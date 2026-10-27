@@ -1,0 +1,313 @@
+---
+import Icon from './Icon.astro';
+import { banner, links, nav, type NavId } from '../data/site';
+
+type Props = { active?: NavId };
+const { active } = Astro.props;
+---
+
+<div class="site-header">
+  {
+    banner && (
+      <div class="banner">
+        <div class="banner__inner">
+          <span class="banner__text">
+            <span class="banner__new">NEW</span>
+            {banner.text}
+          </span>
+          <a href={banner.href} class="banner__cta">
+            {banner.cta} →
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  <header class="head">
+    <div class="head__inner">
+      <a href="/" class="brand" aria-label="The Royal Tribe Embassy home">
+        <img class="brand__logo" src="/images/royal-tribe-logo.jpg" alt="" width="58" height="50" />
+        <span class="brand__words">
+          <span class="brand__name">THE ROYAL TRIBE</span>
+          <span class="brand__sub">EMBASSY</span>
+        </span>
+      </a>
+
+      <nav class="nav-desktop" aria-label="Primary">
+        {
+          nav.map((l) => (
+            <a href={l.href} aria-current={l.id === active ? 'page' : undefined}>
+              {l.label}
+            </a>
+          ))
+        }
+      </nav>
+
+      <div class="head__actions">
+        <a class="btn btn--outline head__btn head__login" href={links.login}>Log in</a>
+        <a class="btn btn--navy head__btn" href="/give">Give</a>
+        <button
+          class="burger"
+          type="button"
+          aria-expanded="false"
+          aria-controls="mobile-nav"
+          aria-label="Open menu"
+          data-menu-toggle
+        >
+          <span data-icon-open><Icon name="menu" size={22} /></span>
+          <span data-icon-close hidden><Icon name="close" size={22} /></span>
+        </button>
+      </div>
+    </div>
+
+    <nav id="mobile-nav" class="nav-mobile" aria-label="Mobile" hidden>
+      {
+        nav.map((l) => (
+          <a href={l.href} aria-current={l.id === active ? 'page' : undefined}>
+            {l.label}
+            <Icon name="chevron-right" size={18} />
+          </a>
+        ))
+      }
+      <div class="nav-mobile__actions">
+        <a class="btn btn--outline" href={links.login}>Log in</a>
+        <a class="btn btn--gold" href="/watch">Watch live</a>
+      </div>
+    </nav>
+  </header>
+</div>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.getElementById('mobile-nav');
+  if (toggle && menu) {
+    const openIcon = toggle.querySelector<HTMLElement>('[data-icon-open]');
+    const closeIcon = toggle.querySelector<HTMLElement>('[data-icon-close]');
+    const setOpen = (open: boolean) => {
+      menu.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      if (openIcon) openIcon.hidden = open;
+      if (closeIcon) closeIcon.hidden = !open;
+    };
+    toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+    // Close after following an in-page link such as /#prayer.
+    menu.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) setOpen(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.hidden) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+  }
+</script>
+
+<style>
+  .site-header {
+    position: relative;
+    z-index: 20;
+  }
+
+  .banner {
+    background: var(--gold);
+    color: var(--midnight);
+  }
+  .banner__inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 10px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .banner__text {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .banner__new {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    background: var(--midnight);
+    color: var(--gold);
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  .banner__cta {
+    color: var(--midnight);
+    font-weight: 800;
+    text-decoration: underline;
+  }
+
+  .head {
+    background: var(--white);
+    border-bottom: 1px solid var(--line);
+  }
+  .head__inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+  .brand__logo {
+    width: 58px;
+    height: 50px;
+    object-fit: contain;
+  }
+  .brand__words {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+    font-family: var(--font-royal);
+    font-weight: 800;
+  }
+  .brand__name {
+    font-size: 16px;
+    color: var(--navy);
+    letter-spacing: 0.04em;
+  }
+  .brand__sub {
+    font-size: 10px;
+    color: var(--bronze);
+    letter-spacing: 0.42em;
+  }
+
+  .nav-desktop {
+    display: flex;
+    gap: 2px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .nav-desktop a {
+    color: var(--ink);
+    padding: 10px 13px;
+    border-radius: 999px;
+  }
+  .nav-desktop a:hover {
+    background: var(--ivory);
+  }
+  .nav-desktop a[aria-current='page'] {
+    color: var(--navy);
+    background: var(--wash);
+    font-weight: 800;
+  }
+
+  .head__actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .head__btn {
+    height: 46px;
+    padding: 0 20px;
+    font-size: 14px;
+  }
+
+  .burger {
+    display: none;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--navy);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .burger span {
+    display: flex;
+  }
+
+  .nav-mobile {
+    border-top: 1px solid var(--line);
+    background: var(--white);
+    padding: 12px 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .nav-mobile > a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 52px;
+    padding: 0 12px;
+    border-radius: 14px;
+    color: var(--navy);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 22px;
+  }
+  .nav-mobile > a[aria-current='page'] {
+    background: var(--wash);
+  }
+  .nav-mobile > a :global(svg) {
+    color: var(--bronze);
+  }
+  .nav-mobile__actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .nav-mobile__actions .btn {
+    flex: 1;
+    height: 52px;
+    font-size: 15px;
+  }
+
+  @media (max-width: 1000px) {
+    .nav-desktop {
+      display: none;
+    }
+    .burger {
+      display: flex;
+    }
+  }
+  @media (min-width: 1001px) {
+    .nav-mobile {
+      display: none !important;
+    }
+  }
+  @media (max-width: 640px) {
+    .head__login {
+      display: none;
+    }
+    .head__inner {
+      padding: 10px 16px;
+      gap: 8px;
+    }
+    .head__actions {
+      gap: 8px;
+    }
+    .brand__logo {
+      width: 44px;
+      height: 38px;
+    }
+    .brand__name {
+      font-size: 13px;
+    }
+    .brand__sub {
+      font-size: 8px;
+    }
+  }
+</style>

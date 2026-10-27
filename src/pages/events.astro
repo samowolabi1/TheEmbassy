@@ -1,0 +1,313 @@
+---
+import Base from '../layouts/Base.astro';
+import Crown from '../components/Crown.astro';
+import Icon from '../components/Icon.astro';
+import { church } from '../data/site';
+import { events, featuredEvent, months } from '../data/events';
+
+// Countdown shown at build time; the script below keeps it current in the browser.
+const daysUntil = Math.max(0, Math.ceil((Date.parse(featuredEvent.startsAt) - Date.now()) / 86_400_000));
+---
+
+<Base title="Events" active="events" description="What's on at The Royal Tribe Embassy: worship nights, the Royal Youth Convention and regular gatherings.">
+  <section class="featured-event bg-gold">
+    <Crown width={640} height={530} fill="var(--midnight)" jewels class="crown-bg" style="right: -140px; top: -60px; opacity: 0.07" />
+    <div class="container featured-event__inner">
+      <div class="stack" style="gap: 20px">
+        <span class="eyebrow eyebrow--ink">FEATURED EVENT · {featuredEvent.dateLabel.toUpperCase()}</span>
+        <h1 class="display featured-event__title">{featuredEvent.title}</h1>
+        <p class="featured-event__text">{featuredEvent.summary} {featuredEvent.where}</p>
+        <div class="featured-event__ctas">
+          <a href={featuredEvent.ticketUrl} class="btn btn--navy">Get your ticket</a>
+          <a href={featuredEvent.calendarUrl} class="btn btn--outline-ink"><Icon name="calendar" size={18} />Add to calendar</a>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat bg-navy">
+          <span class="stat__num" data-countdown={featuredEvent.startsAt}>{daysUntil}</span>
+          <span class="stat__label">DAYS</span>
+        </div>
+        <div class="stat bg-navy">
+          <span class="stat__num">{featuredEvent.speakers}</span>
+          <span class="stat__label">SPEAKERS</span>
+        </div>
+        <div class="stat bg-white stat--light">
+          <span class="stat__num">{featuredEvent.entry}</span>
+          <span class="stat__label">ENTRY</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container section--tight stack" style="gap: 24px" data-filter-scope>
+    <div class="section-head" style="align-items: center">
+      <h2 class="h2">What's on</h2>
+      <div role="tablist" aria-label="Month" class="months">
+        {
+          months.map((m, i) => (
+            <button type="button" role="tab" class="month" aria-selected={i === 0 ? 'true' : 'false'} data-filter={m.id}>
+              {m.label}
+            </button>
+          ))
+        }
+      </div>
+    </div>
+    <div class="stack" style="gap: 14px">
+      {
+        events.map((e) => (
+          <div class="card event" data-filter-item data-tag={e.month}>
+            <span class="event__date">
+              <span class="event__mon">{e.mon}</span>
+              <span class="event__day">{e.day}</span>
+            </span>
+            <span class="event__info">
+              <span class="tag tag--wash event__tag">{e.tag}</span>
+              <span class="event__title">{e.title}</span>
+              <span class="event__when">
+                {e.when} · {e.where}
+              </span>
+            </span>
+            <span class="event__actions">
+              <a href={e.url} class="btn btn--navy btn--sm" style="height: 48px; padding: 0 20px">
+                {e.cta}
+                <span class="sr-only">: {e.title}</span>
+              </a>
+              <a href={e.calendarUrl} class="icon-circle event__cal" aria-label={`Add ${e.title} to calendar`}>
+                <Icon name="calendar" />
+              </a>
+            </span>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="container section--tight section--last stack" style="gap: 24px">
+    <div class="stack" style="gap: 12px">
+      <span class="eyebrow">EVERY WEEK</span>
+      <h2 class="h2">Regular gatherings</h2>
+    </div>
+    <div class="grid-auto" style="--min: 270px; --gap: 16px">
+      <div class="gathering bg-navy">
+        <span class="gathering__when gathering__when--gold">SUNDAY</span>
+        <span class="gathering__title">Sunday Service</span>
+        <span class="gathering__text" style="color: var(--mist)">{church.sundayTime} · In person &amp; YouTube</span>
+      </div>
+      <div class="gathering card">
+        <span class="gathering__when">{church.midweekDay.toUpperCase()}</span>
+        <span class="gathering__title">Midweek prayer</span>
+        <span class="gathering__text">{church.midweekTime} · Online</span>
+      </div>
+      <div class="gathering card">
+        <span class="gathering__when">ALL WEEK</span>
+        <span class="gathering__title">House fellowships</span>
+        <span class="gathering__text">Campuses &amp; neighbourhoods</span>
+      </div>
+      <div class="gathering bg-wash">
+        <span class="gathering__when">MONTHLY</span>
+        <span class="gathering__title">Unit meetings</span>
+        <span class="gathering__text" style="color: var(--body)">Dates in the app</span>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import '../scripts/filters';
+
+  const el = document.querySelector<HTMLElement>('[data-countdown]');
+  if (el?.dataset.countdown) {
+    const ms = Date.parse(el.dataset.countdown) - Date.now();
+    el.textContent = String(Math.max(0, Math.ceil(ms / 86_400_000)));
+  }
+</script>
+
+<style>
+  .featured-event {
+    position: relative;
+    overflow: hidden;
+  }
+  .featured-event__inner {
+    position: relative;
+    padding-top: 72px;
+    padding-bottom: 80px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+    gap: 44px;
+    align-items: center;
+  }
+  .featured-event__title {
+    font-size: clamp(44px, 6vw, 88px);
+    line-height: 0.95;
+  }
+  .featured-event__text {
+    margin: 0;
+    font-size: 19px;
+    line-height: 1.55;
+    font-weight: 600;
+    max-width: 520px;
+  }
+  .featured-event__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .stat {
+    border-radius: 24px;
+    padding: 22px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .stat__num {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(36px, 4vw, 56px);
+    line-height: 1;
+    color: var(--gold);
+  }
+  .stat--light .stat__num,
+  .stat--light {
+    color: var(--navy);
+  }
+  .stat__label {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+  }
+
+  .months {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: var(--white);
+    border: 1px solid var(--line);
+  }
+  .month {
+    height: 44px;
+    padding: 0 22px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--slate);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .month[aria-selected='true'] {
+    background: var(--navy);
+    color: var(--white);
+    font-weight: 800;
+  }
+
+  .event {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px 24px;
+    align-items: center;
+    border-radius: 26px;
+    padding: 18px 22px;
+  }
+  .event__date {
+    width: 84px;
+    height: 84px;
+    border-radius: 20px;
+    background: var(--navy);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .event__mon {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--white);
+  }
+  .event__day {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 32px;
+    line-height: 1;
+    color: var(--gold);
+  }
+  .event__info {
+    flex: 1 1 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .event__tag {
+    font-size: 11px;
+    padding: 4px 9px;
+  }
+  .event__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--navy);
+  }
+  .event__when {
+    font-size: 15px;
+    color: var(--slate);
+  }
+  .event__actions {
+    display: flex;
+    gap: 10px;
+  }
+  .event__cal {
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--line);
+    color: var(--navy);
+  }
+
+  .gathering {
+    border-radius: 26px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .gathering__when {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: var(--bronze);
+  }
+  .gathering__when--gold {
+    color: var(--gold);
+  }
+  .gathering__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 24px;
+  }
+  .card .gathering__title,
+  .bg-wash .gathering__title {
+    color: var(--navy);
+  }
+  .gathering__text {
+    font-size: 15px;
+    color: var(--slate);
+  }
+
+  @media (max-width: 640px) {
+    .featured-event__inner {
+      padding-top: 44px;
+      padding-bottom: 48px;
+    }
+    .event,
+    .gathering {
+      padding: 22px;
+    }
+  }
+</style>

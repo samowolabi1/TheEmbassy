@@ -1,0 +1,245 @@
+---
+import Icon from './Icon.astro';
+import { church, config, links } from '../data/site';
+
+const socials = [
+  { label: 'YouTube', icon: 'youtube', href: links.youtube },
+  { label: 'Instagram', icon: 'instagram', href: links.instagram },
+  { label: 'TikTok', icon: 'tiktok', href: links.tiktok },
+  { label: 'Facebook', icon: 'facebook', href: links.facebook },
+] as const;
+const year = new Date().getFullYear();
+---
+
+<footer class="foot">
+  <div class="foot__inner">
+    <div class="foot__signup">
+      <div class="foot__pitch">
+        <span class="foot__title">Get the weekly declaration in your inbox.</span>
+        <span>Plus announcements and new messages. One email every Monday.</span>
+      </div>
+      <form class="foot__form" data-newsletter data-endpoint={config.newsletterEndpoint}>
+        <label class="foot__email">
+          <span class="sr-only">Email address</span>
+          <input type="email" name="email" required placeholder="Your email address" autocomplete="email" />
+        </label>
+        <button class="btn btn--gold foot__submit" type="submit">Subscribe</button>
+        <p class="foot__status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <div class="foot__cols">
+      <div class="foot__col">
+        <div class="foot__logo">
+          <img src="/images/royal-tribe-logo.jpg" alt="RCCG The Royal Tribe Embassy logo" width="72" height="62" />
+        </div>
+        <span class="foot__about">{church.tagline}</span>
+        <div class="foot__socials">
+          {
+            socials.map((s) => (
+              <a href={s.href} aria-label={s.label} class="icon-circle foot__social">
+                <Icon name={s.icon} />
+              </a>
+            ))
+          }
+        </div>
+      </div>
+      <div class="foot__col">
+        <span class="foot__heading">VISIT</span>
+        <span>{church.address}</span>
+        <span>Sundays · {church.sundayTime}</span>
+        <span>{church.midweekDay} · {church.midweekTime}</span>
+        <a href="/about#visit" class="foot__strong">Plan your visit →</a>
+      </div>
+      <div class="foot__col">
+        <span class="foot__heading">EXPLORE</span>
+        <a href="/about">About us</a>
+        <a href="/watch">Sermons</a>
+        <a href="/blog">Blog</a>
+        <a href="/events">Events</a>
+        <a href="/#market">Tribe Market</a>
+      </div>
+      <div class="foot__col">
+        <span class="foot__heading">GET INVOLVED</span>
+        <a href="/give">Give</a>
+        <a href="/#prayer">Prayer request</a>
+        <a href="/about#units">Join a unit</a>
+        <a href={links.contact}>Contact us</a>
+      </div>
+    </div>
+  </div>
+  <div class="foot__base">
+    <div class="foot__base-inner">
+      <span>© {year} {church.name}</span>
+      <span class="foot__legal"><a href={links.privacy}>Privacy</a><a href={links.terms}>Terms</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  import { submitJson } from '../scripts/forms';
+
+  for (const form of document.querySelectorAll<HTMLFormElement>('[data-newsletter]')) {
+    const status = form.querySelector<HTMLElement>('.foot__status');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = new FormData(form).get('email');
+      const result = await submitJson(form.dataset.endpoint, { email });
+      if (status) {
+        status.textContent =
+          result === 'ok'
+            ? "You're subscribed. See you on Monday."
+            : result === 'unconfigured'
+              ? 'Sign-ups are not switched on yet. Please check back soon.'
+              : 'Something went wrong. Please try again.';
+      }
+      if (result === 'ok') form.reset();
+    });
+  }
+</script>
+
+<style>
+  .foot {
+    background: var(--midnight);
+    color: var(--mist);
+  }
+  .foot a {
+    color: var(--white);
+  }
+  .foot a:hover {
+    color: var(--gold);
+  }
+  .foot__inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 56px 24px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+  }
+  .foot__signup {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--navy-2);
+  }
+  .foot__pitch {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 520px;
+    font-size: 15px;
+  }
+  .foot__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 30px;
+    line-height: 1.1;
+    color: var(--white);
+  }
+  .foot__form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    flex: 1 1 320px;
+    max-width: 480px;
+  }
+  .foot__email {
+    flex: 1 1 220px;
+    display: flex;
+  }
+  .foot__email input {
+    width: 100%;
+    height: 54px;
+    border-radius: 999px;
+    border: 1px solid var(--navy-line);
+    background: var(--navy);
+    color: var(--white);
+    padding: 0 20px;
+    font-size: 15px;
+  }
+  .foot__email input::placeholder {
+    color: var(--mist);
+  }
+  .foot__submit {
+    height: 54px;
+    padding: 0 24px;
+    font-size: 15px;
+  }
+  .foot__status {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: 14px;
+    min-height: 1em;
+  }
+  .foot__status:empty {
+    display: none;
+  }
+  .foot__cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+    gap: 32px;
+  }
+  .foot__col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 14px;
+  }
+  .foot__heading {
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    font-size: 12px;
+  }
+  .foot__strong {
+    font-weight: 700;
+  }
+  .foot__logo {
+    width: 84px;
+    height: 72px;
+    border-radius: 18px;
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .foot__logo img {
+    width: 72px;
+    height: 62px;
+    object-fit: contain;
+  }
+  .foot__about {
+    line-height: 1.6;
+  }
+  .foot__socials {
+    display: flex;
+    gap: 8px;
+  }
+  .foot__social {
+    border: 1px solid var(--navy-line);
+  }
+  .foot__base {
+    border-top: 1px solid var(--navy-2);
+  }
+  .foot__base-inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .foot__legal {
+    display: flex;
+    gap: 18px;
+  }
+  .foot__legal a {
+    color: var(--mist);
+  }
+</style>

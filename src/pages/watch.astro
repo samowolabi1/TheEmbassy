@@ -1,0 +1,402 @@
+---
+import Base from '../layouts/Base.astro';
+import Crown from '../components/Crown.astro';
+import Icon from '../components/Icon.astro';
+import { church, links } from '../data/site';
+import { messageFilters, messages, series, upcomingLive } from '../data/sermons';
+
+const listen = [
+  { label: 'Spotify', href: links.spotify },
+  { label: 'Apple Podcasts', href: links.applePodcasts },
+  { label: 'Audiomack', href: links.audiomack },
+];
+---
+
+<Base title="Watch" active="watch" description="Watch Sunday services live, catch up on sermon series and listen to the Tribe Talk podcast.">
+  <section class="live bg-night on-dark">
+    <div class="container live__inner">
+      <div class="live__main">
+        <div class="player">
+          <Crown width={420} height={350} class="crown-bg" style="right: -60px; bottom: -80px; opacity: 0.1" />
+          <span class="player__live"><span class="player__dot"></span>LIVE ON YOUTUBE</span>
+          <span class="player__note">[YouTube live player]</span>
+          <a href={links.youtubeLive} class="player__play" aria-label="Play livestream"><Icon name="play" size={30} /></a>
+        </div>
+        <div class="live__meta">
+          <div class="stack" style="gap: 4px">
+            <h1 class="live__title">Sunday Service: Crowned for More, week 3</h1>
+            <span class="live__when">Every Sunday at {church.sundayTime} · 1 Peter 2:9</span>
+          </div>
+          <a href={links.youtube} class="btn btn--youtube btn--md"><Icon name="youtube" />Subscribe</a>
+        </div>
+      </div>
+
+      <aside class="upcoming">
+        <span class="eyebrow">COMING UP LIVE</span>
+        {
+          upcomingLive.map((u) => (
+            <div class="upcoming__item">
+              <span class="upcoming__title">{u.title}</span>
+              <span class="upcoming__when">{u.when}</span>
+            </div>
+          ))
+        }
+        <div class="upcoming__listen">
+          <span class="upcoming__label">Listen on the go</span>
+          <div class="upcoming__links">
+            {listen.map((l) => <a href={l.href} class="upcoming__link">{l.label}</a>)}
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="container section--tight stack" style="gap: 28px">
+    <div class="stack" style="gap: 12px">
+      <span class="eyebrow">SERIES</span>
+      <h2 class="h2">Binge a whole series.</h2>
+    </div>
+    <div class="grid-auto" style="--min: 320px">
+      {
+        series.map((s) => (
+          <a href={s.url} class={`series series--${s.style}`}>
+            <span class="tag series__tag">{s.label}</span>
+            <span class="series__title">
+              {s.title}
+              <br />
+              <span class="series__accent">{s.accent}</span>
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="container section--tight section--last stack" style="gap: 24px" data-filter-scope>
+    <div class="section-head">
+      <h2 class="h2">All messages</h2>
+      <label class="search">
+        <Icon name="search" size={18} />
+        <span class="sr-only">Search messages</span>
+        <input type="search" placeholder="Search by title or scripture" data-filter-search />
+      </label>
+    </div>
+    <div role="tablist" aria-label="Filter messages" class="filters">
+      {
+        messageFilters.map((f, i) => (
+          <button type="button" role="tab" class="filter" aria-selected={i === 0 ? 'true' : 'false'} data-filter={f.id}>
+            {f.label}
+          </button>
+        ))
+      }
+    </div>
+    <div class="grid-auto" style="--min: 300px; --gap: 22px">
+      {
+        messages.map((m) => (
+          <a href={m.url} class="message" data-filter-item data-tag={m.type} data-search={`${m.title} ${m.meta} ${m.kind}`}>
+            <div class={`message__thumb bg-${m.swatch}`}>
+              <span class="icon-circle message__play">
+                <Icon name="play" size={18} />
+              </span>
+              <span class="message__len">{m.length}</span>
+            </div>
+            <span class="stack" style="gap: 4px">
+              <span class="message__kind">{m.kind}</span>
+              <span class="message__title">{m.title}</span>
+              <span class="message__meta">{m.meta}</span>
+            </span>
+          </a>
+        ))
+      }
+    </div>
+    <p class="empty" data-filter-empty hidden>No messages match that search yet.</p>
+  </section>
+</Base>
+
+<script>
+  import '../scripts/filters';
+</script>
+
+<style>
+  .live__inner {
+    padding-top: 56px;
+    padding-bottom: 72px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    align-items: stretch;
+  }
+  .live__main {
+    flex: 999 1 560px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .player {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 28px;
+    background: var(--navy-2);
+    border: 1px solid var(--navy-line);
+    overflow: hidden;
+  }
+  .player__live {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--youtube);
+    color: var(--white);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    padding: 7px 12px;
+    border-radius: 999px;
+  }
+  .player__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--white);
+  }
+  .player__note {
+    position: absolute;
+    top: 22px;
+    right: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--mist);
+  }
+  .player__play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin: -40px 0 0 -40px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--midnight);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .live__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .live__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(26px, 3vw, 36px);
+    line-height: 1.1;
+  }
+  .live__when {
+    font-size: 15px;
+    color: var(--mist);
+  }
+
+  .upcoming {
+    flex: 1 1 300px;
+    background: var(--navy);
+    border: 1px solid var(--navy-2);
+    border-radius: 28px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .upcoming__item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--navy-2);
+  }
+  .upcoming__item:nth-last-child(2) {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  .upcoming__title {
+    font-weight: 800;
+    font-size: 17px;
+  }
+  .upcoming__when {
+    font-size: 14px;
+    color: var(--mist);
+  }
+  .upcoming__listen {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 8px;
+  }
+  .upcoming__label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--mist);
+  }
+  .upcoming__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .upcoming__link {
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--navy-line);
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+  }
+
+  .series {
+    position: relative;
+    overflow: hidden;
+    height: 240px;
+    border-radius: 28px;
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .series__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 40px;
+    line-height: 0.95;
+  }
+  .series--navy {
+    background: var(--navy);
+    color: var(--white);
+  }
+  .series--navy .series__tag {
+    background: var(--gold);
+    color: var(--midnight);
+  }
+  .series--navy .series__accent {
+    color: var(--gold);
+  }
+  .series--gold {
+    background: var(--gold);
+    color: var(--midnight);
+  }
+  .series--gold .series__tag {
+    background: var(--midnight);
+    color: var(--gold);
+  }
+  .series--ice {
+    background: var(--ice);
+    color: var(--navy);
+  }
+  .series--ice .series__tag {
+    background: var(--navy);
+    color: var(--white);
+  }
+  .series--ice .series__accent {
+    color: var(--bronze);
+  }
+
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 50px;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    color: var(--slate);
+    flex: 0 1 340px;
+  }
+  .search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+  }
+  .search:focus-within {
+    outline: 3px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  .message {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    color: var(--ink);
+  }
+  .message__thumb {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 22px;
+    overflow: hidden;
+  }
+  .message__play {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    width: 46px;
+    height: 46px;
+    background: var(--white);
+    color: var(--navy);
+  }
+  .message__len {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--white);
+    background: var(--midnight);
+    padding: 5px 9px;
+    border-radius: 999px;
+  }
+  .message__kind {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--bronze);
+    text-transform: uppercase;
+  }
+  .message__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 20px;
+    line-height: 1.2;
+    color: var(--navy);
+  }
+  .message__meta {
+    font-size: 14px;
+    color: var(--slate);
+  }
+  .empty {
+    margin: 0;
+    color: var(--slate);
+    font-size: 16px;
+  }
+
+  @media (max-width: 640px) {
+    .live__inner {
+      padding-top: 36px;
+      padding-bottom: 48px;
+    }
+    .upcoming {
+      padding: 24px;
+    }
+  }
+</style>

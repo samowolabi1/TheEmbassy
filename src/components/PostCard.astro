@@ -1,0 +1,75 @@
+---
+import type { Post } from '../data/posts';
+
+type Props = {
+  post: Post;
+  /** Show the one-line summary under the title. */
+  showDek?: boolean;
+  imageHeight?: number;
+  /** Extra attributes for filtering, e.g. data-filter-item. */
+  [key: `data-${string}`]: string | boolean | undefined;
+};
+
+const { post, showDek = false, imageHeight = 220, ...rest } = Astro.props;
+---
+
+<a href={`/blog/${post.slug}`} class="post-card" {...rest}>
+  <div
+    role="img"
+    aria-label="Article image placeholder"
+    class={`post-card__image bg-${post.swatch}`}
+    style={`height: ${imageHeight}px`}
+  >
+    <span class={post.swatch === 'navy' ? 'label-chip label-chip--gold' : 'label-chip'}>{post.topic}</span>
+  </div>
+  <span class="post-card__text">
+    <span class="post-card__title">{post.title}</span>
+    {showDek && <span class="post-card__dek">{post.dek}</span>}
+    <span class="post-card__meta">{post.author} · {post.read}</span>
+  </span>
+</a>
+
+<style>
+  .post-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    color: var(--ink);
+  }
+  .post-card:hover .post-card__title {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+  }
+  .post-card__image {
+    border-radius: 24px;
+    display: flex;
+    align-items: flex-end;
+    padding: 16px;
+  }
+  .label-chip--gold {
+    background: var(--gold);
+  }
+  .post-card__text {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .post-card__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 22px;
+    line-height: 1.2;
+    color: var(--navy);
+  }
+  .post-card__dek {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--slate);
+  }
+  .post-card__meta {
+    font-size: 14px;
+    color: var(--slate);
+    font-weight: 600;
+  }
+</style>
