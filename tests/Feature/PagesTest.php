@@ -22,7 +22,7 @@ class PagesTest extends TestCase
             'about' => ['/about', 'A royal tribe, raising a generation for Christ.'],
             'watch' => ['/watch', 'Binge a whole series.'],
             'blog' => ['/blog', 'Real talk for'],
-            'events' => ['/events', 'Royal Youth Convention'],
+            'events' => ['/events', 'Regular gatherings'],
             'give' => ['/give', 'Honour God'],
         ];
     }

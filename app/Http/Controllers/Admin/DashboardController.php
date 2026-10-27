@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use App\Models\Declaration;
+use App\Models\Event;
 use App\Models\NewsletterSubscriber;
 use App\Models\Notice;
 use App\Models\PrayerRequest;
+use App\Models\TicketOrder;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -40,7 +42,7 @@ class DashboardController extends Controller
             'hasDeclarationNextWeek' => Declaration::where('week_of', Declaration::weekStarting(today()->addWeek()))->exists(),
             'latestPrayer' => PrayerRequest::latest()->take(3)->get(),
             'latestSubscribers' => NewsletterSubscriber::latest()->take(5)->get(),
-            'events' => collect(config('content.events.events'))->take(3),
+            'events' => Event::upcoming()->withCount(['tickets as booked_count' => fn ($q) => $q->whereHas('order', fn ($o) => $o->where('status', TicketOrder::CONFIRMED))])->take(3)->get(),
         ]);
     }
 }

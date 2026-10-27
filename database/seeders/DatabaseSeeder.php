@@ -4,8 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\Announcement;
 use App\Models\Declaration;
+use App\Models\Event;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 
 class DatabaseSeeder extends Seeder
 {
@@ -28,6 +30,8 @@ class DatabaseSeeder extends Seeder
             ]],
         );
 
+        $this->seedEvents();
+
         if (Announcement::exists()) {
             return;
         }
@@ -41,6 +45,34 @@ class DatabaseSeeder extends Seeder
         // Oldest first, so the first one in the design ends up newest and shows at the top.
         foreach ($announcements as $i => $announcement) {
             Announcement::create([...$announcement, 'published_at' => now()->subMinutes(count($announcements) - $i)]);
+        }
+    }
+
+    /**
+     * The events from the design, each with a free RSVP ticket. Prices can be set in the admin.
+     */
+    private function seedEvents(): void
+    {
+        if (Event::exists()) {
+            return;
+        }
+
+        $events = [
+            ['worship-night', 'Worship Night', 'Worship', '2026-11-06 18:00', 'A night of worship and prayer with the Tribe choir.', 'Main sanctuary', false],
+            ['royal-youth-convention', 'Royal Youth Convention', 'Convention', '2026-11-14 16:00', 'Worship, honest conversations and the biggest Tribe hangout of the year. Bring a friend.', 'Main sanctuary', true],
+            ['career-and-purpose-clinic', 'Career & Purpose Clinic', 'Career', '2026-11-21 11:00', 'CV reviews, mentoring and panels with professionals from the church.', 'Hall B', false],
+            ['thanksgiving-sunday', 'Thanksgiving Sunday', 'Thanksgiving', '2026-11-29 09:00', 'Wear white and gold. Family lunch after service.', 'Main sanctuary', false],
+            ['community-outreach', 'Community Outreach', 'Outreach', '2026-12-05 09:00', 'Taking food, care packs and the gospel to [Location]. Volunteers welcome.', '[Location]', false],
+            ['carols-by-candlelight', 'Carols by Candlelight', 'Carols', '2026-12-19 18:00', 'Carols, candles and the Christmas story.', 'Main sanctuary', false],
+        ];
+
+        foreach ($events as [$slug, $title, $tag, $starts, $summary, $venue, $featured]) {
+            $event = Event::create([
+                'slug' => $slug, 'title' => $title, 'tag' => $tag, 'summary' => $summary, 'venue' => $venue,
+                'starts_at' => Carbon::parse($starts, config('app.timezone')),
+                'is_featured' => $featured, 'is_published' => true,
+            ]);
+            $event->ticketTypes()->create(['name' => 'Free entry', 'price' => 0]);
         }
     }
 }

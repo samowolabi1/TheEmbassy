@@ -32,7 +32,7 @@ return [
 
     'upcoming_live' => [
         ['title' => 'Midweek prayer', 'when' => '[Day] · [Time]'],
-        ['title' => 'Worship Night', 'when' => 'Fri 7 Nov · 6:00 PM'],
+        ['title' => 'Worship Night', 'when' => 'Fri 6 Nov · 6:00 PM'],
         ['title' => 'Royal Youth Convention', 'when' => 'Sat 14 Nov · 4:00 PM'],
     ],
 

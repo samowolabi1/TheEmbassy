@@ -6,3 +6,4 @@ import './share';
 import './countdown';
 import './give';
 import './notices';
+import './booking';

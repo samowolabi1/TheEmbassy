@@ -240,18 +240,20 @@
                 <a href="{{ route('events') }}" class="btn btn--gold" style="align-self: flex-start; margin-top: 6px">See the calendar</a>
             </div>
             <div class="stack events-panel__list">
-                @foreach ($events as $e)
-                    <a href="{{ $e['url'] }}" @class(['event-row', 'event-row--gold' => $e['highlight'] ?? false])>
+                @forelse ($events as $e)
+                    <a href="{{ route('events.show', $e) }}" @class(['event-row', 'event-row--gold' => $e->is_featured])>
                         <span class="date-tile">
-                            <span class="date-tile__mon">{{ $e['mon'] }}</span>
-                            <span class="date-tile__day">{{ $e['day'] }}</span>
+                            <span class="date-tile__mon">{{ strtoupper($e->starts_at->format('M')) }}</span>
+                            <span class="date-tile__day">{{ $e->starts_at->format('d') }}</span>
                         </span>
                         <span class="stack" style="flex: 1">
-                            <span class="event-row__title">{{ $e['title'] }}</span>
-                            <span class="event-row__when">{{ $e['when'] }}@if ($e['highlight'] ?? false) · Tickets open @endif</span>
+                            <span class="event-row__title">{{ $e->title }}</span>
+                            <span class="event-row__when">{{ $e->starts_at->format('D · g:i A') }}@if ($e->is_featured) · Booking open @endif</span>
                         </span>
                     </a>
-                @endforeach
+                @empty
+                    <span class="events-panel__text">New events are coming soon.</span>
+                @endforelse
             </div>
         </div>
     </section>

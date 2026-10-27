@@ -26,7 +26,7 @@
             ['id' => 'content', 'label' => 'Content & announcements', 'route' => 'admin.content'],
             ['id' => 'notices', 'label' => 'Notice board', 'route' => 'admin.notices.index', 'badge' => $noticesToReview ?: null],
             ['id' => 'live', 'label' => 'Sermons & live'],
-            ['id' => 'events', 'label' => 'Events & tickets'],
+            ['id' => 'events', 'label' => 'Events & tickets', 'route' => 'admin.events.index'],
             ['id' => 'prayer', 'label' => 'Prayer requests', 'route' => 'admin.prayer-requests.index', 'badge' => $unreadPrayer ?: null],
         ],
         'SYSTEM' => [

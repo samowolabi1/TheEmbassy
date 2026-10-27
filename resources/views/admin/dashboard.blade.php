@@ -81,16 +81,18 @@
     <div class="row">
         <section class="box side-col">
             <h2>Coming up</h2>
-            @foreach ($events as $e)
-                <div style="display: flex; align-items: center; gap: 12px">
-                    <span class="date-tile" style="width: 52px; height: 52px; border-radius: 14px; background: {{ ($e['highlight'] ?? false) ? 'var(--gold)' : 'var(--navy)' }}; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0">
-                        <span style="font-size: 10px; font-weight: 800; color: {{ ($e['highlight'] ?? false) ? 'var(--midnight)' : 'var(--white)' }}">{{ $e['mon'] }}</span>
-                        <span style="font-family: var(--font-display); font-weight: 800; font-size: 20px; line-height: 1; color: {{ ($e['highlight'] ?? false) ? 'var(--midnight)' : 'var(--gold)' }}">{{ $e['day'] }}</span>
+            @forelse ($events as $e)
+                <a href="{{ route('admin.events.show', $e) }}" style="display: flex; align-items: center; gap: 12px; color: var(--ink)">
+                    <span style="width: 52px; height: 52px; border-radius: 14px; background: {{ $e->is_featured ? 'var(--gold)' : 'var(--navy)' }}; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0">
+                        <span style="font-size: 10px; font-weight: 800; color: {{ $e->is_featured ? 'var(--midnight)' : 'var(--white)' }}">{{ strtoupper($e->starts_at->format('M')) }}</span>
+                        <span style="font-family: var(--font-display); font-weight: 800; font-size: 20px; line-height: 1; color: {{ $e->is_featured ? 'var(--midnight)' : 'var(--gold)' }}">{{ $e->starts_at->format('d') }}</span>
                     </span>
-                    <span class="stack"><span style="font-weight: 800; font-size: 15px">{{ $e['title'] }}</span><span class="box__note">{{ $e['when'] }} · {{ $e['where'] }}</span></span>
-                </div>
-            @endforeach
-            <span class="box__note">Events are updated by the web team until event management is built.</span>
+                    <span class="stack"><span style="font-weight: 800; font-size: 15px">{{ $e->title }}</span><span class="box__note">{{ $e->starts_at->format('D g:i A') }} · {{ $e->booked_count }} booked</span></span>
+                </a>
+            @empty
+                <span class="box__note">No upcoming events.</span>
+            @endforelse
+            <a href="{{ route('admin.events.create') }}" class="box__link">Add an event</a>
         </section>
 
         <section class="box grow">

@@ -1,0 +1,102 @@
+/* Event page, booking form and tickets. Builds on the notice-form styles. */
+
+.event-hero {
+  position: relative;
+  padding-top: 48px;
+  padding-bottom: 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.event-facts {
+  margin: 8px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+}
+.event-facts dt {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+.event-facts dd {
+  margin: 4px 0 0;
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.4;
+}
+a.event__title:hover {
+  text-decoration: underline;
+}
+
+.ticket-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line-soft);
+}
+.ticket-row:first-of-type {
+  border-top: 0;
+}
+.ticket-row--off {
+  opacity: 0.6;
+}
+.ticket-row__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ticket-row__qty select {
+  height: 48px;
+  min-width: 84px;
+  border-radius: 14px;
+  border: 1px solid var(--field-line);
+  background: var(--ivory);
+  padding: 0 12px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.notice-alert--ok {
+  background: #ddf1e5;
+  color: #1e7a4c;
+}
+.ticket {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  break-inside: avoid;
+}
+.ticket__type {
+  font-weight: 800;
+  color: var(--navy);
+}
+.ticket__qr svg {
+  display: block;
+  width: 180px;
+  height: 180px;
+}
+.ticket__code {
+  font-family: ui-monospace, monospace;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  color: var(--navy);
+}
+
+@media print {
+  .site-header,
+  .foot,
+  .skip-link,
+  .slide__ctas {
+    display: none !important;
+  }
+}

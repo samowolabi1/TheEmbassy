@@ -2,17 +2,26 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\NewsletterSubscriptionController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrayerRequestController;
+use App\Http\Controllers\TicketOrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/watch', [PageController::class, 'watch'])->name('watch');
-Route::get('/events', [PageController::class, 'events'])->name('events');
+Route::get('/events', [EventController::class, 'index'])->name('events');
+Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+Route::get('/events/{event}/calendar.ics', [EventController::class, 'calendar'])->name('events.calendar');
+Route::post('/events/{event}/book', [TicketOrderController::class, 'store'])->middleware('throttle:10,1')->name('events.book');
+Route::middleware('signed')->group(function () {
+    Route::get('/tickets/{order}', [TicketOrderController::class, 'show'])->name('tickets.show');
+    Route::post('/tickets/{order}/pay', [TicketOrderController::class, 'pay'])->middleware('throttle:10,1')->name('tickets.pay');
+});
 Route::get('/give', [PageController::class, 'give'])->name('give');
 
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
@@ -63,5 +72,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/notices', [Admin\NoticeController::class, 'index'])->name('notices.index');
         Route::post('/notices/{notice}/approve', [Admin\NoticeController::class, 'approve'])->name('notices.approve');
         Route::post('/notices/{notice}/reject', [Admin\NoticeController::class, 'reject'])->name('notices.reject');
+
+        Route::get('/events/{event}/attendees.csv', [Admin\EventController::class, 'export'])->name('events.export');
+        Route::resource('events', Admin\EventController::class);
+        Route::get('/tickets', [Admin\TicketController::class, 'lookup'])->name('tickets.lookup');
+        Route::get('/tickets/{ticket}', [Admin\TicketController::class, 'show'])->name('tickets.show');
+        Route::post('/tickets/{ticket}/check-in', [Admin\TicketController::class, 'checkIn'])->name('tickets.check-in');
     });
 });
