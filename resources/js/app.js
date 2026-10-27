@@ -7,3 +7,4 @@ import './countdown';
 import './give';
 import './notices';
 import './booking';
+import './market';

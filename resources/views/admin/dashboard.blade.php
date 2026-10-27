@@ -56,6 +56,11 @@
                 <span class="todo__text">Unread prayer requests</span>
                 <x-icon name="chevron-right" :size="16" />
             </a>
+            <a href="{{ route('admin.market.index') }}" @class(['todo', 'todo--done' => ! $stats['shopApplications']])>
+                <span class="todo__count" style="background: var(--ice); color: var(--navy)">{{ $stats['shopApplications'] }}</span>
+                <span class="todo__text">Shop applications to review</span>
+                <x-icon name="chevron-right" :size="16" />
+            </a>
             <a href="{{ route('admin.notices.index') }}" @class(['todo', 'todo--done' => ! $stats['noticesToReview']])>
                 <span class="todo__count" style="background: var(--wash); color: var(--bronze)">{{ $stats['noticesToReview'] }}</span>
                 <span class="todo__text">Paid notices to review</span>

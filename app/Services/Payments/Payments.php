@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Contracts\Payable;
+use App\Contracts\SplitsPayment;
 use App\Models\Payment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -27,20 +28,28 @@ class Payments
      */
     public function checkout(Model&Payable $payable, int $amountInKobo, string $email): string
     {
-        $feePercent = (float) config('platform.fees.'.$payable->feeModule(), 0);
-
         $payment = $payable->payments()->create([
             'reference' => 'RT-'.Str::upper(Str::random(16)),
             'email' => $email,
             'amount' => $amountInKobo,
-            'platform_fee' => (int) round($amountInKobo * max(0, min(100, $feePercent)) / 100),
+            'platform_fee' => self::platformFee($payable->feeModule(), $amountInKobo),
             'currency' => 'NGN',
         ]);
 
         return $this->paystack->initialize($payment, route('payments.callback'), [
             'payable' => class_basename($payable),
             'payable_id' => $payable->getKey(),
-        ]);
+        ], $payable instanceof SplitsPayment ? $payable->paystackSplit($payment) : null);
+    }
+
+    /**
+     * Donaitech's fee on an amount, from config('platform.fees'), in kobo.
+     */
+    public static function platformFee(string $module, int $amountInKobo): int
+    {
+        $percent = max(0, min(100, (float) config('platform.fees.'.$module, 0)));
+
+        return (int) round($amountInKobo * $percent / 100);
     }
 
     /**

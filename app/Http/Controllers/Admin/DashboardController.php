@@ -9,6 +9,7 @@ use App\Models\Event;
 use App\Models\NewsletterSubscriber;
 use App\Models\Notice;
 use App\Models\PrayerRequest;
+use App\Models\Shop;
 use App\Models\TicketOrder;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -37,6 +38,7 @@ class DashboardController extends Controller
                 'liveAnnouncements' => Announcement::live()->count(),
                 'scheduledAnnouncements' => Announcement::where('published_at', '>', now())->count(),
                 'noticesToReview' => Notice::where('status', Notice::IN_REVIEW)->count(),
+                'shopApplications' => Shop::where('status', Shop::PENDING)->count(),
             ],
             'hasDeclarationThisWeek' => Declaration::where('week_of', Declaration::weekStarting(today()))->exists(),
             'hasDeclarationNextWeek' => Declaration::where('week_of', Declaration::weekStarting(today()->addWeek()))->exists(),

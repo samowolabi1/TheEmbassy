@@ -2,6 +2,7 @@
     $user = auth()->user();
     $unreadPrayer = \App\Models\PrayerRequest::unread()->count();
     $noticesToReview = \App\Models\Notice::where('status', \App\Models\Notice::IN_REVIEW)->count();
+    $shopApplications = \App\Models\Shop::where('status', \App\Models\Shop::PENDING)->count();
 
     // The sidebar from the design. Sections without a `route` aren't built yet and show as "Soon".
     $nav = [
@@ -20,7 +21,7 @@
             ['id' => 'expenses', 'label' => 'Expenses & budgets'],
         ],
         'MARKET' => [
-            ['id' => 'market', 'label' => config('church.brand.market_name')],
+            ['id' => 'market', 'label' => config('church.brand.market_name'), 'route' => 'admin.market.index', 'badge' => $shopApplications ?: null],
         ],
         'CONTENT' => [
             ['id' => 'content', 'label' => 'Content & announcements', 'route' => 'admin.content'],

@@ -6,6 +6,7 @@ use App\Models\Announcement;
 use App\Models\Declaration;
 use App\Models\Event;
 use App\Models\Notice;
+use App\Models\Product;
 use Illuminate\View\View;
 
 class PageController extends Controller
@@ -23,6 +24,7 @@ class PageController extends Controller
             'declaration' => Declaration::current(),
             'announcements' => Announcement::live()->take(3)->get(),
             'notices' => Notice::live()->where('featured', true)->take(3)->get(),
+            'products' => Product::listed()->with('shop')->take(4)->get(),
             'headline' => $series->first(),
             // The two earlier episodes, then the podcast.
             'sideMessages' => $series->slice(1)->concat($messages->where('type', 'podcast'))->take(3),

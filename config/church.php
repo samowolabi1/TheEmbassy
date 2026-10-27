@@ -69,7 +69,7 @@ return [
         ['id' => 'watch', 'label' => 'Watch', 'route' => 'watch'],
         ['id' => 'blog', 'label' => 'Blog', 'route' => 'blog.index'],
         ['id' => 'events', 'label' => 'Events', 'route' => 'events'],
-        ['id' => 'market', 'label' => $marketName, 'route' => 'home', 'fragment' => 'market'],
+        ['id' => 'market', 'label' => $marketName, 'route' => 'market.index'],
         ['id' => 'prayer', 'label' => 'Prayer', 'route' => 'home', 'fragment' => 'prayer'],
     ],
 

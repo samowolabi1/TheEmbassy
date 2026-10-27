@@ -59,7 +59,7 @@
                 <a href="{{ route('blog.index') }}">Blog</a>
                 <a href="{{ route('events') }}">Events</a>
                 <a href="{{ route('notices.index') }}">Notice board</a>
-                <a href="{{ route('home') }}#market">{{ config('church.brand.market_name') }}</a>
+                <a href="{{ route('market.index') }}">{{ config('church.brand.market_name') }}</a>
             </div>
             <div class="foot__col">
                 <span class="foot__heading">GET INVOLVED</span>

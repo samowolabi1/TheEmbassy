@@ -266,24 +266,20 @@
                 <h2 class="h2 h2--lg">Shop from the family.</h2>
                 <span class="lede">Every order supports a member's business and the work of the church.</span>
             </div>
-            <a href="#" class="btn btn--navy btn--md">Visit the market</a>
+            <a href="{{ route('market.index') }}" class="btn btn--navy btn--md">Visit the market</a>
         </div>
-        <div class="grid-auto" style="--min: 230px; --gap: 18px">
-            @foreach ($home['market'] as $item)
-                <a href="{{ $item['url'] }}" class="product">
-                    <div role="img" aria-label="Product photo placeholder" class="product__image bg-{{ $item['swatch'] }}">
-                        <span class="label-chip">{{ $item['category'] }}</span>
-                    </div>
-                    <span class="product__row">
-                        <span class="stack" style="gap: 2px">
-                            <span class="product__name">{{ $item['name'] }}</span>
-                            <span class="product__seller">{{ $item['seller'] }}</span>
-                        </span>
-                        <span class="product__price">{{ $item['price'] }}</span>
-                    </span>
-                </a>
-            @endforeach
-        </div>
+        @if ($products->isEmpty())
+            <div class="card notices-empty">
+                <p class="lede" style="margin: 0">Members' shops are opening soon. Run a business? Sell to the family.</p>
+                <a href="{{ route('market.apply') }}" class="btn btn--outline btn--md">Open a shop</a>
+            </div>
+        @else
+            <div class="grid-auto" style="--min: 230px; --gap: 18px">
+                @foreach ($products as $product)
+                    @include('market.product-card', ['product' => $product])
+                @endforeach
+            </div>
+        @endif
     </section>
 
     {{-- Featured paid notices from other churches and businesses --}}

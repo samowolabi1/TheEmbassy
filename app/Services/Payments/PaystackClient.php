@@ -6,6 +6,7 @@ use App\Models\Payment;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -23,10 +24,11 @@ class PaystackClient
      * Start a Paystack checkout and return the page to send the payer to.
      *
      * @param  array<string, mixed>  $metadata
+     * @param  array<string, mixed>|null  $split  a dynamic split; replaces the default church subaccount split
      *
      * @throws RuntimeException when Paystack refuses or can't be reached
      */
-    public function initialize(Payment $payment, string $callbackUrl, array $metadata = []): string
+    public function initialize(Payment $payment, string $callbackUrl, array $metadata = [], ?array $split = null): string
     {
         $body = [
             'email' => $payment->email,
@@ -37,8 +39,10 @@ class PaystackClient
             'metadata' => $metadata,
         ];
 
-        // Church money settles to the church's subaccount; Donaitech's fee (if any) goes to the main account.
-        if ($subaccount = config('services.paystack.subaccount')) {
+        if ($split) {
+            $body['split'] = $split;
+        } elseif ($subaccount = config('services.paystack.subaccount')) {
+            // Church money settles to the church's subaccount; Donaitech's fee (if any) goes to the main account.
             $body['subaccount'] = $subaccount;
             $body['transaction_charge'] = $payment->platform_fee;
             $body['bearer'] = 'subaccount';
@@ -59,6 +63,46 @@ class PaystackClient
     public function verify(string $reference): array
     {
         return $this->call(fn (PendingRequest $http) => $http->get('/transaction/verify/'.rawurlencode($reference)));
+    }
+
+    /**
+     * Nigerian banks Paystack can pay out to, as [code => name]. Cached for a day.
+     *
+     * @return array<string, string>
+     */
+    public function banks(): array
+    {
+        if (! $this->enabled()) {
+            return [];
+        }
+
+        return Cache::remember('paystack.banks', now()->addDay(), fn () => collect(
+            $this->call(fn (PendingRequest $http) => $http->get('/bank', ['country' => 'nigeria', 'perPage' => 100]))
+        )->pluck('name', 'code')->sort()->all());
+    }
+
+    /**
+     * Create a subaccount so a vendor's share of each sale settles to their own bank account.
+     *
+     * @return array{code: string, account_name: ?string}
+     *
+     * @throws RuntimeException
+     */
+    public function createSubaccount(string $businessName, string $bankCode, string $accountNumber, string $email): array
+    {
+        $data = $this->call(fn (PendingRequest $http) => $http->post('/subaccount', [
+            'business_name' => $businessName,
+            'settlement_bank' => $bankCode,
+            'account_number' => $accountNumber,
+            // Shares are set per order with a dynamic split, so this default is unused.
+            'percentage_charge' => 0,
+            'primary_contact_email' => $email,
+        ]));
+
+        return [
+            'code' => $data['subaccount_code'] ?? throw new RuntimeException('Paystack did not return a subaccount code.'),
+            'account_name' => $data['account_name'] ?? null,
+        ];
     }
 
     /**
