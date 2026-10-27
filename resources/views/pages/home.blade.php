@@ -2,7 +2,6 @@
 
 @php
     $links = config('church.links');
-    $declaration = $home['declaration'];
     $testimony = $home['testimony'];
     $followLinks = [
         ['label' => 'Instagram', 'icon' => 'instagram', 'href' => $links['instagram']],
@@ -130,33 +129,40 @@
         </div>
     </section>
 
-    {{-- Declaration and announcements --}}
+    {{-- Declaration and announcements (edited in the admin dashboard) --}}
     <section id="declaration" class="container section grid-auto" style="--min: 460px">
-        <div class="panel bg-gold stack declaration">
-            <x-crown :width="300" :height="250" fill="var(--midnight)" class="crown-bg" style="right: -60px; top: -50px; opacity: 0.07" />
-            <span class="eyebrow eyebrow--ink">WEEKLY DECLARATION · WEEK OF {{ $declaration['week'] }}</span>
-            <h2 class="h2 h2--sm declaration__title">Say it out loud this week.</h2>
-            <ol class="declaration__list">
-                @foreach ($declaration['lines'] as $line)
-                    <li><span class="declaration__num">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>{{ $line }}</li>
-                @endforeach
-            </ol>
-            <button type="button" class="btn btn--navy btn--md declaration__share" data-share data-share-text="{{ implode("\n", $declaration['lines']) }}">Share the declaration</button>
-        </div>
+        @if ($declaration)
+            <div class="panel bg-gold stack declaration">
+                <x-crown :width="300" :height="250" fill="var(--midnight)" class="crown-bg" style="right: -60px; top: -50px; opacity: 0.07" />
+                <span class="eyebrow eyebrow--ink">WEEKLY DECLARATION · WEEK OF {{ strtoupper($declaration->week_of->format('j F')) }}</span>
+                <h2 class="h2 h2--sm declaration__title">Say it out loud this week.</h2>
+                <ol class="declaration__list">
+                    @foreach ($declaration->lines as $line)
+                        <li><span class="declaration__num">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>{{ $line }}</li>
+                    @endforeach
+                </ol>
+                <button type="button" class="btn btn--navy btn--md declaration__share" data-share data-share-text="{{ implode("\n", $declaration->lines) }}">Share the declaration</button>
+            </div>
+        @endif
         <div class="card panel stack announcements" style="padding: 36px">
             <div class="announcements__head">
                 <h2 class="announcements__title">Announcements</h2>
-                <a href="#" class="announcements__all">View all</a>
             </div>
-            @foreach ($home['announcements'] as $a)
-                <a href="{{ $a['url'] }}" class="announcement">
-                    <span class="tag tag--{{ $a['tone'] }} announcement__tag">{{ $a['tag'] }}</span>
+            @forelse ($announcements as $a)
+                @if ($a->url)
+                    <a href="{{ $a->url }}" class="announcement">
+                @else
+                    <div class="announcement">
+                @endif
+                    <span class="tag tag--{{ $a->tone }} announcement__tag">{{ $a->tag }}</span>
                     <span class="announcement__text">
-                        <span class="announcement__title">{{ $a['title'] }}</span>
-                        <span class="announcement__body">{{ $a['text'] }}</span>
+                        <span class="announcement__title">{{ $a->title }}</span>
+                        <span class="announcement__body">{{ $a->body }}</span>
                     </span>
-                </a>
-            @endforeach
+                {!! $a->url ? '</a>' : '</div>' !!}
+            @empty
+                <p class="announcement__body" style="margin: 0">No announcements right now. Check back soon.</p>
+            @endforelse
         </div>
     </section>
 

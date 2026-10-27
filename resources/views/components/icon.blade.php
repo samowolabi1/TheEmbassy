@@ -27,6 +27,7 @@
         'link' => ['body' => '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'],
         'plus' => ['body' => '<path d="M12 5v14M5 12h14"/>'],
         'minus' => ['body' => '<path d="M5 12h14"/>'],
+        'sign-out' => ['body' => '<path d="M15 4h4v16h-4"/><path d="M10 8l-4 4 4 4M6 12h10"/>'],
     ];
     $icon = $icons[$name];
     $filled = $icon['fill'] ?? false;

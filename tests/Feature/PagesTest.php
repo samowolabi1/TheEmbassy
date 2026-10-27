@@ -2,11 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Models\Announcement;
+use App\Models\Declaration;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class PagesTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * @return array<string, array{string, string}>
      */
@@ -58,5 +63,36 @@ class PagesTest extends TestCase
 
         $this->assertMatchesRegularExpression('#href="[^"]*/watch"\s+aria-current="page"\s*>Watch</a>#', $html);
         $this->assertDoesNotMatchRegularExpression('#aria-current="page"\s*>Home</a>#', $html);
+    }
+
+    public function test_home_shows_live_announcements_only(): void
+    {
+        Announcement::factory()->create(['title' => 'Live one']);
+        Announcement::factory()->draft()->create(['title' => 'Draft one']);
+        Announcement::factory()->scheduled()->create(['title' => 'Future one']);
+
+        $this->get('/')->assertSee('Live one')->assertDontSee('Draft one')->assertDontSee('Future one');
+    }
+
+    public function test_home_shows_only_the_three_newest_announcements(): void
+    {
+        foreach (range(1, 4) as $n) {
+            Announcement::factory()->create(['title' => "Notice {$n}", 'published_at' => now()->subHours(10 - $n)]);
+        }
+
+        $this->get('/')->assertSeeInOrder(['Notice 4', 'Notice 3', 'Notice 2'])->assertDontSee('Notice 1');
+    }
+
+    public function test_home_shows_this_weeks_declaration(): void
+    {
+        Declaration::factory()->create(['week_of' => now()->startOfWeek(), 'lines' => ['Line A', 'Line B', 'Line C', 'Line D']]);
+        Declaration::factory()->create(['week_of' => now()->startOfWeek()->addWeek(), 'lines' => ['Next A', 'Next B', 'Next C', 'Next D']]);
+
+        $this->get('/')->assertSee('Line A')->assertDontSee('Next A');
+    }
+
+    public function test_home_works_with_no_announcements_or_declaration(): void
+    {
+        $this->get('/')->assertOk()->assertSee('No announcements right now.')->assertDontSee('Say it out loud this week.');
     }
 }

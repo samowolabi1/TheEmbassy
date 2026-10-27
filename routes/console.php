@@ -1,8 +1,52 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use App\Models\User;
+use Illuminate\Support\Str;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+use function Laravel\Prompts\password;
+
+Artisan::command('admin:create {email} {--name= : Display name, e.g. "Pastor Ade"}', function (string $email) {
+    if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $this->error('That is not a valid email address.');
+
+        return 1;
+    }
+
+    $user = User::firstWhere('email', $email);
+
+    $password = password(
+        label: $user ? 'New password (leave empty to keep the current one)' : 'Password (leave empty to generate one)',
+        hint: 'At least 12 characters.',
+        validate: fn (string $value) => $value === '' || strlen($value) >= 12 ? null : 'Use at least 12 characters.',
+    );
+    $generated = $password === '' && ! $user;
+    if ($generated) {
+        $password = Str::password(16);
+    }
+
+    $user ??= new User(['email' => $email]);
+    $user->name = $this->option('name') ?? $user->name ?? Str::before($email, '@');
+    if ($password !== '') {
+        $user->password = $password;
+    }
+    $user->is_admin = true;
+    $user->save();
+
+    $this->info("{$user->email} can now sign in at ".route('admin.login'));
+    if ($generated) {
+        $this->line("Password: {$password}");
+        $this->warn('Store it somewhere safe; it will not be shown again.');
+    }
+})->purpose('Create a church admin, or give an existing account admin access');
+
+Artisan::command('admin:revoke {email}', function (string $email) {
+    $user = User::firstWhere('email', $email);
+    if (! $user) {
+        $this->error("No account found for {$email}.");
+
+        return 1;
+    }
+
+    $user->forceFill(['is_admin' => false])->save();
+    $this->info("{$email} no longer has admin access.");
+})->purpose('Remove admin access from an account');

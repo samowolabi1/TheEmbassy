@@ -1,6 +1,5 @@
 /* Shared tokens and building blocks first, then each part of the site. */
 @import './base.css';
-@import './partials/layout.css';
 @import './partials/header.css';
 @import './partials/footer.css';
 @import './partials/post-card.css';
