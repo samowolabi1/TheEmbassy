@@ -5,6 +5,7 @@ namespace App\Services\Payments;
 use App\Models\Payment;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -71,7 +72,7 @@ class PaystackClient
     }
 
     /**
-     * @param  callable(PendingRequest): \Illuminate\Http\Client\Response  $send
+     * @param  callable(PendingRequest): Response  $send
      * @return array<string, mixed>
      */
     private function call(callable $send): array
