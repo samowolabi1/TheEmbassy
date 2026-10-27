@@ -1,0 +1,261 @@
+.page-hero {
+  position: relative;
+  overflow: hidden;
+}
+.page-hero__inner {
+  position: relative;
+  padding-top: 88px;
+  padding-bottom: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.page-hero__title {
+  font-size: clamp(42px, 6vw, 88px);
+  max-width: 900px;
+}
+.page-hero__text {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--mist);
+  max-width: 620px;
+}
+
+.story {
+  align-items: center;
+}
+.body-copy {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--body);
+}
+.story__photo {
+  height: 460px;
+}
+.story__badge {
+  position: absolute;
+  right: 22px;
+  bottom: 22px;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pillar {
+  border-radius: 28px;
+  padding: 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.pillar__text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1.25;
+}
+.values {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.values li {
+  font-weight: 800;
+  font-size: 15px;
+  padding: 9px 14px;
+  border-radius: 999px;
+}
+
+.leader__photo {
+  position: relative;
+  height: 320px;
+  border-radius: 28px;
+}
+.leader__note {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.85;
+}
+.bg-navy .leader__note,
+.bg-mid .leader__note {
+  color: var(--mist);
+}
+.leader__name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--navy);
+}
+.leader__role {
+  font-size: 15px;
+  color: var(--bronze);
+  font-weight: 700;
+}
+
+.beliefs {
+  border-radius: 36px;
+  padding: 52px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: 40px;
+}
+.beliefs__text {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--slate);
+}
+.beliefs__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 14px;
+  align-content: start;
+}
+.beliefs__list li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--body);
+}
+.beliefs__list .beliefs__icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.unit {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.unit__name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 21px;
+  color: var(--navy);
+}
+.unit__text {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--slate);
+}
+
+.visit {
+  align-items: start;
+}
+.visit__map {
+  height: 300px;
+  border-radius: 28px;
+}
+.visit__map .placeholder__note {
+  color: var(--navy);
+}
+.visit__pin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -26px 0 0 -20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--gold);
+  border: 3px solid var(--navy);
+}
+.visit__fact {
+  border-radius: 20px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.visit__label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--bronze);
+}
+.visit__value {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--navy);
+}
+
+.faq__heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--navy);
+  padding: 8px 0;
+}
+.faq {
+  border-radius: 20px;
+  overflow: hidden;
+}
+.faq summary {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 14px 20px;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--navy);
+  cursor: pointer;
+}
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq__icon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--bronze);
+}
+.faq__icon--minus,
+.faq[open] .faq__icon--plus {
+  display: none;
+}
+.faq[open] .faq__icon--minus {
+  display: flex;
+}
+.faq p {
+  margin: 0;
+  padding: 0 20px 20px;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--slate);
+}
+
+@media (max-width: 640px) {
+  .page-hero__inner {
+    padding-top: 44px;
+    padding-bottom: 56px;
+  }
+  .story__photo {
+    height: 280px;
+  }
+  .pillar,
+  .beliefs {
+    padding: 26px;
+  }
+}

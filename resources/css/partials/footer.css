@@ -1,0 +1,143 @@
+.foot {
+  background: var(--midnight);
+  color: var(--mist);
+}
+.foot a {
+  color: var(--white);
+}
+.foot a:hover {
+  color: var(--gold);
+}
+.foot__inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 56px 24px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+}
+.foot__signup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 36px;
+  border-bottom: 1px solid var(--navy-2);
+}
+.foot__pitch {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 520px;
+  font-size: 15px;
+}
+.foot__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1.1;
+  color: var(--white);
+}
+.foot__form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1 1 320px;
+  max-width: 480px;
+}
+.foot__email {
+  flex: 1 1 220px;
+  display: flex;
+}
+.foot__email input {
+  width: 100%;
+  height: 54px;
+  border-radius: 999px;
+  border: 1px solid var(--navy-line);
+  background: var(--navy);
+  color: var(--white);
+  padding: 0 20px;
+  font-size: 15px;
+}
+.foot__email input::placeholder {
+  color: var(--mist);
+}
+.foot__submit {
+  height: 54px;
+  padding: 0 24px;
+  font-size: 15px;
+}
+.foot__status {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 14px;
+  min-height: 1em;
+}
+.foot__status:empty {
+  display: none;
+}
+.foot__cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 32px;
+}
+.foot__col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 14px;
+}
+.foot__heading {
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  font-size: 12px;
+}
+.foot__strong {
+  font-weight: 700;
+}
+.foot__logo {
+  width: 84px;
+  height: 72px;
+  border-radius: 18px;
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.foot__logo img {
+  width: 72px;
+  height: 62px;
+  object-fit: contain;
+}
+.foot__about {
+  line-height: 1.6;
+}
+.foot__socials {
+  display: flex;
+  gap: 8px;
+}
+.foot__social {
+  border: 1px solid var(--navy-line);
+}
+.foot__base {
+  border-top: 1px solid var(--navy-2);
+}
+.foot__base-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.foot__legal {
+  display: flex;
+  gap: 18px;
+}
+.foot__legal a {
+  color: var(--mist);
+}
