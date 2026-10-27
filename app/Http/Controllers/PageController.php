@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Announcement;
 use App\Models\Declaration;
+use App\Models\Notice;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
@@ -21,6 +22,7 @@ class PageController extends Controller
             'home' => config('content.home'),
             'declaration' => Declaration::current(),
             'announcements' => Announcement::live()->take(3)->get(),
+            'notices' => Notice::live()->where('featured', true)->take(3)->get(),
             'headline' => $series->first(),
             // The two earlier episodes, then the podcast.
             'sideMessages' => $series->slice(1)->concat($messages->where('type', 'podcast'))->take(3),

@@ -22,7 +22,7 @@
                 </div>
             </div>
 
-            <form class="give-form" data-give-form data-paystack-key="{{ config('church.paystack_public_key') }}" novalidate>
+            <form class="give-form" data-give-form data-paystack-key="{{ config('services.paystack.public_key') }}" novalidate>
                 <fieldset class="segmented">
                     <legend class="sr-only">How often</legend>
                     <label><input type="radio" name="frequency" value="once" checked><span>One time</span></label>

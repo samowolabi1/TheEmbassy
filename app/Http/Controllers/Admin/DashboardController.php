@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use App\Models\Declaration;
 use App\Models\NewsletterSubscriber;
+use App\Models\Notice;
 use App\Models\PrayerRequest;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -33,6 +34,7 @@ class DashboardController extends Controller
                 'subscribersThisMonth' => NewsletterSubscriber::where('created_at', '>=', now()->startOfMonth())->count(),
                 'liveAnnouncements' => Announcement::live()->count(),
                 'scheduledAnnouncements' => Announcement::where('published_at', '>', now())->count(),
+                'noticesToReview' => Notice::where('status', Notice::IN_REVIEW)->count(),
             ],
             'hasDeclarationThisWeek' => Declaration::where('week_of', Declaration::weekStarting(today()))->exists(),
             'hasDeclarationNextWeek' => Declaration::where('week_of', Declaration::weekStarting(today()->addWeek()))->exists(),

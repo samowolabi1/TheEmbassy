@@ -1,6 +1,7 @@
 @php
     $user = auth()->user();
     $unreadPrayer = \App\Models\PrayerRequest::unread()->count();
+    $noticesToReview = \App\Models\Notice::where('status', \App\Models\Notice::IN_REVIEW)->count();
 
     // The sidebar from the design. Sections without a `route` aren't built yet and show as "Soon".
     $nav = [
@@ -23,6 +24,7 @@
         ],
         'CONTENT' => [
             ['id' => 'content', 'label' => 'Content & announcements', 'route' => 'admin.content'],
+            ['id' => 'notices', 'label' => 'Notice board', 'route' => 'admin.notices.index', 'badge' => $noticesToReview ?: null],
             ['id' => 'live', 'label' => 'Sermons & live'],
             ['id' => 'events', 'label' => 'Events & tickets'],
             ['id' => 'prayer', 'label' => 'Prayer requests', 'route' => 'admin.prayer-requests.index', 'badge' => $unreadPrayer ?: null],
@@ -63,7 +65,7 @@
                             <a href="{{ route($item['route']) }}" class="side__link" @if ($item['id'] === $active) aria-current="page" @endif>
                                 {{ $item['label'] }}
                                 @if ($item['badge'] ?? null)
-                                    <span class="side__badge"><span class="sr-only">unread: </span>{{ $item['badge'] }}</span>
+                                    <span class="side__badge"><span class="sr-only">to do: </span>{{ $item['badge'] }}</span>
                                 @endif
                             </a>
                         @else

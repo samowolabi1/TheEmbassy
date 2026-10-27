@@ -56,6 +56,11 @@
                 <span class="todo__text">Unread prayer requests</span>
                 <x-icon name="chevron-right" :size="16" />
             </a>
+            <a href="{{ route('admin.notices.index') }}" @class(['todo', 'todo--done' => ! $stats['noticesToReview']])>
+                <span class="todo__count" style="background: var(--wash); color: var(--bronze)">{{ $stats['noticesToReview'] }}</span>
+                <span class="todo__text">Paid notices to review</span>
+                <x-icon name="chevron-right" :size="16" />
+            </a>
             <a href="{{ route('admin.content') }}#declaration" @class(['todo', 'todo--done' => $hasDeclarationThisWeek])>
                 <span class="todo__count" style="background: var(--wash); color: var(--bronze)">
                     @if ($hasDeclarationThisWeek) <x-icon name="check" :size="16" /> @else ! @endif

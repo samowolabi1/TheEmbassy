@@ -284,6 +284,24 @@
         </div>
     </section>
 
+    {{-- Featured paid notices from other churches and businesses --}}
+    @if ($notices->isNotEmpty())
+        <section class="container section stack" style="gap: 28px">
+            <div class="section-head">
+                <div class="stack" style="gap: 12px">
+                    <span class="eyebrow">NOTICE BOARD</span>
+                    <h2 class="h2 h2--lg">Around the community.</h2>
+                </div>
+                <a href="{{ route('notices.index') }}" class="btn btn--outline btn--md">All notices</a>
+            </div>
+            <div class="grid-auto" style="--min: 320px; --gap: 22px">
+                @foreach ($notices as $notice)
+                    @include('notices.card', ['notice' => $notice])
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     {{-- Prayer request and testimony --}}
     <section id="prayer" class="container section grid-auto" style="--min: 460px">
         <div class="card panel stack prayer" style="padding: 40px">

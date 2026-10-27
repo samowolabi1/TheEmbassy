@@ -58,6 +58,7 @@
                 <a href="{{ route('watch') }}">Sermons</a>
                 <a href="{{ route('blog.index') }}">Blog</a>
                 <a href="{{ route('events') }}">Events</a>
+                <a href="{{ route('notices.index') }}">Notice board</a>
                 <a href="{{ route('home') }}#market">{{ config('church.brand.market_name') }}</a>
             </div>
             <div class="foot__col">
@@ -65,6 +66,7 @@
                 <a href="{{ route('give') }}">Give</a>
                 <a href="{{ route('home') }}#prayer">Prayer request</a>
                 <a href="{{ route('about') }}#units">Join a unit</a>
+                <a href="{{ route('notices.create') }}">Advertise with us</a>
                 <a href="{{ $links['contact'] }}">Contact us</a>
             </div>
         </div>

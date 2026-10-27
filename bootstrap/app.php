@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Only church staff sign in, so guests go to the admin sign-in page.
         $middleware->redirectGuestsTo(fn () => route('admin.login'));
         $middleware->redirectUsersTo(fn () => route('admin.dashboard'));
+        // Paystack signs its webhooks instead; see PaymentController::webhook.
+        $middleware->validateCsrfTokens(except: ['webhooks/paystack']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

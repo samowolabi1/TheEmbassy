@@ -80,7 +80,4 @@ return [
         'route' => 'events',
     ],
 
-    // Paystack public key for online giving. Leave empty until the account is set up.
-    'paystack_public_key' => env('PAYSTACK_PUBLIC_KEY', ''),
-
 ];

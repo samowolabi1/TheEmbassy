@@ -3,7 +3,9 @@
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\NewsletterSubscriptionController;
+use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrayerRequestController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,11 +18,24 @@ Route::get('/give', [PageController::class, 'give'])->name('give');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
+// Paid notice board for other churches and businesses.
+Route::get('/notices', [NoticeController::class, 'index'])->name('notices.index');
+Route::get('/notices/advertise', [NoticeController::class, 'create'])->name('notices.create');
+Route::post('/notices', [NoticeController::class, 'store'])->middleware('throttle:10,1')->name('notices.store');
+Route::middleware('signed')->group(function () {
+    Route::get('/notices/{notice}/status', [NoticeController::class, 'status'])->name('notices.status');
+    Route::post('/notices/{notice}/pay', [NoticeController::class, 'pay'])->middleware('throttle:10,1')->name('notices.pay');
+});
+
 // Public forms, rate limited to slow down spam.
 Route::middleware('throttle:5,1')->group(function () {
     Route::post('/prayer-requests', [PrayerRequestController::class, 'store'])->name('prayer-requests.store');
     Route::post('/newsletter', [NewsletterSubscriptionController::class, 'store'])->name('newsletter.store');
 });
+
+// Paystack: the payer's return and Paystack's signed notifications (no CSRF token on the webhook).
+Route::get('/payments/callback', [PaymentController::class, 'callback'])->name('payments.callback');
+Route::post('/webhooks/paystack', [PaymentController::class, 'webhook'])->name('webhooks.paystack');
 
 // Church admin. Accounts are created with `php artisan admin:create`; there is no public sign-up.
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -44,5 +59,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/content', Admin\ContentController::class)->name('content');
         Route::resource('announcements', Admin\AnnouncementController::class)->only(['store', 'edit', 'update', 'destroy']);
         Route::post('/declarations', [Admin\DeclarationController::class, 'store'])->name('declarations.store');
+
+        Route::get('/notices', [Admin\NoticeController::class, 'index'])->name('notices.index');
+        Route::post('/notices/{notice}/approve', [Admin\NoticeController::class, 'approve'])->name('notices.approve');
+        Route::post('/notices/{notice}/reject', [Admin\NoticeController::class, 'reject'])->name('notices.reject');
     });
 });

@@ -5,3 +5,4 @@ import './filters';
 import './share';
 import './countdown';
 import './give';
+import './notices';
