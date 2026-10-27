@@ -1,11 +1,32 @@
 <?php
 
-// Church details and links used across the site.
+// Church details, branding and links used across the site.
+// To deploy for another church, change this file and config/content/, and replace the logo in public/images.
 // Values in [brackets] are placeholders from the design: replace them with real details.
+
+$marketName = env('CHURCH_MARKET_NAME', 'Tribe Market');
 
 return [
 
-    'name' => 'RCCG The Royal Tribe Embassy',
+    'name' => env('CHURCH_NAME', 'RCCG The Royal Tribe Embassy'),
+    'short_name' => env('CHURCH_SHORT_NAME', 'The Royal Tribe Embassy'),
+
+    'brand' => [
+        // The two-line wordmark beside the logo.
+        'wordmark' => env('CHURCH_WORDMARK', 'THE ROYAL TRIBE'),
+        'wordmark_sub' => env('CHURCH_WORDMARK_SUB', 'EMBASSY'),
+        // Path under public/.
+        'logo' => env('CHURCH_LOGO', 'images/royal-tribe-logo.jpg'),
+        'app_name' => env('CHURCH_APP_NAME', 'The Royal Tribe app'),
+        'market_name' => $marketName,
+        // Optional colour overrides (hex). Empty keeps the design's royal navy and crown gold.
+        'colors' => [
+            'navy' => env('BRAND_PRIMARY'),
+            'gold' => env('BRAND_ACCENT'),
+            'midnight' => env('BRAND_ACCENT_TEXT'),
+        ],
+    ],
+
     'tagline' => 'A youth parish of The Redeemed Christian Church of God.',
     'description' => 'A youth parish of The Redeemed Christian Church of God for students, creatives and young professionals.',
     'address' => '[Venue address]',
@@ -48,7 +69,7 @@ return [
         ['id' => 'watch', 'label' => 'Watch', 'route' => 'watch'],
         ['id' => 'blog', 'label' => 'Blog', 'route' => 'blog.index'],
         ['id' => 'events', 'label' => 'Events', 'route' => 'events'],
-        ['id' => 'market', 'label' => 'Tribe Market', 'route' => 'home', 'fragment' => 'market'],
+        ['id' => 'market', 'label' => $marketName, 'route' => 'home', 'fragment' => 'market'],
         ['id' => 'prayer', 'label' => 'Prayer', 'route' => 'home', 'fragment' => 'prayer'],
     ],
 

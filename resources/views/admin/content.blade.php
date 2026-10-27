@@ -28,7 +28,7 @@
                         <span class="stack" style="gap: 4px; min-width: 0">
                             <span id="preview-title" style="font-weight: 800; font-size: 14px; color: var(--navy); overflow-wrap: anywhere">Your title</span>
                             <span id="preview-body" style="font-size: 13px; line-height: 1.45; color: var(--body); overflow-wrap: anywhere">Your message</span>
-                            <span style="font-size: 11px; color: var(--slate)">Royal Tribe · now</span>
+                            <span style="font-size: 11px; color: var(--slate)">{{ config('church.short_name') }} · now</span>
                         </span>
                     </div>
                 </div>

@@ -18,11 +18,11 @@
 
     <header class="head">
         <div class="head__inner">
-            <a href="{{ route('home') }}" class="brand" aria-label="The Royal Tribe Embassy home">
-                <img class="brand__logo" src="{{ asset('images/royal-tribe-logo.jpg') }}" alt="" width="58" height="50">
+            <a href="{{ route('home') }}" class="brand" aria-label="{{ config('church.short_name') }} home">
+                <img class="brand__logo" src="{{ asset(config('church.brand.logo')) }}" alt="" width="58" height="50">
                 <span class="brand__words">
-                    <span class="brand__name">THE ROYAL TRIBE</span>
-                    <span class="brand__sub">EMBASSY</span>
+                    <span class="brand__name">{{ config('church.brand.wordmark') }}</span>
+                    <span class="brand__sub">{{ config('church.brand.wordmark_sub') }}</span>
                 </span>
             </a>
 

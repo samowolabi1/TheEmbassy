@@ -84,7 +84,7 @@
             <div class="way bg-navy">
                 <span class="icon-tile" style="background: var(--gold); color: var(--midnight)"><x-icon name="heart" :size="24" /></span>
                 <span class="way__title">In the app</span>
-                <span class="way__text" style="color: var(--mist)">Members get a personal account number, giving history and yearly statements in the Royal Tribe app.</span>
+                <span class="way__text" style="color: var(--mist)">Members get a personal account number, giving history and yearly statements in the {{ config('church.brand.app_name') }}.</span>
                 <a href="{{ route('home') }}#app" class="btn btn--white btn--sm" style="align-self: flex-start">Get the app</a>
             </div>
         </div>

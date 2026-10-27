@@ -36,7 +36,7 @@
         <div class="foot__cols">
             <div class="foot__col">
                 <div class="foot__logo">
-                    <img src="{{ asset('images/royal-tribe-logo.jpg') }}" alt="RCCG The Royal Tribe Embassy logo" width="72" height="62">
+                    <img src="{{ asset(config('church.brand.logo')) }}" alt="{{ config('church.name') }} logo" width="72" height="62">
                 </div>
                 <span class="foot__about">{{ config('church.tagline') }}</span>
                 <div class="foot__socials">
@@ -58,7 +58,7 @@
                 <a href="{{ route('watch') }}">Sermons</a>
                 <a href="{{ route('blog.index') }}">Blog</a>
                 <a href="{{ route('events') }}">Events</a>
-                <a href="{{ route('home') }}#market">Tribe Market</a>
+                <a href="{{ route('home') }}#market">{{ config('church.brand.market_name') }}</a>
             </div>
             <div class="foot__col">
                 <span class="foot__heading">GET INVOLVED</span>

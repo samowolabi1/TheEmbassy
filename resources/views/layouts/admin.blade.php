@@ -19,7 +19,7 @@
             ['id' => 'expenses', 'label' => 'Expenses & budgets'],
         ],
         'MARKET' => [
-            ['id' => 'market', 'label' => 'Tribe Market'],
+            ['id' => 'market', 'label' => config('church.brand.market_name')],
         ],
         'CONTENT' => [
             ['id' => 'content', 'label' => 'Content & announcements', 'route' => 'admin.content'],
@@ -40,19 +40,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title>{{ $title }} · Church admin</title>
-    <link rel="icon" href="{{ asset('images/royal-tribe-logo.jpg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Cinzel:wght@700;800&display=swap">
     @vite(['resources/css/admin.css', 'resources/js/admin.js'])
+    @include('partials.theme')
 </head>
 <body class="admin">
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="admin-shell">
         <aside class="side">
             <a href="{{ route('admin.dashboard') }}" class="side__brand">
-                <span class="side__logo"><img src="{{ asset('images/royal-tribe-logo.jpg') }}" alt="" width="40" height="38"></span>
-                <span class="side__words"><span class="side__name">THE ROYAL TRIBE</span><span class="side__role">Church admin</span></span>
+                <span class="side__logo"><img src="{{ asset(config('church.brand.logo')) }}" alt="" width="40" height="38"></span>
+                <span class="side__words"><span class="side__name">{{ config('church.brand.wordmark') }}</span><span class="side__role">Church admin</span></span>
             </a>
 
             <nav class="side__nav" aria-label="Admin">

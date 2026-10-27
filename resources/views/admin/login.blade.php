@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title>Sign in · Church admin</title>
-    <link rel="icon" href="{{ asset('images/royal-tribe-logo.jpg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Cinzel:wght@700;800&display=swap">
     @vite(['resources/css/admin.css'])
+    @include('partials.theme')
 </head>
 <body class="admin">
     <main class="login">
         <div class="login__card">
             <div class="login__brand">
-                <img src="{{ asset('images/royal-tribe-logo.jpg') }}" alt="RCCG The Royal Tribe Embassy logo" width="58" height="50">
-                <span class="side__words"><span class="side__name" style="color: var(--navy)">THE ROYAL TRIBE</span><span class="side__role" style="color: var(--bronze)">Church admin</span></span>
+                <img src="{{ asset(config('church.brand.logo')) }}" alt="{{ config('church.name') }} logo" width="58" height="50">
+                <span class="side__words"><span class="side__name" style="color: var(--navy)">{{ config('church.brand.wordmark') }}</span><span class="side__role" style="color: var(--bronze)">Church admin</span></span>
             </div>
             <h1>Sign in</h1>
             <form method="POST" action="{{ route('admin.login.store') }}" class="form">

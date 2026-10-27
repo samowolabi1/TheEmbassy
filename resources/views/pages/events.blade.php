@@ -1,7 +1,7 @@
 @extends('layouts.app', [
     'title' => 'Events',
     'active' => 'events',
-    'description' => "What's on at The Royal Tribe Embassy: worship nights, the Royal Youth Convention and regular gatherings.",
+    'description' => "What's on at ".config('church.short_name').': worship nights, conventions and regular gatherings.',
 ])
 
 @section('content')

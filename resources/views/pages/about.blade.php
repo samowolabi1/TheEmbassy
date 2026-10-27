@@ -1,7 +1,7 @@
 @extends('layouts.app', [
     'title' => 'About',
     'active' => 'about',
-    'description' => 'Who we are, what we believe and how to plan your first visit to The Royal Tribe Embassy.',
+    'description' => 'Who we are, what we believe and how to plan your first visit to '.config('church.short_name').'.',
 ])
 
 @section('content')
@@ -10,7 +10,7 @@
         <div class="container page-hero__inner">
             <span class="eyebrow">ABOUT US</span>
             <h1 class="display page-hero__title">A royal tribe, raising a generation for Christ.</h1>
-            <p class="page-hero__text">The Royal Tribe Embassy is a youth parish of The Redeemed Christian Church of God, built for students, creatives and young professionals.</p>
+            <p class="page-hero__text">{{ config('church.short_name') }} is a youth parish of The Redeemed Christian Church of God, built for students, creatives and young professionals.</p>
         </div>
     </section>
 

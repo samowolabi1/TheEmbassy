@@ -256,11 +256,11 @@
         </div>
     </section>
 
-    {{-- Tribe Market --}}
+    {{-- Member market --}}
     <section id="market" class="container section stack" style="gap: 32px">
         <div class="section-head">
             <div class="stack" style="gap: 12px; max-width: 640px">
-                <span class="eyebrow">TRIBE MARKET</span>
+                <span class="eyebrow">{{ strtoupper(config('church.brand.market_name')) }}</span>
                 <h2 class="h2 h2--lg">Shop from the family.</h2>
                 <span class="lede">Every order supports a member's business and the work of the church.</span>
             </div>
@@ -341,7 +341,7 @@
             <a href="{{ route('give') }}" class="btn btn--navy" style="align-self: flex-start; height: 54px; font-size: 15px">Give online</a>
         </div>
         <div class="panel bg-ice stack" style="gap: 16px">
-            <span class="eyebrow">THE ROYAL TRIBE APP</span>
+            <span class="eyebrow">{{ strtoupper(config('church.brand.app_name')) }}</span>
             <h2 class="cta-title">Church in your pocket.</h2>
             <p class="cta-text">Watch live, take sermon notes, join the prayer wall, pay your token and shop from members.</p>
             <div class="store-links">
