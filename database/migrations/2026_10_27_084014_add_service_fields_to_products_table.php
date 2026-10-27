@@ -17,11 +17,6 @@ return new class extends Migration
             // For services: what the price covers, e.g. "per hour" or "per session".
             $table->string('price_unit', 30)->nullable()->after('price');
         });
-
-        Schema::table('market_orders', function (Blueprint $table) {
-            // For services: when the buyer would like it done.
-            $table->date('preferred_date')->nullable()->after('delivery_note');
-        });
     }
 
     /**
@@ -32,10 +27,6 @@ return new class extends Migration
         Schema::table('products', function (Blueprint $table) {
             $table->dropIndex(['type']);
             $table->dropColumn(['type', 'price_unit']);
-        });
-
-        Schema::table('market_orders', function (Blueprint $table) {
-            $table->dropColumn('preferred_date');
         });
     }
 };

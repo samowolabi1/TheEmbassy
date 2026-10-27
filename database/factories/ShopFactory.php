@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Shop;
+use App\Models\VendorSubscription;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -25,17 +26,19 @@ class ShopFactory extends Factory
             'phone' => '0803 000 0000',
             'category' => 'Food',
             'description' => fake()->sentence(12),
-            'bank_name' => 'Test Bank',
-            'bank_code' => '058',
-            'account_number' => '0123456789',
         ];
     }
 
-    /**
-     * Approved, with a Paystack payout account, so it can sell.
-     */
-    public function selling(): static
+    public function approved(): static
     {
-        return $this->state(fn () => ['status' => Shop::APPROVED, 'approved_at' => now(), 'subaccount_code' => 'ACCT_vendor']);
+        return $this->state(fn () => ['status' => Shop::APPROVED, 'approved_at' => now()]);
+    }
+
+    /**
+     * Approved with a paid-up subscription, so its listings show in the market.
+     */
+    public function listed(): static
+    {
+        return $this->approved()->has(VendorSubscription::factory()->active(), 'subscriptions');
     }
 }

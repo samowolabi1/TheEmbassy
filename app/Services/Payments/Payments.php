@@ -3,7 +3,6 @@
 namespace App\Services\Payments;
 
 use App\Contracts\Payable;
-use App\Contracts\SplitsPayment;
 use App\Models\Payment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -39,7 +38,7 @@ class Payments
         return $this->paystack->initialize($payment, route('payments.callback'), [
             'payable' => class_basename($payable),
             'payable_id' => $payable->getKey(),
-        ], $payable instanceof SplitsPayment ? $payable->paystackSplit($payment) : null);
+        ]);
     }
 
     /**

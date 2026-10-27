@@ -44,17 +44,19 @@ All online payments go through Paystack and are recorded in one `payments` table
 
 **Who gets what.** Each deployment runs on Donaitech's Paystack integration with the church as a subaccount, so:
 
-| Sale | Vendor | Church | Donaitech |
-| --- | --- | --- | --- |
-| Event ticket | | the ticket price | `PLATFORM_FEE_TICKETS`% |
-| Notice board listing | | the package price | `PLATFORM_FEE_NOTICES`% |
-| Market order | the rest, less Paystack's fee | the market commission (admin setting) | `PLATFORM_FEE_MARKET`% |
+| Payment | Church | Donaitech |
+| --- | --- | --- |
+| Event ticket | the ticket price | `PLATFORM_FEE_TICKETS`% |
+| Notice board listing | the package price | `PLATFORM_FEE_NOTICES`% |
+| Seller subscription | the plan price, after any coupon | `PLATFORM_FEE_MARKET`% |
 
-Paystack divides each payment at the moment it's made, so nothing is paid out by hand. Settings: `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`, `PAYSTACK_SUBACCOUNT` (the church), the `PLATFORM_FEE_*` percentages, notice prices in `config/notices.php`, and the starting market commission in `config/market.php`. In the Paystack dashboard, point the webhook to `https://<site>/webhooks/paystack`.
+Market sales themselves never go through the site: buyers pay sellers directly.
+
+Paystack divides each payment at the moment it's made, so nothing is paid out by hand. Settings: `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`, `PAYSTACK_SUBACCOUNT` (the church), the `PLATFORM_FEE_*` percentages, notice prices in `config/notices.php`, and the market's subscription periods and coupon percentages in `config/market.php`. In the Paystack dashboard, point the webhook to `https://<site>/webhooks/paystack`.
 
 **Event tickets** (admin › Events & tickets): ticket types per event, free or paid, with optional limits. Unpaid orders hold their places for 30 minutes. Every attendee gets a QR code; scanning it opens the door check-in page for signed-in staff.
 
-**Market** (admin › Tribe Market): members apply to open a shop; approving creates their Paystack payout account and emails them a link to set a password. At `/vendor`, sellers list products (with optional stock) and services (booked for a date, priced fixed or "per hour", "per session" and so on), and move orders along: ready then delivered for products, confirmed then done for services. Orders are one listing at a time (no basket yet).
+**Market** (admin › Tribe Market): members apply to open a shop, and approving emails them a link to set a password. At `/vendor`, sellers list products and services (priced fixed or "per hour", "per session" and so on), read buyer enquiries, and pay a subscription to be listed: monthly, quarterly, 6 months, 1 year or 3 years. The admin prices each period (a plan is only offered once it's priced and switched on) and creates coupons for 10%, 20%, 50% or 100% off, with optional use limits and end dates. A 100% coupon activates with no payment. Renewing early adds the new period after the current one. A shop's listings show only while it is approved and subscribed. Buyers contact the seller by phone, WhatsApp, email or an enquiry form (with a date for services), and arrange payment with them.
 
 **Notice board** (admin › Notice board): other churches and businesses pay to list a notice; nothing appears until an admin approves it, and it runs for the days paid for. Rejected notices are refunded from the Paystack dashboard.
 
@@ -103,7 +105,7 @@ Announcements, the weekly declaration, events, market shops and notices are mana
 
 - `routes/web.php`: all routes
 - `app/Http/Controllers/`: `PageController` (home, about, watch, events, give), `BlogController`, the two form handlers, and `Admin/` for the dashboard
-- `app/Models/`: content (`Announcement`, `Declaration`, `PrayerRequest`, `NewsletterSubscriber`), money (`Payment`, `Notice`, `Event`, `TicketType`, `TicketOrder`, `Ticket`, `Shop`, `Product`, `MarketOrder`), `Setting`, `User`
+- `app/Models/`: content (`Announcement`, `Declaration`, `PrayerRequest`, `NewsletterSubscriber`), money (`Payment`, `Notice`, `Event`, `TicketType`, `TicketOrder`, `Ticket`, `Shop`, `Product`, `VendorPlan`, `VendorSubscription`, `Coupon`), `Enquiry`, `User`
 - `app/Services/Payments/`: the Paystack client and payment settlement; `app/Services/Market/`: shop approval
 - `resources/views/`: `layouts/app.blade.php` and `layouts/admin.blade.php`, `partials/` (header, footer), `components/` (icon, crown, post card), `pages/`, `blog/`, `admin/`
 - `resources/css/`: `base.css` holds the design tokens and shared styles; `partials/` and `pages/` hold the rest; `admin.css` is the dashboard's own stylesheet

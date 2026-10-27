@@ -53,13 +53,13 @@ class Product extends Model
     }
 
     /**
-     * Shown in the market: active, from an approved shop, newest first.
+     * Shown in the market: active, from an approved shop with a paid-up subscription, newest first.
      */
     #[Scope]
     protected function listed(Builder $query): void
     {
         $query->where('is_active', true)
-            ->whereHas('shop', fn ($q) => $q->where('status', Shop::APPROVED))
+            ->whereHas('shop', fn ($q) => $q->listed())
             ->latest();
     }
 
@@ -83,14 +83,6 @@ class Product extends Model
     public function inStock(): bool
     {
         return $this->stock === null || $this->stock > 0;
-    }
-
-    /**
-     * Can be bought online right now.
-     */
-    public function canBuy(): bool
-    {
-        return $this->is_active && $this->inStock() && $this->shop->canSell();
     }
 
     public function imageUrl(): ?string

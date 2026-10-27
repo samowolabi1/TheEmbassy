@@ -9,6 +9,9 @@
 @section('content')
     <section class="container notices-hero section--last">
         <a href="{{ route('market.shop', $shop) }}" class="back-link"><x-icon name="chevron-left" :size="16" />{{ $shop->name }}</a>
+        @unless ($shop->isListed())
+            <p class="contact-note" role="status" style="margin-top: 16px">Only you can see this listing until your subscription is active.</p>
+        @endunless
 
         <div class="notice-form" style="margin-top: 20px">
             <div class="notice-form__main" style="padding: 0; background: none; border: 0; gap: 20px">
@@ -26,63 +29,53 @@
                 </div>
             </div>
 
-            <aside class="card notice-form__side" id="buy">
-                @if ($product->canBuy() && $paymentsEnabled)
-                    <form method="POST" action="{{ route('market.buy', $product) }}" class="notice-form__group" data-market-buy data-price="{{ $product->price }}">
+            <aside class="card notice-form__side" id="contact">
+                <h2 style="margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--navy)">{{ $product->isService() ? 'Book with '.$shop->owner_name : 'Order from '.$shop->owner_name }}</h2>
+                @if ($product->stock === 0)
+                    <span class="pill pill--warn" style="align-self: flex-start">Sold out for now</span>
+                @endif
+                <div class="contact-buttons">
+                    <a href="{{ $shop->telUrl() }}" class="btn btn--navy">Call {{ $shop->phone }}</a>
+                    @if ($whatsapp = $shop->whatsappUrl())
+                        <a href="{{ $whatsapp }}?text={{ rawurlencode('Hi, I found "'.$product->name.'" on '.config('church.brand.market_name').'.') }}" class="btn btn--gold" target="_blank" rel="noopener">Chat on WhatsApp</a>
+                    @endif
+                    <a href="mailto:{{ $shop->email }}?subject={{ rawurlencode($product->name) }}" class="btn btn--outline">Email the seller</a>
+                </div>
+
+                @if (session('enquired'))
+                    <p class="notice-alert" role="status" style="margin: 0; background: var(--wash); color: var(--navy)">Message sent. {{ session('enquired') }} will get back to you.</p>
+                @else
+                    <form method="POST" action="{{ route('market.enquire', $product) }}" class="notice-form__group">
                         @csrf
-                        <h2 style="margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--navy)">{{ $product->isService() ? 'Book this service' : 'Buy now' }}</h2>
-                        @error('quantity') <p class="notice-alert" role="alert" style="margin: 0">{{ $message }}</p> @enderror
-                        @if ($product->isService() && ! $product->unitNoun())
-                            <input type="hidden" name="quantity" value="1">
-                        @else
-                            <label class="field">{{ $product->unitNoun() ? 'How many '.$product->unitNoun().'?' : 'Quantity' }}
-                                <select name="quantity">
-                                    @foreach (range(1, min(config('market.max_quantity'), $product->stock ?? config('market.max_quantity'))) as $n)
-                                        <option value="{{ $n }}" @selected((int) old('quantity', 1) === $n)>{{ $n }}</option>
-                                    @endforeach
-                                </select>
-                                @if ($product->stock !== null && $product->stock <= 10)
-                                    <span class="field-hint">Only {{ $product->stock }} left.</span>
-                                @endif
-                            </label>
-                        @endif
+                        <h3 style="margin: 0; font-size: 16px; color: var(--navy)">Or send a message</h3>
+                        <label class="honeypot" aria-hidden="true">Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
                         @if ($product->isService())
                             <label class="field">When do you need it?
                                 <input type="date" name="preferred_date" value="{{ old('preferred_date') }}" min="{{ today()->toDateString() }}" required>
-                                <span class="field-hint">The seller will confirm the exact time with you.</span>
                                 @error('preferred_date') <span class="field-error">{{ $message }}</span> @enderror
                             </label>
                         @endif
                         <label class="field">Your name
-                            <input type="text" name="buyer_name" value="{{ old('buyer_name') }}" required maxlength="100" autocomplete="name">
-                            @error('buyer_name') <span class="field-error">{{ $message }}</span> @enderror
+                            <input type="text" name="name" value="{{ old('name') }}" required maxlength="100" autocomplete="name">
+                            @error('name') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
-                        <label class="field">Email (for your receipt)
-                            <input type="email" name="buyer_email" value="{{ old('buyer_email') }}" required autocomplete="email">
-                            @error('buyer_email') <span class="field-error">{{ $message }}</span> @enderror
+                        <label class="field">Phone
+                            <input type="tel" name="phone" value="{{ old('phone') }}" required maxlength="40" autocomplete="tel">
+                            @error('phone') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
-                        <label class="field">Phone (the seller will call you)
-                            <input type="tel" name="buyer_phone" value="{{ old('buyer_phone') }}" required maxlength="40" autocomplete="tel">
-                            @error('buyer_phone') <span class="field-error">{{ $message }}</span> @enderror
+                        <label class="field">Email (optional)
+                            <input type="email" name="email" value="{{ old('email') }}" autocomplete="email">
+                            @error('email') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
-                        <label class="field">{{ $product->isService() ? 'What you need, and where' : 'Delivery or collection' }}
-                            <textarea name="delivery_note" required maxlength="500" style="height: 90px" placeholder="{{ $product->isService() ? 'e.g. Birthday shoot for 20 guests at our home in Lekki' : 'Your address, or "I\'ll collect at church on Sunday"' }}">{{ old('delivery_note') }}</textarea>
-                            @error('delivery_note') <span class="field-error">{{ $message }}</span> @enderror
+                        <label class="field">Message
+                            <textarea name="message" required maxlength="1000" style="height: 90px" placeholder="{{ $product->isService() ? 'What you need, and where' : 'How many, and delivery or collection' }}">{{ old('message') }}</textarea>
+                            @error('message') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
-                        <button type="submit" class="btn btn--gold">Pay <span data-market-total>{{ $product->priceLabel() }}</span></button>
-                        <span class="field-hint" style="text-align: center">Secure payment by Paystack. The seller {{ $product->isService() ? 'confirms the booking' : 'arranges delivery' }} with you.</span>
+                        <button type="submit" class="btn btn--gold">Send message</button>
                     </form>
-                @else
-                    <p class="lede" style="margin: 0">
-                        @if (! $product->inStock())
-                            Sold out for now.
-                        @elseif (! $paymentsEnabled)
-                            Online payments aren't switched on yet. Contact {{ $shop->owner_name }} on {{ $shop->phone }} to order.
-                        @else
-                            Online orders aren't open for this shop yet. Contact {{ $shop->owner_name }} on {{ $shop->phone }}.
-                        @endif
-                    </p>
                 @endif
+
+                <p class="contact-note">You pay {{ $shop->name }} directly, on terms you agree with them. {{ config('church.short_name') }} lists member businesses but isn't part of the sale.</p>
             </aside>
         </div>
 

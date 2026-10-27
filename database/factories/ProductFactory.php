@@ -19,7 +19,7 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         return [
-            'shop_id' => Shop::factory()->selling(),
+            'shop_id' => Shop::factory()->listed(),
             'type' => 'product',
             'slug' => fake()->unique()->slug(3),
             'name' => fake()->words(3, true),

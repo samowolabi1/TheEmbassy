@@ -4,7 +4,6 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\MarketController;
-use App\Http\Controllers\MarketOrderController;
 use App\Http\Controllers\NewsletterSubscriptionController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\PageController;
@@ -36,11 +35,7 @@ Route::get('/market/open-a-shop', [MarketController::class, 'apply'])->name('mar
 Route::post('/market/open-a-shop', [MarketController::class, 'storeApplication'])->middleware('throttle:5,1')->name('market.apply.store');
 Route::get('/market/shops/{shop}', [MarketController::class, 'shop'])->name('market.shop');
 Route::get('/market/products/{product}', [MarketController::class, 'product'])->name('market.product');
-Route::post('/market/products/{product}/buy', [MarketOrderController::class, 'store'])->middleware('throttle:10,1')->name('market.buy');
-Route::middleware('signed')->group(function () {
-    Route::get('/market/orders/{order}', [MarketOrderController::class, 'show'])->name('market.orders.show');
-    Route::post('/market/orders/{order}/pay', [MarketOrderController::class, 'pay'])->middleware('throttle:10,1')->name('market.orders.pay');
-});
+Route::post('/market/products/{product}/enquire', [MarketController::class, 'enquire'])->middleware('throttle:5,1')->name('market.enquire');
 
 // Vendors manage their shop here.
 Route::prefix('vendor')->name('vendor.')->group(function () {
@@ -55,8 +50,11 @@ Route::prefix('vendor')->name('vendor.')->group(function () {
 
     Route::middleware(['auth', 'can:run-shop'])->group(function () {
         Route::post('/logout', [Vendor\AuthController::class, 'destroy'])->name('logout');
-        Route::get('/', [Vendor\OrderController::class, 'index'])->name('orders.index');
-        Route::patch('/orders/{order}', [Vendor\OrderController::class, 'update'])->name('orders.update');
+        Route::redirect('/', '/vendor/products')->name('home');
+        Route::get('/enquiries', [Vendor\EnquiryController::class, 'index'])->name('enquiries.index');
+        Route::patch('/enquiries/{enquiry}', [Vendor\EnquiryController::class, 'markRead'])->name('enquiries.read');
+        Route::get('/subscription', [Vendor\SubscriptionController::class, 'index'])->name('subscription.index');
+        Route::post('/subscription', [Vendor\SubscriptionController::class, 'store'])->middleware('throttle:10,1')->name('subscription.store');
         Route::resource('products', Vendor\ProductController::class)->only(['index', 'create', 'store', 'edit', 'update']);
     });
 });
@@ -114,10 +112,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/tickets/{ticket}/check-in', [Admin\TicketController::class, 'checkIn'])->name('tickets.check-in');
 
         Route::get('/market', [Admin\MarketController::class, 'index'])->name('market.index');
-        Route::post('/market/settings', [Admin\MarketController::class, 'settings'])->name('market.settings');
+        Route::post('/market/plans', [Admin\MarketController::class, 'plans'])->name('market.plans');
+        Route::post('/market/coupons', [Admin\MarketController::class, 'storeCoupon'])->name('market.coupons.store');
+        Route::post('/market/coupons/{coupon}/toggle', [Admin\MarketController::class, 'toggleCoupon'])->name('market.coupons.toggle');
         Route::post('/market/shops/{shop}/approve', [Admin\MarketController::class, 'approve'])->name('market.approve');
         Route::post('/market/shops/{shop}/decline', [Admin\MarketController::class, 'decline'])->name('market.decline');
         Route::post('/market/shops/{shop}/suspend', [Admin\MarketController::class, 'toggleSuspend'])->name('market.suspend');
-        Route::post('/market/shops/{shop}/payout', [Admin\MarketController::class, 'retryPayout'])->name('market.payout');
     });
 });

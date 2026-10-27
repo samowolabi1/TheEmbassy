@@ -44,3 +44,38 @@
   font-size: 32px;
   color: var(--navy);
 }
+.plan-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.plan-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 15px;
+}
+.plan-list strong {
+  color: var(--navy);
+}
+.contact-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.contact-buttons .btn {
+  justify-content: center;
+}
+.contact-note {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--wash);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+}

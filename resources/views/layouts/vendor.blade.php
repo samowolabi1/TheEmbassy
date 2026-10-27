@@ -2,8 +2,9 @@
     $user = auth()->user();
     $shop = $user->shop;
     $nav = [
-        ['id' => 'orders', 'label' => 'Orders', 'route' => 'vendor.orders.index'],
         ['id' => 'products', 'label' => 'Products & services', 'route' => 'vendor.products.index'],
+        ['id' => 'enquiries', 'label' => 'Enquiries', 'route' => 'vendor.enquiries.index', 'badge' => $shop->enquiries()->whereNull('read_at')->count() ?: null],
+        ['id' => 'subscription', 'label' => 'Subscription', 'route' => 'vendor.subscription.index'],
     ];
 @endphp
 <!DOCTYPE html>
@@ -23,13 +24,18 @@
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="admin-shell">
         <aside class="side">
-            <a href="{{ route('vendor.orders.index') }}" class="side__brand">
+            <a href="{{ route('vendor.products.index') }}" class="side__brand">
                 <span class="side__logo"><img src="{{ asset(config('church.brand.logo')) }}" alt="" width="40" height="38"></span>
                 <span class="side__words"><span class="side__name">{{ $shop->name }}</span><span class="side__role">{{ config('church.brand.market_name') }}</span></span>
             </a>
             <nav class="side__nav" aria-label="Shop">
                 @foreach ($nav as $item)
-                    <a href="{{ route($item['route']) }}" class="side__link" @if ($item['id'] === $active) aria-current="page" @endif>{{ $item['label'] }}</a>
+                    <a href="{{ route($item['route']) }}" class="side__link" @if ($item['id'] === $active) aria-current="page" @endif>
+                        {{ $item['label'] }}
+                        @if ($item['badge'] ?? null)
+                            <span class="side__badge"><span class="sr-only">new: </span>{{ $item['badge'] }}</span>
+                        @endif
+                    </a>
                 @endforeach
                 <a href="{{ route('market.shop', $shop) }}" class="side__link">View my shop</a>
             </nav>
@@ -46,9 +52,9 @@
             @if (session('status'))
                 <p class="flash" role="status">{{ session('status') }}</p>
             @endif
-            @unless ($shop->canSell())
-                <p class="flash" style="background: var(--wash); color: var(--navy)" role="status">Your payout account isn't set up yet, so buyers can see your products but can't pay online. The church office is sorting it out.</p>
-            @endunless
+            @if ($active !== 'subscription' && ! $shop->isSubscribed())
+                <p class="flash" style="background: var(--wash); color: var(--navy)" role="status">Your listings are hidden from the market until you subscribe. <a href="{{ route('vendor.subscription.index') }}" style="font-weight: 800">Choose a plan</a></p>
+            @endif
             @yield('content')
         </main>
     </div>

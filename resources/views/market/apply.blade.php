@@ -10,8 +10,8 @@
         <span class="eyebrow">SELL ON {{ strtoupper(config('church.brand.market_name')) }}</span>
         <h1 class="display notices-hero__title">Open a shop.</h1>
         <p class="lede" style="max-width: 680px">
-            Sell your products or services to the church family. Payments go straight to your bank account,
-            less a {{ rtrim(rtrim(number_format(\App\Models\Setting::marketCommission(), 2), '0'), '.') }}% commission that supports the church, and Paystack's fee.
+            List your products or services for the church family. Buyers call, WhatsApp or message you and pay you
+            directly; the church never handles your sales. You pay a small subscription to stay listed.
         </p>
     </section>
 
@@ -65,37 +65,29 @@
                                 <input type="tel" name="phone" value="{{ old('phone') }}" required maxlength="40" autocomplete="tel">
                                 @error('phone') <span class="field-error">{{ $message }}</span> @enderror
                             </label>
+                            <label class="field">WhatsApp (if different)
+                                <input type="tel" name="whatsapp" value="{{ old('whatsapp') }}" maxlength="40">
+                                @error('whatsapp') <span class="field-error">{{ $message }}</span> @enderror
+                            </label>
                         </div>
                     </fieldset>
                 </div>
 
                 <aside class="card notice-form__side">
-                    <fieldset class="notice-form__group">
-                        <legend>Where we pay you</legend>
-                        @if ($banks)
-                            <label class="field">Bank
-                                <select name="bank_code" required>
-                                    <option value="">Choose your bank</option>
-                                    @foreach ($banks as $code => $name)
-                                        <option value="{{ $code }}" @selected(old('bank_code') === (string) $code)>{{ $name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('bank_code') <span class="field-error">{{ $message }}</span> @enderror
-                            </label>
-                        @else
-                            <label class="field">Bank
-                                <input type="text" name="bank_name" value="{{ old('bank_name') }}" required maxlength="80">
-                                @error('bank_name') <span class="field-error">{{ $message }}</span> @enderror
-                            </label>
+                    <div class="notice-form__group">
+                        <h2 style="margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 20px; color: var(--navy)">Subscription</h2>
+                        @if ($plans->isNotEmpty())
+                            <ul class="plan-list">
+                                @foreach ($plans as $plan)
+                                    <li><span>{{ $plan->name }}</span><strong>{{ $plan->priceLabel() }}</strong></li>
+                                @endforeach
+                            </ul>
                         @endif
-                        <label class="field">Account number
-                            <input type="text" name="account_number" value="{{ old('account_number') }}" required inputmode="numeric" maxlength="10" autocomplete="off">
-                            @error('account_number') <span class="field-error">{{ $message }}</span> @enderror
-                        </label>
-                    </fieldset>
+                        <span class="field-hint">Once you're approved, pick a plan in your shop dashboard. Your listings show while your subscription is active.</span>
+                    </div>
                     <label class="agree">
                         <input type="checkbox" name="agree" value="1" @checked(old('agree'))>
-                        <span>I'll only sell honest, family-friendly goods and services, deliver what buyers pay for, and answer buyers quickly. The church may suspend shops that don't.</span>
+                        <span>I'll only sell honest, family-friendly goods and services, deliver what buyers pay me for, and answer buyers quickly. The church may suspend shops that don't.</span>
                     </label>
                     @error('agree') <span class="field-error">{{ $message }}</span> @enderror
                     <button type="submit" class="btn btn--gold">Send application</button>
