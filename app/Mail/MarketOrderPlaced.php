@@ -21,8 +21,8 @@ class MarketOrderPlaced extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(subject: $this->forVendor
-            ? 'New order '.$this->order->code.': '.$this->order->product->name
-            : 'Your order from '.$this->order->shop->name);
+            ? ($this->order->isService() ? 'New booking ' : 'New order ').$this->order->code.': '.$this->order->product->name
+            : ($this->order->isService() ? 'Your booking with ' : 'Your order from ').$this->order->shop->name);
     }
 
     public function content(): Content

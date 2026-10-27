@@ -1,9 +1,9 @@
 {{-- One product in a grid. --}}
-<a href="{{ route('market.product', $product) }}" class="product" data-filter-item data-tag="{{ $product->shop->category }}">
+<a href="{{ route('market.product', $product) }}" class="product" data-filter-item data-tag="{{ $product->type }}">
     @if ($product->imageUrl())
         <img class="product__photo" src="{{ $product->imageUrl() }}" alt="" loading="lazy">
     @else
-        <div role="img" aria-label="No photo" class="product__image bg-{{ $product->id % 2 ? 'ice' : 'wash' }}"><span class="label-chip">{{ $product->shop->category }}</span></div>
+        <div role="img" aria-label="No photo" class="product__image bg-{{ $product->id % 2 ? 'ice' : 'wash' }}"><span class="label-chip">{{ $product->isService() ? 'Service' : $product->shop->category }}</span></div>
     @endif
     <span class="product__row">
         <span class="stack" style="gap: 2px">
@@ -12,7 +12,9 @@
         </span>
         <span class="product__price">{{ $product->priceLabel() }}</span>
     </span>
-    @unless ($product->inStock())
+    @if ($product->isService() && $product->imageUrl())
+        <span class="field-hint">Service</span>
+    @elseif (! $product->inStock())
         <span class="field-hint">Sold out</span>
-    @endunless
+    @endif
 </a>

@@ -16,14 +16,13 @@ use RuntimeException;
 class MarketController extends Controller
 {
     /**
-     * Everything for sale, filterable by shop category.
+     * Everything for sale, filterable by products or services.
      */
     public function index(): View
     {
         return view('market.index', [
             'products' => Product::listed()->with('shop')->get(),
             'shops' => Shop::approved()->withCount(['products' => fn ($q) => $q->where('is_active', true)])->orderBy('name')->get(),
-            'categories' => config('market.categories'),
         ]);
     }
 

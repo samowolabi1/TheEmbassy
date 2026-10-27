@@ -10,12 +10,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
-#[Fillable(['slug', 'name', 'description', 'price', 'stock', 'image_path', 'is_active'])]
+/**
+ * Something sold on the market: a product (goods, optionally with stock) or a service (booked, no stock).
+ */
+#[Fillable(['type', 'slug', 'name', 'description', 'price', 'price_unit', 'stock', 'image_path', 'is_active'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
+
+    public const PRODUCT = 'product';
+
+    public const SERVICE = 'service';
 
     /**
      * Get the attributes that should be cast.
@@ -55,6 +63,23 @@ class Product extends Model
             ->latest();
     }
 
+    public function isService(): bool
+    {
+        return $this->type === self::SERVICE;
+    }
+
+    /**
+     * What a quantity counts for a service priced "per hour" etc. ("hours"), or null when it's booked once.
+     */
+    public function unitNoun(): ?string
+    {
+        if (! $this->isService() || ! $this->price_unit || ! preg_match('/^per\s+(.+)$/i', trim($this->price_unit), $m)) {
+            return null;
+        }
+
+        return Str::plural(strtolower($m[1]));
+    }
+
     public function inStock(): bool
     {
         return $this->stock === null || $this->stock > 0;
@@ -75,6 +100,8 @@ class Product extends Model
 
     public function priceLabel(): string
     {
-        return '₦'.number_format($this->price / 100);
+        $price = '₦'.number_format($this->price / 100);
+
+        return $this->isService() && $this->price_unit ? "{$price} {$this->price_unit}" : $price;
     }
 }

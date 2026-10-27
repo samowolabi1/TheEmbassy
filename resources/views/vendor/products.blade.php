@@ -1,13 +1,13 @@
-@extends('layouts.vendor', ['title' => 'Products', 'active' => 'products'])
+@extends('layouts.vendor', ['title' => 'Products & services', 'active' => 'products'])
 
 @section('content')
     <header class="page-head">
         <div class="stack" style="gap: 4px">
-            <h1>Products</h1>
-            <span class="page-head__sub">What {{ $shop->name }} sells. Hidden products don't show in the market.</span>
+            <h1>Products &amp; services</h1>
+            <span class="page-head__sub">What {{ $shop->name }} offers. Hidden listings don't show in the market.</span>
         </div>
         <div class="actions">
-            <a href="{{ route('vendor.products.create') }}" class="btn btn--gold"><x-icon name="plus" :size="16" />Add a product</a>
+            <a href="{{ route('vendor.products.create') }}" class="btn btn--gold"><x-icon name="plus" :size="16" />Add a listing</a>
         </div>
     </header>
 
@@ -19,7 +19,7 @@
                 @endif
                 <span class="list-item__main">
                     <span class="list-item__title">{{ $product->name }}</span>
-                    <span class="list-item__meta">{{ $product->priceLabel() }} · {{ $product->stock === null ? 'No stock limit' : $product->stock.' in stock' }}</span>
+                    <span class="list-item__meta">{{ $product->isService() ? 'Service' : 'Product' }} · {{ $product->priceLabel() }}@unless ($product->isService()) · {{ $product->stock === null ? 'No stock limit' : $product->stock.' in stock' }}@endunless</span>
                 </span>
                 @unless ($product->is_active)
                     <span class="pill pill--draft">Hidden</span>
@@ -32,7 +32,7 @@
                 </span>
             </div>
         @empty
-            <p class="empty-state">No products yet. Add your first one.</p>
+            <p class="empty-state">Nothing listed yet. Add your first product or service.</p>
         @endforelse
     </section>
 @endsection

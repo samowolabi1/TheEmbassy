@@ -122,7 +122,7 @@ class MarketplaceTest extends TestCase
         $shop = Shop::factory()->selling()->create(['user_id' => $user->id]);
 
         $this->actingAs($user)->post(route('vendor.products.store'), [
-            'name' => 'Party jollof tray', 'description' => 'Serves 10.', 'price' => '25000', 'stock' => '', 'is_active' => '1',
+            'type' => 'product', 'name' => 'Party jollof tray', 'description' => 'Serves 10.', 'price' => '25000', 'stock' => '', 'is_active' => '1',
         ])->assertRedirect(route('vendor.products.index'));
 
         $product = Product::sole();
@@ -130,6 +130,79 @@ class MarketplaceTest extends TestCase
         $this->assertNull($product->stock);
         $this->get(route('market.index'))->assertSee('Party jollof tray')->assertSee('₦25,000');
         $this->get('/')->assertSee('Party jollof tray');
+    }
+
+    public function test_vendor_lists_a_service_with_a_price_unit_and_no_stock(): void
+    {
+        $user = User::factory()->create();
+        Shop::factory()->selling()->create(['user_id' => $user->id]);
+
+        $this->actingAs($user)->post(route('vendor.products.store'), [
+            'type' => 'service', 'name' => 'Birthday photoshoot', 'description' => 'Two hours, edited photos.',
+            'price' => '40000', 'price_unit' => 'per session', 'stock' => '5', 'is_active' => '1',
+        ])->assertRedirect(route('vendor.products.index'));
+
+        $service = Product::sole();
+        $this->assertTrue($service->isService());
+        $this->assertNull($service->stock); // services have no stock
+        $this->assertSame('₦40,000 per session', $service->priceLabel());
+        $this->get(route('market.index'))->assertSee('Birthday photoshoot')->assertSee('₦40,000 per session');
+    }
+
+    public function test_booking_a_service_asks_for_a_date_and_details(): void
+    {
+        $service = Product::factory()->service()->create(['price' => 4_000_000]);
+
+        $this->get(route('market.product', $service))->assertSee('Book this service')->assertSee('When do you need it?')->assertDontSee('Quantity');
+
+        // A fixed-price service is always booked once, whatever is posted.
+        $this->buy($service, ['quantity' => 3, 'preferred_date' => now()->addWeek()->toDateString()])->assertSessionHasErrors('quantity');
+        $this->buy($service, ['quantity' => 1])->assertSessionHasErrors(['preferred_date' => 'Pick the date you need it.']);
+        $this->buy($service, ['quantity' => 1, 'preferred_date' => now()->subDay()->toDateString()])->assertSessionHasErrors('preferred_date');
+
+        $this->buy($service, ['quantity' => 1, 'preferred_date' => now()->addWeek()->toDateString(), 'delivery_note' => 'Home shoot in Lekki'])
+            ->assertRedirect('https://checkout.paystack.com/m');
+
+        $order = MarketOrder::sole();
+        $this->assertTrue($order->preferred_date->isSameDay(now()->addWeek()));
+        $this->assertSame(4_000_000, $order->total);
+        $this->assertSame('Awaiting payment', $order->statusLabel());
+    }
+
+    public function test_hourly_services_can_be_booked_for_several_hours(): void
+    {
+        $service = Product::factory()->service('per hour')->create(['price' => 500_000]);
+
+        $this->get(route('market.product', $service))->assertSee('How many hours?');
+        $this->buy($service, ['quantity' => 3, 'preferred_date' => now()->addDay()->toDateString()]);
+
+        $this->assertSame(1_500_000, MarketOrder::sole()->total);
+    }
+
+    public function test_products_do_not_take_a_date(): void
+    {
+        $product = Product::factory()->create();
+
+        $this->buy($product, ['preferred_date' => now()->addDay()->toDateString()])->assertSessionHasErrors('preferred_date');
+    }
+
+    public function test_service_orders_use_booking_steps(): void
+    {
+        $user = User::factory()->create();
+        $shop = Shop::factory()->selling()->create(['user_id' => $user->id]);
+        $service = Product::factory()->for($shop)->service()->create();
+        $order = MarketOrder::factory()->create([
+            'shop_id' => $shop->id, 'product_id' => $service->id, 'status' => MarketOrder::PAID, 'paid_at' => now(), 'preferred_date' => now()->addDays(3),
+        ]);
+
+        $this->actingAs($user)->get(route('vendor.orders.index'))
+            ->assertSee('Booked: waiting for the seller to confirm')
+            ->assertSee('Wanted on')
+            ->assertSee('Mark as confirmed and scheduled');
+
+        $this->patch(route('vendor.orders.update', $order), ['status' => MarketOrder::READY])->assertRedirect();
+        $this->assertSame('Confirmed and scheduled', $order->fresh()->statusLabel());
+        $this->get($order->url())->assertSee('Your booking is confirmed.');
     }
 
     public function test_vendors_cannot_touch_other_shops(): void

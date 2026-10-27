@@ -3,7 +3,7 @@
     $shop = $user->shop;
     $nav = [
         ['id' => 'orders', 'label' => 'Orders', 'route' => 'vendor.orders.index'],
-        ['id' => 'products', 'label' => 'Products', 'route' => 'vendor.products.index'],
+        ['id' => 'products', 'label' => 'Products & services', 'route' => 'vendor.products.index'],
     ];
 @endphp
 <!DOCTYPE html>

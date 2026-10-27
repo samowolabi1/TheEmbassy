@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -73,19 +74,26 @@ class ProductController extends Controller
     private function validated(Request $request): array
     {
         $data = $request->validate([
+            'type' => ['required', Rule::in([Product::PRODUCT, Product::SERVICE])],
             'name' => ['required', 'string', 'max:100'],
             'description' => ['required', 'string', 'max:1000'],
             'price' => ['required', 'numeric', 'min:100', 'max:10000000'],
+            'price_unit' => ['nullable', 'string', 'max:30'],
             'stock' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'is_active' => ['nullable', 'boolean'],
         ], ['price.min' => 'The lowest price is ₦100.']);
 
+        $service = $data['type'] === Product::SERVICE;
+
         return [
+            'type' => $data['type'],
             'name' => $data['name'],
             'description' => $data['description'],
             'price' => (int) round($data['price'] * 100),
-            'stock' => isset($data['stock']) && $data['stock'] !== '' ? (int) $data['stock'] : null,
+            // Services are booked, so they have no stock; products have no price unit.
+            'price_unit' => $service ? (trim((string) ($data['price_unit'] ?? '')) ?: null) : null,
+            'stock' => ! $service && isset($data['stock']) && $data['stock'] !== '' ? (int) $data['stock'] : null,
             'is_active' => $request->boolean('is_active'),
         ];
     }

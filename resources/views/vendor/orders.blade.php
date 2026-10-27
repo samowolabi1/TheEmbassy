@@ -4,10 +4,10 @@
     <header class="page-head">
         <div class="stack" style="gap: 4px">
             <h1>Orders</h1>
-            <span class="page-head__sub">Paid orders for {{ $shop->name }}. Call the buyer to arrange delivery or collection.</span>
+            <span class="page-head__sub">Paid orders and bookings for {{ $shop->name }}. Call the buyer to arrange delivery or confirm the booking.</span>
         </div>
         <div class="actions">
-            <a href="{{ route('vendor.products.create') }}" class="btn btn--gold"><x-icon name="plus" :size="16" />Add a product</a>
+            <a href="{{ route('vendor.products.create') }}" class="btn btn--gold"><x-icon name="plus" :size="16" />Add a listing</a>
         </div>
     </header>
 
@@ -38,11 +38,14 @@
                     <span class="prayer-card__when">{{ $order->code }} · paid {{ $order->paid_at->diffForHumans() }}</span>
                 </div>
                 <span class="prayer-card__contact"><strong>{{ $order->buyer_name }}</strong> · <a href="tel:{{ preg_replace('/[^\d+]/', '', $order->buyer_phone) }}">{{ $order->buyer_phone }}</a> · {{ $order->buyer_email }}</span>
-                <p class="prayer-card__text"><strong>Delivery:</strong> {{ $order->delivery_note }}</p>
+                @if ($order->preferred_date)
+                    <span class="prayer-card__contact"><strong>Wanted on:</strong> {{ $order->preferred_date->format('l j F Y') }}</span>
+                @endif
+                <p class="prayer-card__text"><strong>{{ $order->isService() ? 'Details' : 'Delivery' }}:</strong> {{ $order->delivery_note }}</p>
                 <span class="box__note">Total ₦{{ number_format($order->total / 100) }} · your share ₦{{ number_format($order->vendorShare() / 100) }} before Paystack's fee</span>
                 @if (in_array($order->status, [\App\Models\MarketOrder::PAID, \App\Models\MarketOrder::READY], true))
                     <div class="list-item__actions" style="flex-wrap: wrap">
-                        @foreach (\App\Models\MarketOrder::VENDOR_STEPS as $step => $label)
+                        @foreach ($order->vendorSteps() as $step => $label)
                             @continue($step === $order->status)
                             <form method="POST" action="{{ route('vendor.orders.update', $order) }}">
                                 @csrf

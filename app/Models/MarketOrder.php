@@ -24,7 +24,7 @@ use Throwable;
  */
 #[Fillable([
     'shop_id', 'product_id', 'code', 'quantity', 'unit_price', 'total', 'commission', 'platform_fee',
-    'buyer_name', 'buyer_email', 'buyer_phone', 'delivery_note',
+    'buyer_name', 'buyer_email', 'buyer_phone', 'delivery_note', 'preferred_date',
 ])]
 class MarketOrder extends Model implements Payable, SplitsPayment
 {
@@ -41,12 +41,6 @@ class MarketOrder extends Model implements Payable, SplitsPayment
 
     public const CANCELLED = 'cancelled';
 
-    /** What the vendor can move a paid order to, and the label for each. */
-    public const VENDOR_STEPS = [
-        self::READY => 'Ready / on its way',
-        self::COMPLETED => 'Delivered or collected',
-    ];
-
     /**
      * Get the attributes that should be cast.
      *
@@ -61,6 +55,7 @@ class MarketOrder extends Model implements Payable, SplitsPayment
             'commission' => 'integer',
             'platform_fee' => 'integer',
             'paid_at' => 'datetime',
+            'preferred_date' => 'date',
         ];
     }
 
@@ -117,15 +112,34 @@ class MarketOrder extends Model implements Payable, SplitsPayment
         return ! in_array($this->status, [self::AWAITING_PAYMENT, self::CANCELLED], true);
     }
 
+    public function isService(): bool
+    {
+        return $this->product->isService();
+    }
+
     public function statusLabel(): string
     {
+        $service = $this->isService();
+
         return match ($this->status) {
             self::AWAITING_PAYMENT => 'Awaiting payment',
-            self::PAID => 'Paid: being prepared',
-            self::READY => 'Ready / on its way',
-            self::COMPLETED => 'Delivered',
+            self::PAID => $service ? 'Booked: waiting for the seller to confirm' : 'Paid: being prepared',
+            self::READY => $service ? 'Confirmed and scheduled' : 'Ready / on its way',
+            self::COMPLETED => $service ? 'Done' : 'Delivered',
             self::CANCELLED => 'Cancelled',
         };
+    }
+
+    /**
+     * What the seller can move a paid order to, and the label for each.
+     *
+     * @return array<string, string>
+     */
+    public function vendorSteps(): array
+    {
+        return $this->isService()
+            ? [self::READY => 'Confirmed and scheduled', self::COMPLETED => 'Done']
+            : [self::READY => 'Ready / on its way', self::COMPLETED => 'Delivered or collected'];
     }
 
     public function feeModule(): string

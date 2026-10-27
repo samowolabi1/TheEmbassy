@@ -26,3 +26,14 @@ if (scheduleAt) {
     radios.forEach((r) => r.addEventListener('change', sync));
     sync();
 }
+
+// Seller listing form: stock for products, price unit for services.
+const typeRadios = document.querySelectorAll('[data-listing-type]');
+if (typeRadios.length) {
+    const sync = () => {
+        const type = document.querySelector('[data-listing-type]:checked')?.value;
+        for (const el of document.querySelectorAll('[data-for-type]')) el.hidden = el.dataset.forType !== type;
+    };
+    typeRadios.forEach((r) => r.addEventListener('change', sync));
+    sync();
+}

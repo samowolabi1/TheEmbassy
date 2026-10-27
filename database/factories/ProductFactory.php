@@ -20,6 +20,7 @@ class ProductFactory extends Factory
     {
         return [
             'shop_id' => Shop::factory()->selling(),
+            'type' => 'product',
             'slug' => fake()->unique()->slug(3),
             'name' => fake()->words(3, true),
             'description' => fake()->sentence(10),
@@ -27,5 +28,13 @@ class ProductFactory extends Factory
             'stock' => null,
             'is_active' => true,
         ];
+    }
+
+    /**
+     * A service: booked for a date, no stock.
+     */
+    public function service(?string $unit = null): static
+    {
+        return $this->state(fn () => ['type' => 'service', 'price_unit' => $unit, 'stock' => null]);
     }
 }

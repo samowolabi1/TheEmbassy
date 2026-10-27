@@ -18,23 +18,26 @@
                         @endif
                         @break
                     @case(\App\Models\MarketOrder::PAID)
-                        Thanks! {{ $order->shop->owner_name }} has your order and will call you on {{ $order->buyer_phone }} about delivery or collection.
+                        Thanks! {{ $order->shop->owner_name }} has your {{ $order->isService() ? 'booking' : 'order' }} and will call you on {{ $order->buyer_phone }} to {{ $order->isService() ? 'confirm the time' : 'arrange delivery or collection' }}.
                         @break
                     @case(\App\Models\MarketOrder::READY)
-                        Your order is ready or on its way.
+                        {{ $order->isService() ? 'Your booking is confirmed.' : 'Your order is ready or on its way.' }}
                         @break
                     @case(\App\Models\MarketOrder::COMPLETED)
-                        Delivered. Enjoy, and thank you for supporting the family.
+                        {{ $order->isService() ? 'Done.' : 'Delivered.' }} Thank you for supporting the family.
                         @break
                     @default
                         This order was cancelled.
                 @endswitch
             </p>
             <dl class="notice-status__facts">
-                <dt>Item</dt><dd>{{ $order->quantity }} × {{ $order->product->name }}</dd>
+                <dt>{{ $order->isService() ? 'Service' : 'Item' }}</dt><dd>{{ $order->quantity }} × {{ $order->product->name }}</dd>
+                @if ($order->preferred_date)
+                    <dt>Wanted on</dt><dd>{{ $order->preferred_date->format('l j F Y') }}</dd>
+                @endif
                 <dt>Shop</dt><dd><a href="{{ route('market.shop', $order->shop) }}">{{ $order->shop->name }}</a> · {{ $order->shop->phone }}</dd>
                 <dt>Total</dt><dd>₦{{ number_format($order->total / 100) }}</dd>
-                <dt>Delivery</dt><dd style="white-space: pre-line">{{ $order->delivery_note }}</dd>
+                <dt>{{ $order->isService() ? 'Details' : 'Delivery' }}</dt><dd style="white-space: pre-line">{{ $order->delivery_note }}</dd>
             </dl>
             @if ($order->status === \App\Models\MarketOrder::AWAITING_PAYMENT && $paymentsEnabled && $order->product->canBuy())
                 <form method="POST" action="{{ \Illuminate\Support\Facades\URL::signedRoute('market.orders.pay', $order) }}">

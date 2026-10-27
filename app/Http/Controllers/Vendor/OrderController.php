@@ -32,15 +32,16 @@ class OrderController extends Controller
     }
 
     /**
-     * Move an order along: ready or on its way, then delivered.
+     * Move an order along: ready or on its way (confirmed, for a service), then delivered (done).
      */
     public function update(Request $request, MarketOrder $order): RedirectResponse
     {
         abort_unless($order->shop_id === $request->user()->shop->id && $order->isPaid(), 404);
 
-        $data = $request->validate(['status' => ['required', Rule::in(array_keys(MarketOrder::VENDOR_STEPS))]]);
+        $steps = $order->vendorSteps();
+        $data = $request->validate(['status' => ['required', Rule::in(array_keys($steps))]]);
         $order->forceFill(['status' => $data['status']])->save();
 
-        return back()->with('status', "Order {$order->code}: ".MarketOrder::VENDOR_STEPS[$data['status']].'.');
+        return back()->with('status', "Order {$order->code}: {$steps[$data['status']]}.");
     }
 }

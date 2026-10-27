@@ -21,16 +21,23 @@ class MarketOrderController extends Controller
     {
         abort_unless($product->is_active && $product->shop->isApproved(), 404);
 
-        $max = min(config('market.max_quantity'), $product->stock ?? PHP_INT_MAX);
+        $service = $product->isService();
+        // A service booked once (no "per hour" etc.) is always a quantity of one.
+        $max = $service && ! $product->unitNoun() ? 1 : min(config('market.max_quantity'), $product->stock ?? PHP_INT_MAX);
         $data = $request->validate([
             'quantity' => ['required', 'integer', 'min:1', 'max:'.max(1, $max)],
             'buyer_name' => ['required', 'string', 'max:100'],
             'buyer_email' => ['required', 'email', 'max:255'],
             'buyer_phone' => ['required', 'string', 'max:40'],
             'delivery_note' => ['required', 'string', 'max:500'],
+            'preferred_date' => $service ? ['required', 'date', 'after_or_equal:today'] : ['prohibited'],
         ], [
             'quantity.max' => $product->stock !== null ? "Only {$product->stock} left." : 'That is more than one order allows.',
-            'delivery_note.required' => 'Tell the seller where to deliver, or that you will collect at church.',
+            'delivery_note.required' => $service
+                ? 'Tell the seller what you need and where.'
+                : 'Tell the seller where to deliver, or that you will collect at church.',
+            'preferred_date.required' => 'Pick the date you need it.',
+            'preferred_date.after_or_equal' => 'Pick today or a later date.',
         ]);
 
         if (! $payments->enabled() || ! $product->canBuy()) {

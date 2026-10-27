@@ -10,7 +10,7 @@
             <div class="stack" style="gap: 14px; max-width: 720px">
                 <span class="eyebrow">{{ strtoupper(config('church.brand.market_name')) }}</span>
                 <h1 class="display notices-hero__title">Shop from <span class="accent-bronze">the family.</span></h1>
-                <p class="lede">Every order supports a member's business and the work of the church.</p>
+                <p class="lede">Products and services from members' businesses. Every order supports a member and the work of the church.</p>
             </div>
             <a href="{{ route('market.apply') }}" class="btn btn--outline">Open a shop</a>
         </div>
@@ -23,14 +23,13 @@
                 <a href="{{ route('market.apply') }}" class="btn btn--navy btn--md">Sell something</a>
             </div>
         @else
-            <div role="tablist" aria-label="Filter by category" class="filters">
-                <button type="button" role="tab" class="filter" aria-selected="true" data-filter="all">All</button>
-                @foreach ($categories as $category)
-                    @if ($products->contains(fn ($p) => $p->shop->category === $category))
-                        <button type="button" role="tab" class="filter" aria-selected="false" data-filter="{{ $category }}">{{ $category }}</button>
-                    @endif
-                @endforeach
-            </div>
+            @if ($products->pluck('type')->unique()->count() > 1)
+                <div role="tablist" aria-label="Products or services" class="filters">
+                    <button type="button" role="tab" class="filter" aria-selected="true" data-filter="all">All</button>
+                    <button type="button" role="tab" class="filter" aria-selected="false" data-filter="product">Products</button>
+                    <button type="button" role="tab" class="filter" aria-selected="false" data-filter="service">Services</button>
+                </div>
+            @endif
             <div class="grid-auto" style="--min: 230px; --gap: 22px 18px">
                 @foreach ($products as $product)
                     @include('market.product-card', ['product' => $product])

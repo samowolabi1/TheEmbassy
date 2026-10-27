@@ -18,7 +18,7 @@
                     <div role="img" aria-label="No photo" class="product-hero-photo bg-ice"></div>
                 @endif
                 <div class="stack" style="gap: 12px">
-                    <span class="tag tag--wash">{{ $shop->category }}</span>
+                    <span class="tag tag--wash">{{ $product->isService() ? 'Service' : $shop->category }}</span>
                     <h1 class="h2">{{ $product->name }}</h1>
                     <span class="product-hero-price">{{ $product->priceLabel() }}</span>
                     <p class="lede" style="margin: 0; white-space: pre-line">{{ $product->description }}</p>
@@ -30,18 +30,29 @@
                 @if ($product->canBuy() && $paymentsEnabled)
                     <form method="POST" action="{{ route('market.buy', $product) }}" class="notice-form__group" data-market-buy data-price="{{ $product->price }}">
                         @csrf
-                        <h2 style="margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--navy)">Buy now</h2>
+                        <h2 style="margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--navy)">{{ $product->isService() ? 'Book this service' : 'Buy now' }}</h2>
                         @error('quantity') <p class="notice-alert" role="alert" style="margin: 0">{{ $message }}</p> @enderror
-                        <label class="field">Quantity
-                            <select name="quantity">
-                                @foreach (range(1, min(config('market.max_quantity'), $product->stock ?? config('market.max_quantity'))) as $n)
-                                    <option value="{{ $n }}" @selected((int) old('quantity', 1) === $n)>{{ $n }}</option>
-                                @endforeach
-                            </select>
-                            @if ($product->stock !== null && $product->stock <= 10)
-                                <span class="field-hint">Only {{ $product->stock }} left.</span>
-                            @endif
-                        </label>
+                        @if ($product->isService() && ! $product->unitNoun())
+                            <input type="hidden" name="quantity" value="1">
+                        @else
+                            <label class="field">{{ $product->unitNoun() ? 'How many '.$product->unitNoun().'?' : 'Quantity' }}
+                                <select name="quantity">
+                                    @foreach (range(1, min(config('market.max_quantity'), $product->stock ?? config('market.max_quantity'))) as $n)
+                                        <option value="{{ $n }}" @selected((int) old('quantity', 1) === $n)>{{ $n }}</option>
+                                    @endforeach
+                                </select>
+                                @if ($product->stock !== null && $product->stock <= 10)
+                                    <span class="field-hint">Only {{ $product->stock }} left.</span>
+                                @endif
+                            </label>
+                        @endif
+                        @if ($product->isService())
+                            <label class="field">When do you need it?
+                                <input type="date" name="preferred_date" value="{{ old('preferred_date') }}" min="{{ today()->toDateString() }}" required>
+                                <span class="field-hint">The seller will confirm the exact time with you.</span>
+                                @error('preferred_date') <span class="field-error">{{ $message }}</span> @enderror
+                            </label>
+                        @endif
                         <label class="field">Your name
                             <input type="text" name="buyer_name" value="{{ old('buyer_name') }}" required maxlength="100" autocomplete="name">
                             @error('buyer_name') <span class="field-error">{{ $message }}</span> @enderror
@@ -54,12 +65,12 @@
                             <input type="tel" name="buyer_phone" value="{{ old('buyer_phone') }}" required maxlength="40" autocomplete="tel">
                             @error('buyer_phone') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
-                        <label class="field">Delivery or collection
-                            <textarea name="delivery_note" required maxlength="500" style="height: 90px" placeholder="Your address, or &quot;I'll collect at church on Sunday&quot;">{{ old('delivery_note') }}</textarea>
+                        <label class="field">{{ $product->isService() ? 'What you need, and where' : 'Delivery or collection' }}
+                            <textarea name="delivery_note" required maxlength="500" style="height: 90px" placeholder="{{ $product->isService() ? 'e.g. Birthday shoot for 20 guests at our home in Lekki' : 'Your address, or "I\'ll collect at church on Sunday"' }}">{{ old('delivery_note') }}</textarea>
                             @error('delivery_note') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
                         <button type="submit" class="btn btn--gold">Pay <span data-market-total>{{ $product->priceLabel() }}</span></button>
-                        <span class="field-hint" style="text-align: center">Secure payment by Paystack. The seller arranges delivery with you.</span>
+                        <span class="field-hint" style="text-align: center">Secure payment by Paystack. The seller {{ $product->isService() ? 'confirms the booking' : 'arranges delivery' }} with you.</span>
                     </form>
                 @else
                     <p class="lede" style="margin: 0">

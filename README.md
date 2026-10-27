@@ -14,7 +14,7 @@ The public website, built with [Laravel](https://laravel.com) 13 from the "RCCG 
 | `/events` | Featured event with countdown, monthly calendar, regular gatherings |
 | `/give` | Giving form, bank transfer and USSD details, building fund |
 | `/events/{slug}` | One event: details, free RSVP or paid tickets, add to calendar |
-| `/market` | The member marketplace; shop and product pages, and `/market/open-a-shop` to apply |
+| `/market` | The member marketplace for products and services; shop and listing pages, and `/market/open-a-shop` to apply |
 | `/notices` | Paid notice board for other churches and businesses; `/notices/advertise` to place one |
 | `/vendor` | Sellers manage their products and orders (sign in at `/vendor/login`) |
 
@@ -54,7 +54,7 @@ Paystack divides each payment at the moment it's made, so nothing is paid out by
 
 **Event tickets** (admin › Events & tickets): ticket types per event, free or paid, with optional limits. Unpaid orders hold their places for 30 minutes. Every attendee gets a QR code; scanning it opens the door check-in page for signed-in staff.
 
-**Market** (admin › Tribe Market): members apply to open a shop; approving creates their Paystack payout account and emails them a link to set a password. Sellers add products and mark orders ready and delivered at `/vendor`. Orders are one product at a time (no basket yet).
+**Market** (admin › Tribe Market): members apply to open a shop; approving creates their Paystack payout account and emails them a link to set a password. At `/vendor`, sellers list products (with optional stock) and services (booked for a date, priced fixed or "per hour", "per session" and so on), and move orders along: ready then delivered for products, confirmed then done for services. Orders are one listing at a time (no basket yet).
 
 **Notice board** (admin › Notice board): other churches and businesses pay to list a notice; nothing appears until an admin approves it, and it runs for the days paid for. Rejected notices are refunded from the Paystack dashboard.
 
