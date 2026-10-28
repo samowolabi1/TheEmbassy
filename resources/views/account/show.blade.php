@@ -8,6 +8,9 @@
             @if ($member?->status === 'active')
                 <a href="{{ route('check-in') }}" class="btn btn--gold btn--sm">Check in to a service</a>
             @endif
+            @if ($member?->status === 'active')
+                <a href="{{ route('account.welfare') }}" class="btn btn--outline btn--sm">Welfare</a>
+            @endif
             @foreach ($ledUnits as $led)
                 <a href="{{ route('unit.show', $led) }}" class="btn btn--navy btn--sm">Lead {{ $led->name }}</a>
             @endforeach
@@ -143,6 +146,9 @@
                         <label class="field">Birthday
                             <input type="date" name="birthday" value="{{ old('birthday', $member->birthday?->toDateString()) }}" max="{{ today()->subDay()->toDateString() }}">
                             @error('birthday') <span class="field-error">{{ $message }}</span> @enderror
+                        </label>
+                        <label class="field">Wedding anniversary (optional)
+                            <input type="date" name="anniversary" value="{{ old('anniversary', $member->anniversary?->toDateString()) }}" max="{{ today()->toDateString() }}">
                         </label>
                         <label class="field">Unit
                             <select name="unit_id">

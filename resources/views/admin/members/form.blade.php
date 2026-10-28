@@ -42,6 +42,9 @@
                     <input type="date" name="birthday" value="{{ old('birthday', $member->birthday?->toDateString()) }}">
                     @error('birthday') <span class="field-error">{{ $message }}</span> @enderror
                 </label>
+                <label class="field">Wedding anniversary
+                    <input type="date" name="anniversary" value="{{ old('anniversary', $member->anniversary?->toDateString()) }}">
+                </label>
                 <label class="field">Member since
                     <input type="date" name="joined_on" value="{{ old('joined_on', $member->joined_on?->toDateString()) }}">
                     @error('joined_on') <span class="field-error">{{ $message }}</span> @enderror

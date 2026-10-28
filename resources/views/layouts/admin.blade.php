@@ -16,6 +16,8 @@
             ['id' => 'care', 'area' => 'care', 'label' => 'Follow-up & care', 'route' => 'admin.care.index',
                 'badge' => $count('care', fn () => \App\Models\FollowUp::open()->where(fn ($q) => $q->where('assigned_to', $user->id)->orWhereNull('assigned_to'))->count())],
             ['id' => 'attendance', 'area' => 'attendance', 'label' => 'Attendance', 'route' => 'admin.attendance.index'],
+            ['id' => 'welfare', 'area' => 'welfare', 'label' => 'Welfare', 'route' => 'admin.welfare',
+                'badge' => $count('welfare', fn () => \App\Models\WelfareCase::where('status', 'awaiting_pastor')->count())],
             ['id' => 'units', 'area' => 'units', 'label' => 'Units & fellowships', 'route' => 'admin.units.index'],
             ['id' => 'subscribers', 'area' => 'subscribers', 'label' => 'Newsletter subscribers', 'route' => 'admin.subscribers.index'],
         ],

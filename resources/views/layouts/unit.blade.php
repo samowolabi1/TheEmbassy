@@ -8,7 +8,7 @@
         ['id' => 'rota', 'label' => 'Rota', 'route' => 'unit.rota'],
         ['id' => 'messages', 'label' => 'Messages', 'route' => 'unit.messages'],
     ];
-    if ($unit->isWelfare()) {
+    if ($unit->isWelfare() && $user->can('manage-welfare', $unit)) {
         $nav[] = ['id' => 'welfare', 'label' => 'Welfare cases', 'route' => 'unit.welfare.index'];
         $nav[] = ['id' => 'celebrations', 'label' => 'Celebrations', 'route' => 'unit.welfare.celebrations'];
     }

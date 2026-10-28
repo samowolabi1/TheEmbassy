@@ -26,6 +26,18 @@ class UnitController extends Controller
         ]);
     }
 
+    /**
+     * Pastors reach welfare cases through the welfare unit's area.
+     */
+    public function welfare(): RedirectResponse
+    {
+        $unit = Unit::ofKind('welfare');
+
+        return $unit
+            ? redirect()->route('unit.welfare.index', $unit)
+            : redirect()->route('admin.units.index')->with('status', 'Set a unit\'s type to Welfare to open its case desk.');
+    }
+
     public function storeUnit(Request $request): RedirectResponse
     {
         $unit = Unit::create($this->unitData($request));

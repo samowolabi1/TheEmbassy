@@ -56,6 +56,12 @@ return [
         'closes_after' => 30,
     ],
 
+    // Welfare: the HOD approves support up to `approval_limit` naira; above that a pastor approves.
+    'welfare' => [
+        'approval_limit' => 50000,
+        'monthly_budget' => null,
+    ],
+
     // Pastoral care: who to check on.
     'care' => [
         // Raise a follow-up when an active member has missed this many Sunday services in a row.

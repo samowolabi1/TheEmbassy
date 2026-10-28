@@ -57,6 +57,14 @@ return [
         ],
     ],
 
+    'welfare' => [
+        'title' => 'Welfare',
+        'fields' => [
+            'church.welfare.approval_limit' => ['label' => 'The welfare HOD can approve up to (₦)', 'type' => 'number', 'rules' => ['integer', 'min:0', 'max:100000000'], 'hint' => 'Anything above this needs a pastor to approve.'],
+            'church.welfare.monthly_budget' => ['label' => 'Monthly welfare budget (₦, optional)', 'type' => 'number', 'rules' => ['integer', 'min:0', 'max:1000000000']],
+        ],
+    ],
+
     'live' => [
         'title' => 'Live stream',
         'fields' => [

@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
 /**
  * Someone in the church family. They may have a login (user) or be on the register only.
  */
-#[Fillable(['name', 'phone', 'email', 'gender', 'birthday', 'address', 'unit_id', 'fellowship_id', 'token_plan_id', 'tokens_from', 'joined_on', 'baptised', 'believers_class', 'workers_training', 'notes'])]
+#[Fillable(['name', 'phone', 'email', 'gender', 'birthday', 'anniversary', 'address', 'unit_id', 'fellowship_id', 'token_plan_id', 'tokens_from', 'joined_on', 'baptised', 'believers_class', 'workers_training', 'notes'])]
 class Member extends Model
 {
     use HasFactory;
@@ -43,6 +43,7 @@ class Member extends Model
     {
         return [
             'birthday' => 'date',
+            'anniversary' => 'date',
             'joined_on' => 'date',
             'tokens_from' => 'date',
             'token_reminded_at' => 'datetime',

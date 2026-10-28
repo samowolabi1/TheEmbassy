@@ -99,6 +99,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/account', [Account\AccountController::class, 'show'])->name('account');
     Route::put('/account', [Account\AccountController::class, 'update'])->name('account.update');
     Route::get('/account/tokens', [Account\AccountController::class, 'tokens'])->name('account.tokens');
+    Route::get('/account/welfare', [Account\WelfareController::class, 'index'])->name('account.welfare');
+    Route::post('/account/welfare', [Account\WelfareController::class, 'store'])->middleware('throttle:5,1')->name('account.welfare.store');
+    Route::get('/account/welfare/cases/{case}', [Account\WelfareController::class, 'show'])->name('account.welfare.case');
+    Route::post('/account/welfare/cases/{case}', [Account\WelfareController::class, 'note'])->name('account.welfare.note');
     Route::get('/check-in', [Account\CheckInController::class, 'show'])->name('check-in');
     Route::post('/check-in', [Account\CheckInController::class, 'store'])->middleware('throttle:10,1')->name('check-in.store');
     Route::post('/account/tokens', [Account\AccountController::class, 'payTokens'])->middleware('throttle:10,1')->name('account.tokens.pay');
@@ -127,6 +131,19 @@ Route::middleware(['auth', 'can:lead-unit,unit'])->prefix('units/{unit}')->name(
     Route::post('/meetings/{meeting}/present', [Unit\MeetingController::class, 'mark'])->name('meetings.mark');
     Route::get('/meetings/{meeting}/screen', [Unit\MeetingController::class, 'screen'])->name('meetings.screen');
     Route::delete('/meetings/{meeting}', [Unit\MeetingController::class, 'destroy'])->name('meetings.destroy');
+
+    Route::middleware('can:manage-welfare,unit')->prefix('welfare')->name('welfare.')->group(function () {
+        Route::get('/', [Unit\WelfareController::class, 'index'])->name('index');
+        Route::get('/new', [Unit\WelfareController::class, 'create'])->name('create');
+        Route::post('/', [Unit\WelfareController::class, 'store'])->name('store');
+        Route::get('/celebrations', [Unit\WelfareController::class, 'celebrations'])->name('celebrations');
+        Route::get('/export', [Unit\WelfareController::class, 'export'])->name('export');
+        Route::get('/{case}', [Unit\WelfareController::class, 'show'])->name('show');
+        Route::put('/{case}', [Unit\WelfareController::class, 'update'])->name('update');
+        Route::post('/{case}/act', [Unit\WelfareController::class, 'act'])->name('act');
+        Route::post('/{case}/pay', [Unit\WelfareController::class, 'pay'])->name('pay');
+        Route::post('/{case}/log', [Unit\WelfareController::class, 'note'])->name('note');
+    });
 });
 Route::post('/meetings/{meeting}/check-in', [Unit\MeetingController::class, 'checkIn'])->middleware(['auth', 'throttle:10,1'])->name('meetings.check-in');
 
@@ -181,6 +198,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/care/{followUp}/assign', [Admin\CareController::class, 'assign'])->name('care.assign');
             Route::post('/care/{followUp}/done', [Admin\CareController::class, 'complete'])->name('care.complete');
         });
+
+        // Pastors reach welfare cases through the welfare unit's area.
+        Route::get('/welfare', [Admin\UnitController::class, 'welfare'])->middleware('can:manage,"welfare"')->name('welfare');
 
         Route::middleware('can:manage,"units"')->group(function () {
             Route::get('/units', [Admin\UnitController::class, 'index'])->name('units.index');

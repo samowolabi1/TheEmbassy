@@ -22,6 +22,7 @@ return [
         'Venue & utilities',
         'Sound & media',
         'Outreach & welfare',
+        'Welfare support',
         'Events',
         'Hospitality',
         'Transport',

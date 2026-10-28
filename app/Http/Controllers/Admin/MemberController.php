@@ -196,6 +196,7 @@ class MemberController extends Controller
             'email' => ['nullable', 'email', 'max:255', Rule::unique('members', 'email')->ignore($member?->id)],
             'gender' => ['nullable', Rule::in(['female', 'male'])],
             'birthday' => ['nullable', 'date', 'before:today'],
+            'anniversary' => ['nullable', 'date', 'before_or_equal:today'],
             'address' => ['nullable', 'string', 'max:255'],
             'unit_id' => ['nullable', Rule::exists('units', 'id')],
             'fellowship_id' => ['nullable', Rule::exists('fellowships', 'id')],

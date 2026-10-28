@@ -47,6 +47,7 @@ class AccountController extends Controller
         $data = $request->validate([
             'phone' => ['required', 'string', 'max:40'],
             'birthday' => ['nullable', 'date', 'before:today'],
+            'anniversary' => ['nullable', 'date', 'before_or_equal:today'],
             'address' => ['nullable', 'string', 'max:255'],
             'unit_id' => ['nullable', Rule::exists('units', 'id')],
             'fellowship_id' => ['nullable', Rule::exists('fellowships', 'id')],
