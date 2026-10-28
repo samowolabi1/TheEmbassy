@@ -116,6 +116,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/logout', [Admin\AuthController::class, 'destroy'])->name('logout');
         Route::get('/', Admin\DashboardController::class)->name('dashboard');
 
+        Route::middleware('can:manage,"members"')->group(function () {
+            Route::get('/members/export', [Admin\MemberController::class, 'export'])->name('members.export');
+            Route::post('/members/import', [Admin\MemberController::class, 'import'])->name('members.import');
+            Route::post('/members/{member}/approve', [Admin\MemberController::class, 'approve'])->name('members.approve');
+            Route::resource('members', Admin\MemberController::class);
+        });
+
+        Route::middleware('can:manage,"units"')->group(function () {
+            Route::get('/units', [Admin\UnitController::class, 'index'])->name('units.index');
+            Route::post('/units', [Admin\UnitController::class, 'storeUnit'])->name('units.store');
+            Route::put('/units/{unit}', [Admin\UnitController::class, 'updateUnit'])->name('units.update');
+            Route::delete('/units/{unit}', [Admin\UnitController::class, 'destroyUnit'])->name('units.destroy');
+            Route::post('/fellowships', [Admin\UnitController::class, 'storeFellowship'])->name('fellowships.store');
+            Route::put('/fellowships/{fellowship}', [Admin\UnitController::class, 'updateFellowship'])->name('fellowships.update');
+            Route::delete('/fellowships/{fellowship}', [Admin\UnitController::class, 'destroyFellowship'])->name('fellowships.destroy');
+        });
+
         Route::middleware('can:manage,"prayer"')->group(function () {
             Route::get('/prayer-requests', [Admin\PrayerRequestController::class, 'index'])->name('prayer-requests.index');
             Route::patch('/prayer-requests/{prayerRequest}', [Admin\PrayerRequestController::class, 'update'])->name('prayer-requests.update');
