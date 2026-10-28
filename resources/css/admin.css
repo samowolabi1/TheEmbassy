@@ -1042,3 +1042,90 @@ a.stat-tile--navy:hover {
   height: 100%;
   background: var(--navy);
 }
+
+/* Attendance chart */
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 220px;
+  padding: 0 4px;
+}
+.chart__col {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+.chart__bar {
+  width: 100%;
+  max-width: 44px;
+  min-height: 2px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px 10px 4px 4px;
+  overflow: hidden;
+}
+.chart__inperson {
+  background: var(--navy);
+}
+.chart__online {
+  background: var(--gold);
+}
+.chart__num {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--navy);
+}
+.chart__label {
+  font-size: 11px;
+  color: var(--slate);
+  white-space: nowrap;
+}
+.chart__legend {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--slate);
+}
+.chart__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.chart__key {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.chart__key--inperson {
+  background: var(--navy);
+}
+.chart__key--online {
+  background: var(--gold);
+}
+.present-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  padding: 0 20px 20px;
+}
+.present-list label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--admin-line);
+  border-radius: 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.present-list label:has(input:checked) {
+  border-color: var(--navy);
+  background: var(--ice, #eef3fb);
+  font-weight: 700;
+}

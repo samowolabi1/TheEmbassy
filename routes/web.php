@@ -14,6 +14,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrayerRequestController;
 use App\Http\Controllers\TicketOrderController;
 use App\Http\Controllers\Vendor;
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
@@ -98,6 +99,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/account/tokens', [Account\AccountController::class, 'payTokens'])->middleware('throttle:10,1')->name('account.tokens.pay');
 });
 
+// First-timer card for visitors (e.g. from a QR code at the door).
+Route::get('/welcome', [WelcomeController::class, 'create'])->name('welcome');
+Route::post('/welcome', [WelcomeController::class, 'store'])->middleware('throttle:5,1')->name('welcome.store');
+
 // Contact and legal pages.
 Route::get('/contact', [ContactController::class, 'create'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:5,1')->name('contact.store');
@@ -124,6 +129,22 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/members/import', [Admin\MemberController::class, 'import'])->name('members.import');
             Route::post('/members/{member}/approve', [Admin\MemberController::class, 'approve'])->name('members.approve');
             Route::resource('members', Admin\MemberController::class);
+        });
+
+        Route::middleware('can:manage,"attendance"')->group(function () {
+            Route::get('/attendance', [Admin\AttendanceController::class, 'index'])->name('attendance.index');
+            Route::post('/attendance', [Admin\AttendanceController::class, 'store'])->name('attendance.store');
+            Route::get('/attendance/{service}', [Admin\AttendanceController::class, 'show'])->name('attendance.show');
+            Route::put('/attendance/{service}', [Admin\AttendanceController::class, 'update'])->name('attendance.update');
+            Route::post('/attendance/{service}/present', [Admin\AttendanceController::class, 'mark'])->name('attendance.mark');
+            Route::delete('/attendance/{service}', [Admin\AttendanceController::class, 'destroy'])->name('attendance.destroy');
+
+            Route::get('/first-timers', [Admin\FirstTimerController::class, 'index'])->name('first-timers.index');
+            Route::get('/first-timers/export', [Admin\FirstTimerController::class, 'export'])->name('first-timers.export');
+            Route::post('/first-timers', [Admin\FirstTimerController::class, 'store'])->name('first-timers.store');
+            Route::post('/first-timers/{firstTimer}/follow-up', [Admin\FirstTimerController::class, 'followUp'])->name('first-timers.follow-up');
+            Route::post('/first-timers/{firstTimer}/register', [Admin\FirstTimerController::class, 'addToRegister'])->middleware('can:manage,"members"')->name('first-timers.register');
+            Route::delete('/first-timers/{firstTimer}', [Admin\FirstTimerController::class, 'destroy'])->name('first-timers.destroy');
         });
 
         Route::middleware('can:manage,"units"')->group(function () {
