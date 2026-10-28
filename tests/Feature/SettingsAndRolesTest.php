@@ -116,4 +116,14 @@ class SettingsAndRolesTest extends TestCase
 
         $this->get(route('admin.settings.edit'))->assertOk()->assertSee('Kunle Media')->assertSee('What each role can open')->assertSee('Venue address');
     }
+
+    public function test_the_dashboard_shows_each_role_its_own_panels(): void
+    {
+        $this->actingAs(User::factory()->admin()->create())->get('/admin')->assertOk()
+            ->assertSee('Members waiting for approval')->assertSee('Tokens up to date')->assertSee('Sunday attendance')->assertSee('Giving by fund');
+
+        $this->actingAs(User::factory()->staff('usher')->create())->get('/admin')->assertOk()
+            ->assertSee('Sunday attendance')->assertSee('First-timers not yet called')
+            ->assertDontSee('Giving by fund')->assertDontSee('Unread prayer requests')->assertDontSee('Members waiting for approval');
+    }
 }

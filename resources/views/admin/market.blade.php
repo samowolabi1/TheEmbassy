@@ -126,6 +126,32 @@
     </div>
 
     <section class="box box--flush">
+        <div class="box__head">
+            <h2>Subscription payments</h2>
+            <a href="{{ route('admin.market.export') }}" class="btn btn--outline btn--xs">Download CSV</a>
+        </div>
+        <div class="table-wrap">
+            <table class="table" style="min-width: 640px">
+                <thead><tr><th>DATE</th><th>SHOP</th><th>PLAN</th><th>COVERS</th><th>COUPON</th><th class="num">PAID</th></tr></thead>
+                <tbody>
+                    @forelse ($payments as $s)
+                        <tr>
+                            <td style="white-space: nowrap; color: var(--slate)">{{ $s->created_at->format('j M Y') }}</td>
+                            <td style="font-weight: 700">{{ $s->shop->name }}</td>
+                            <td>{{ $s->plan->name }}</td>
+                            <td style="white-space: nowrap">{{ $s->starts_at->format('j M') }} – {{ $s->ends_at->format('j M Y') }}</td>
+                            <td>{{ $s->coupon ? $s->coupon->code.' ('.$s->coupon->percent_off.'%)' : '—' }}</td>
+                            <td class="num" style="font-weight: 800; color: var(--navy)">₦{{ number_format($s->amount / 100) }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6"><p class="empty-state">No subscriptions yet.</p></td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="box box--flush">
         <div class="box__head"><h2>Coupons</h2></div>
         @forelse ($coupons as $coupon)
             <div class="list-item">

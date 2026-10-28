@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\User;
+use App\Services\Market\SubscriptionReminders;
+use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Str;
 
 use function Laravel\Prompts\password;
@@ -50,3 +52,11 @@ Artisan::command('admin:revoke {email}', function (string $email) {
     $user->forceFill(['role' => null])->save();
     $this->info("{$email} no longer has staff access.");
 })->purpose('Remove staff access from an account');
+
+Artisan::command('market:remind', function (SubscriptionReminders $reminders) {
+    $sent = $reminders->send();
+    $this->info("Sent {$sent['ending']} renewal reminders and {$sent['lapsed']} lapsed notices.");
+})->purpose('Email sellers whose market subscription is ending or has just ended');
+
+// Run `php artisan schedule:run` every minute from cron (see the README).
+Schedule::command('market:remind')->dailyAt('08:00')->timezone('Africa/Lagos');

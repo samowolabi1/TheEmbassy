@@ -9,11 +9,13 @@ use App\Models\Shop;
 use App\Models\VendorPlan;
 use App\Models\VendorSubscription;
 use App\Services\Market\ShopApprovals;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * The market: shop applications, shops and their subscriptions, plan prices and coupons.
@@ -35,6 +37,7 @@ class MarketController extends Controller
             'applications' => Shop::where('status', Shop::PENDING)->oldest()->get(),
             'shops' => $shops,
             'plans' => VendorPlan::catalogue(),
+            'payments' => VendorSubscription::with('shop', 'plan', 'coupon')->where('status', VendorSubscription::ACTIVE)->latest()->take(10)->get(),
             'coupons' => Coupon::withCount(['subscriptions as uses_count' => fn ($q) => $q->where('status', VendorSubscription::ACTIVE)])->latest()->get(),
             'stats' => [
                 'income' => (clone $paidThisMonth)->sum('amount'),
@@ -43,6 +46,22 @@ class MarketController extends Controller
                 'products' => Product::listed()->count(),
             ],
         ]);
+    }
+
+    /**
+     * Every subscription taken, for the church's accounts.
+     */
+    public function export(): StreamedResponse
+    {
+        return Csv::download('market-subscriptions-'.now()->format('Y-m-d').'.csv',
+            ['date', 'shop', 'plan', 'from', 'to', 'list_price_naira', 'coupon', 'discount_naira', 'paid_naira'],
+            function ($write) {
+                VendorSubscription::with('shop', 'plan', 'coupon')->where('status', VendorSubscription::ACTIVE)->orderBy('created_at')
+                    ->each(fn (VendorSubscription $s) => $write([
+                        $s->created_at->toDateString(), $s->shop->name, $s->plan->name, $s->starts_at->toDateString(), $s->ends_at->toDateString(),
+                        number_format($s->list_price / 100, 2, '.', ''), $s->coupon?->code, number_format($s->discount / 100, 2, '.', ''), number_format($s->amount / 100, 2, '.', ''),
+                    ]));
+            });
     }
 
     public function approve(Shop $shop, ShopApprovals $approvals): RedirectResponse

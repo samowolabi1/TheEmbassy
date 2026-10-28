@@ -39,6 +39,8 @@ class Shop extends Model
     {
         return [
             'approved_at' => 'datetime',
+            'reminded_for' => 'datetime',
+            'lapse_noticed_for' => 'datetime',
         ];
     }
 

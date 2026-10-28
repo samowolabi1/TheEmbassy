@@ -75,6 +75,7 @@ class MemberAccountTest extends TestCase
         Member::factory()->for($user)->create();
 
         $this->post(route('login.store'), ['email' => $user->email, 'password' => 'password'])->assertRedirect(route('account'));
+        $this->get('/')->assertSee('My account');
         $this->post(route('logout'))->assertRedirect(route('home'));
         $this->assertGuest();
     }

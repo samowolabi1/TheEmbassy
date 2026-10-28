@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Mail\NewEnquiry;
 use App\Mail\SubscriptionActivated;
+use App\Mail\SubscriptionEnding;
+use App\Mail\SubscriptionLapsed;
 use App\Mail\VendorApproved;
 use App\Models\Coupon;
 use App\Models\Enquiry;
@@ -445,5 +447,62 @@ class MarketplaceTest extends TestCase
 
         $this->actingAs($user)->post(route('admin.market.coupons.store'), ['code' => 'FREE', 'percent_off' => 100])->assertForbidden();
         $this->assertDatabaseCount('coupons', 0);
+    }
+
+    // ---- Reminders, shop details and reports ----
+
+    public function test_sellers_get_one_reminder_before_their_subscription_ends_and_one_after(): void
+    {
+        [, $shop] = $this->vendor();
+        VendorSubscription::factory()->for($shop)->create(['status' => VendorSubscription::ACTIVE, 'starts_at' => now()->subMonth(), 'ends_at' => now()->addDays(5)]);
+
+        $this->artisan('market:remind')->expectsOutput('Sent 1 renewal reminders and 0 lapsed notices.')->assertSuccessful();
+        $this->artisan('market:remind')->expectsOutput('Sent 0 renewal reminders and 0 lapsed notices.');
+        Mail::assertSent(SubscriptionEnding::class, 1);
+
+        $this->travel(6)->days();
+        $this->artisan('market:remind')->expectsOutput('Sent 0 renewal reminders and 1 lapsed notices.');
+        $this->artisan('market:remind')->expectsOutput('Sent 0 renewal reminders and 0 lapsed notices.');
+        Mail::assertSent(SubscriptionLapsed::class, fn ($mail) => $mail->hasTo($shop->email));
+    }
+
+    public function test_renewing_gets_a_fresh_reminder_for_the_new_end_date(): void
+    {
+        [, $shop] = $this->vendor();
+        $first = VendorSubscription::factory()->for($shop)->create(['status' => VendorSubscription::ACTIVE, 'starts_at' => now()->subMonth(), 'ends_at' => now()->addDays(3)]);
+        $this->artisan('market:remind');
+
+        VendorSubscription::factory()->for($shop)->create(['status' => VendorSubscription::ACTIVE, 'starts_at' => $first->ends_at, 'ends_at' => $first->ends_at->copy()->addMonth()]);
+        $this->travel(28)->days();
+        $this->artisan('market:remind')->expectsOutput('Sent 1 renewal reminders and 0 lapsed notices.');
+        Mail::assertSent(SubscriptionEnding::class, 2);
+    }
+
+    public function test_sellers_edit_their_shop_details(): void
+    {
+        [$user, $shop] = $this->vendor();
+        $slug = $shop->slug;
+
+        $this->actingAs($user)->get(route('vendor.shop.edit'))->assertOk()->assertSee($shop->name);
+        $this->put(route('vendor.shop.update'), [
+            'name' => 'Kemi Kitchen & Events', 'owner_name' => 'Kemi Bello', 'phone' => '0803 999 0000', 'whatsapp' => '0809 999 0000',
+            'category' => 'Food', 'description' => 'Trays, small chops and event catering.',
+        ])->assertRedirect();
+
+        $shop->refresh();
+        $this->assertSame('Kemi Kitchen & Events', $shop->name);
+        $this->assertSame($slug, $shop->slug);
+        $this->assertSame('0809 999 0000', $shop->whatsapp);
+    }
+
+    public function test_admin_downloads_subscription_payments(): void
+    {
+        $shop = Shop::factory()->approved()->create(['name' => 'Ade Prints']);
+        VendorSubscription::factory()->active()->for($shop)->create(['amount' => 1_200_000]);
+
+        $this->actingAs(User::factory()->staff('finance')->create())->get(route('admin.market.index'))->assertSee('Subscription payments')->assertSee('Ade Prints');
+        $csv = $this->get(route('admin.market.export'))->streamedContent();
+        $this->assertStringContainsString('Ade Prints', $csv);
+        $this->assertStringContainsString('12000.00', $csv);
     }
 }

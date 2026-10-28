@@ -576,6 +576,8 @@ a.stat-tile--navy:hover {
 
 /* Tables */
 .table-wrap {
+  /* Keeps screen-reader-only text in table headers inside the scroll area, so it can't widen the page. */
+  position: relative;
   overflow-x: auto;
 }
 .table {
@@ -1128,4 +1130,22 @@ a.stat-tile--navy:hover {
   border-color: var(--navy);
   background: var(--ice, #eef3fb);
   font-weight: 700;
+}
+
+input[type='file'] {
+  max-width: 100%;
+  min-width: 0;
+}
+.admin-main .avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--wash);
+  color: var(--bronze);
+  font-weight: 800;
+  font-size: 13px;
 }

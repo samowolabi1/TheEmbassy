@@ -86,7 +86,7 @@
         </div>
         <form method="POST" action="{{ route('admin.members.import') }}" enctype="multipart/form-data" class="form" style="flex-direction: row; flex-wrap: wrap; align-items: center">
             @csrf
-            <label class="field" style="flex: 1 1 260px"><span class="sr-only">CSV file</span>
+            <label class="field" style="flex: 1 1 260px; min-width: 0"><span class="sr-only">CSV file</span>
                 <input type="file" name="file" accept=".csv,text/csv" required>
                 @error('file') <span class="field-error">{{ $message }}</span> @enderror
             </label>

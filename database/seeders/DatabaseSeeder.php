@@ -5,6 +5,11 @@ namespace Database\Seeders;
 use App\Models\Announcement;
 use App\Models\Declaration;
 use App\Models\Event;
+use App\Models\Fellowship;
+use App\Models\Fund;
+use App\Models\TokenPlan;
+use App\Models\Unit;
+use App\Models\VendorPlan;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -16,7 +21,7 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the starting content from the design. Safe to run more than once.
      *
-     * Admin accounts are not seeded: create them with `php artisan admin:create`.
+     * Staff accounts are not seeded: create the first administrator with `php artisan admin:create`.
      */
     public function run(): void
     {
@@ -31,6 +36,17 @@ class DatabaseSeeder extends Seeder
         );
 
         $this->seedEvents();
+
+        // Units and house fellowships from the design; the church renames or adds to them in admin.
+        foreach (['Choir', 'Media & tech', 'Ushering', 'Drama', 'Prayer', 'Fellowship'] as $unit) {
+            Unit::firstOrCreate(['name' => $unit]);
+        }
+        foreach (['House 1', 'House 4', 'Campus'] as $fellowship) {
+            Fellowship::firstOrCreate(['name' => $fellowship]);
+        }
+        Fund::ensureDefaults();
+        TokenPlan::ensureDefaults();
+        VendorPlan::catalogue();
 
         if (Announcement::exists()) {
             return;

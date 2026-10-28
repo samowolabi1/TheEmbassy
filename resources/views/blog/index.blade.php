@@ -58,7 +58,7 @@
                 <span class="pitch__title">Want to write for the blog?</span>
                 <span class="pitch__text">We feature stories and lessons from members. Pitch your idea to the media unit.</span>
             </div>
-            <a href="#" class="btn btn--navy">Pitch a story</a>
+            <a href="{{ route('contact') }}" class="btn btn--navy">Pitch a story</a>
         </div>
     </section>
 @endsection

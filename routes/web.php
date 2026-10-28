@@ -60,6 +60,8 @@ Route::prefix('vendor')->name('vendor.')->group(function () {
         Route::get('/enquiries', [Vendor\EnquiryController::class, 'index'])->name('enquiries.index');
         Route::patch('/enquiries/{enquiry}', [Vendor\EnquiryController::class, 'markRead'])->name('enquiries.read');
         Route::get('/subscription', [Vendor\SubscriptionController::class, 'index'])->name('subscription.index');
+        Route::get('/shop', [Vendor\ShopController::class, 'edit'])->name('shop.edit');
+        Route::put('/shop', [Vendor\ShopController::class, 'update'])->name('shop.update');
         Route::post('/subscription', [Vendor\SubscriptionController::class, 'store'])->middleware('throttle:10,1')->name('subscription.store');
         Route::resource('products', Vendor\ProductController::class)->only(['index', 'create', 'store', 'edit', 'update']);
     });
@@ -222,6 +224,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::middleware('can:manage,"market"')->group(function () {
             Route::get('/market', [Admin\MarketController::class, 'index'])->name('market.index');
+            Route::get('/market/subscriptions.csv', [Admin\MarketController::class, 'export'])->name('market.export');
             Route::post('/market/plans', [Admin\MarketController::class, 'plans'])->name('market.plans');
             Route::post('/market/coupons', [Admin\MarketController::class, 'storeCoupon'])->name('market.coupons.store');
             Route::post('/market/coupons/{coupon}/toggle', [Admin\MarketController::class, 'toggleCoupon'])->name('market.coupons.toggle');
