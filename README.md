@@ -9,7 +9,8 @@ The public website, built with [Laravel](https://laravel.com) 13 from the "RCCG 
 | `/` | Home: highlights carousel, declaration, announcements, messages, blog, events, Tribe Market, prayer request, give, app |
 | `/about` | Story, mission, pastors, beliefs, units, plan your visit and FAQs |
 | `/watch` | Live stream player, series and a filterable message library |
-| `/blog` | Featured article and articles filterable by topic (`/blog?topic=Faith` preselects a topic) |
+| `/blog` | Featured article, then articles by topic and search (`/blog?topic=Faith`, `/blog?q=money`), nine to a page; `/blog/{slug}` for each article and `/blog/feed` for RSS |
+| `/gallery` | Photo and video albums by year; `/gallery/{album}` opens a full-screen viewer with swipe, download and a shareable link to each photo |
 | `/events` | Featured event with countdown, monthly calendar, regular gatherings; `/events/{slug}` for RSVPs and tickets |
 | `/give` | Online giving to the church's funds, bank transfer details, appeal progress |
 | `/market` | The member marketplace for products and services; `/market/open-a-shop` to apply |
@@ -18,6 +19,7 @@ The public website, built with [Laravel](https://laravel.com) 13 from the "RCCG 
 | `/welcome` | First-timer card for visitors; print it as a QR code at the door |
 | `/check-in` | Members check in to a service, at church (location and screen code) or online (stream code) |
 | `/contact`, `/privacy`, `/terms` | Contact form and legal pages |
+| `/sitemap.xml` | Every public page, article, album and upcoming event, for search engines |
 | `/vendor` | Sellers manage listings, enquiries, subscription and shop details (sign in at `/vendor/login`) |
 
 ## Accounts and roles
@@ -33,8 +35,8 @@ There are three kinds of account, all in the `users` table:
 | Administrator | Everything, including Settings & roles |
 | Pastor | Everything except Settings & roles, including welfare cases and approvals above the HOD's limit |
 | Finance | Giving & tokens, expenses & budgets, the market |
-| Church office | Members, attendance & first-timers, follow-up & care, units, subscribers, the market, content, notices, events, prayer, messages |
-| Media | Content, notices, sermons & live, events |
+| Church office | Members, attendance & first-timers, follow-up & care, units, subscribers, the market, content (announcements, blog, pages), gallery, notices, events, prayer, messages |
+| Media | Content (announcements, blog, pages), gallery, notices, sermons & live, events |
 | Ushering | Attendance & first-timers, events (door check-in) |
 
 Create the first administrator from the command line; they add everyone else in **Settings & roles**, which emails each new person a link to set their password:
@@ -61,8 +63,11 @@ Staff sign in at `/admin`. Every area in the design's sidebar is built:
 - **Expenses & budgets**: spending logged with a receipt, approved by someone other than the person who logged it, against monthly budgets per category; CSV export.
 - **Tribe Market**: shop applications, shops and subscription status, plan prices, coupons, and subscription payments with CSV export.
 - **Content & announcements**, **Notice board**, **Events & tickets**, **Prayer requests**, **Contact messages**.
+- **Blog**: write articles in Markdown with a formatting toolbar (headings, bold, links, lists, scripture cards, the "reflect" box) and pictures uploaded straight into the text; a cover photo with a description for screen readers; draft, publish now or schedule for later; preview before publishing; feature one article at the top of the blog. Changing an article's address keeps the old one working (it redirects). Raw HTML and unsafe links are removed when an article is saved.
+- **Pages**: the About page (headline, story and photo, mission, vision, values, leaders with photos, beliefs, first-timer questions) and the home page testimony. Units on the About page come from the units' "What they do" lines.
+- **Gallery**: albums with a date, description and optional event; drop in up to 40 photos at a time with an upload progress bar, add YouTube videos, write captions, set the order and the cover, then publish. Photos are turned upright, resized (2000 px, plus a 640 px thumbnail), saved as WebP, and stripped of location and camera data.
 - **Sermons & live**: the message library and series on the home and Watch pages, and the YouTube stream in the Watch page player.
-- **Settings & roles**: staff and their roles, and the church's details (address, service times, bank details, leaders, live stream, social links). Saved values replace the placeholders across the site.
+- **Settings & roles**: staff and their roles, and the church's details (address, service times, bank details, live stream, social links). Saved values replace the placeholders across the site.
 
 ## Attendance and follow-up
 
@@ -183,7 +188,9 @@ The web server's document root is `public/`, and `storage/` and `bootstrap/cache
 **5. Paystack.** In the Paystack dashboard: create the church's subaccount and put its code in `PAYSTACK_SUBACCOUNT`; copy the live secret and public keys into `PAYSTACK_SECRET_KEY` and `PAYSTACK_PUBLIC_KEY`; set the webhook URL to `https://<site>/webhooks/paystack`. Until the keys are set, the site shows bank transfer details instead of taking payments.
 
 **6. In admin.** Sign in at `/admin`, then:
-- **Settings & roles**: fill in the address, service times, bank details, leaders' names, social links and church email, and add the other staff.
+- **Settings & roles**: fill in the address, service times, bank details, social links and church email, and add the other staff.
+- **Pages**: write the church's story, add the leaders' names and photos, and check the beliefs and first-timer questions.
+- **Blog**: replace the starter articles (their author and body are `[placeholders]`) or delete them.
 - **Tribe Market**: price the subscription periods and switch them on.
 - **Giving & tokens**: check the funds and token plan amounts.
 - **Sermons & live**: add the first messages and the current series.
@@ -191,7 +198,11 @@ The web server's document root is `public/`, and `storage/` and `bootstrap/cache
 
 **7. YouTube (optional).** In Google Cloud: create a project, enable the YouTube Data API v3, set up the OAuth consent screen (External), and create an OAuth client of type "Web application" with `https://<site>/youtube/callback` as an authorised redirect URI. Put the client ID and secret in Settings & roles › YouTube broadcasts (or `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`), then the media HOD connects the channel from Service setup & streaming. While the consent screen is in "Testing", Google ends the sign-in after 7 days and the page will ask to connect again; publish the app (Google reviews the YouTube permission, which can take a few weeks) for a lasting connection. Live streaming must be turned on for the channel in YouTube Studio.
 
-**8. Backups.** Back up the database daily and `storage/app` (uploaded photos and receipts).
+**8. Uploads.** Gallery uploads send several photos at once, so raise PHP's limits to match: `upload_max_filesize = 16M`, `post_max_size = 200M`, `max_file_uploads = 40`, and `memory_limit = 256M` for resizing large photos (plus `client_max_body_size 200m;` on nginx). The upload page tells staff to send fewer photos if a limit is hit.
+
+**9. Search engines.** Submit `https://<site>/sitemap.xml` in Google Search Console.
+
+**10. Backups.** Back up the database daily and `storage/app` (uploaded photos and receipts).
 
 ### Deploying for another church
 
@@ -217,11 +228,11 @@ php artisan test
 
 ## Editing content
 
-Most content is edited in admin: announcements, the declaration, events, sermons and series, the live stream, funds, and the church's details in Settings & roles. A few things still live in config files:
+Most content is edited in admin: announcements, the declaration, blog articles, the About page and home testimony, the gallery, events, sermons and series, the live stream, funds, and the church's details in Settings & roles. A few things still live in config files:
 
 - `config/church.php`: name and branding (from `.env`), navigation, the gold banner, and defaults for what Settings & roles can change
-- `config/content/posts.php`: blog articles
-- `config/content/about.php`: values, beliefs, units text and FAQs
+- `config/content/posts.php`: blog topics, and the starter articles copied into the database the first time migrations run
+- `config/content/about.php`, `config/content/home.php`: the About page and testimony text used until someone saves the page in admin
 - `config/content/sermons.php`: example messages, shown until the church adds its own
 - `config/finance.php`, `config/market.php`, `config/notices.php`, `config/roles.php`: funds and token plans to start with, expense categories, market periods and coupons, notice prices, staff roles
 
@@ -231,11 +242,11 @@ Anything still in `[brackets]` is a placeholder waiting for real details; most d
 
 - `routes/web.php`: all routes; `routes/console.php`: `admin:create`, `admin:revoke`, `care:scan`, `units:remind`, `social:publish`, `youtube:sync`, `market:remind` and the schedule
 - `app/Http/Controllers/`: public pages and forms, `Account/` (members), `Vendor/` (sellers), `Admin/` (dashboard)
-- `app/Models/`: people (`User`, `Member`, `Unit`, `Fellowship`, `FirstTimer`, `Service`), money (`Payment`, `Fund`, `Gift`, `TokenPlan`, `TokenPayment`, `Expense`, `Budget`), events and notices (`Event`, `TicketType`, `TicketOrder`, `Ticket`, `Notice`), the market (`Shop`, `Product`, `Enquiry`, `VendorPlan`, `VendorSubscription`, `Coupon`), content (`Announcement`, `Declaration`, `Sermon`, `SermonSeries`, `PrayerRequest`, `NewsletterSubscriber`, `ContactMessage`, `Setting`)
-- `app/Services/`: Paystack and payment settlement, shop approval and seller reminders, the sermon library
+- `app/Models/`: people (`User`, `Member`, `Unit`, `Fellowship`, `FirstTimer`, `Service`), money (`Payment`, `Fund`, `Gift`, `TokenPlan`, `TokenPayment`, `Expense`, `Budget`), events and notices (`Event`, `TicketType`, `TicketOrder`, `Ticket`, `Notice`), the market (`Shop`, `Product`, `Enquiry`, `VendorPlan`, `VendorSubscription`, `Coupon`), content (`Announcement`, `Declaration`, `Post`, `PageContent`, `GalleryAlbum`, `GalleryItem`, `Sermon`, `SermonSeries`, `PrayerRequest`, `NewsletterSubscriber`, `ContactMessage`, `Setting`)
+- `app/Services/`: Paystack and payment settlement, shop approval and seller reminders, the sermon library, `Content/Markdown` (safe article rendering) and `Content/Images` (photo resizing)
 - `resources/views/`: `layouts/` (site, admin, seller), `partials/`, `components/`, `pages/`, `account/`, `blog/`, `market/`, `vendor/`, `admin/`, `mail/`
 - `resources/css/`: `base.css` holds the design tokens; `partials/` and `pages/` hold the rest; `admin.css` is the dashboard's own stylesheet
-- `resources/js/`: mobile menu, carousel, filters, share/copy buttons, countdown, give form
+- `resources/js/`: mobile menu, carousel, filters, share/copy buttons, countdown, give form, gallery viewer; in admin, the article editor and gallery uploads
 
 ## Forms
 

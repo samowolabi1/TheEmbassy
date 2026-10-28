@@ -93,6 +93,7 @@
   color: var(--ink);
   padding: 10px 13px;
   border-radius: 999px;
+  white-space: nowrap;
 }
 .nav-desktop a:hover {
   background: var(--ivory);
@@ -168,6 +169,14 @@
   font-size: 15px;
 }
 
+@media (max-width: 1180px) {
+  .nav-desktop {
+    font-size: 14px;
+  }
+  .nav-desktop a {
+    padding: 10px 9px;
+  }
+}
 @media (max-width: 1000px) {
   .nav-desktop {
     display: none;

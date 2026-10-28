@@ -8,3 +8,4 @@ import './give';
 import './check-in';
 import './notices';
 import './booking';
+import './gallery';

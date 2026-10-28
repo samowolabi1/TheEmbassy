@@ -9,32 +9,44 @@
         <x-crown :width="560" :height="470" jewels class="crown-bg" style="right: -120px; bottom: -150px; opacity: 0.08" />
         <div class="container page-hero__inner">
             <span class="eyebrow">ABOUT US</span>
-            <h1 class="display page-hero__title">A royal tribe, raising a generation for Christ.</h1>
-            <p class="page-hero__text">{{ config('church.short_name') }} is a youth parish of The Redeemed Christian Church of God, built for students, creatives and young professionals.</p>
+            <h1 class="display page-hero__title">{{ $about['hero_title'] }}</h1>
+            @if ($about['hero_text'])
+                <p class="page-hero__text">{{ strtr($about['hero_text'], [':church' => config('church.short_name')]) }}</p>
+            @endif
         </div>
     </section>
 
     <section class="container section grid-auto story" style="--min: 440px; --gap: 48px">
         <div class="stack" style="gap: 18px">
             <span class="eyebrow">OUR STORY</span>
-            <h2 class="h2">Church that feels like family.</h2>
-            <p class="body-copy">[Your story: when the parish started, who started it and why. Two or three short paragraphs work best.]</p>
-            <p class="body-copy">Today we gather every Sunday to worship, learn the Word and build friendships that last beyond the service. Whether you are in school, starting a career or building a business, there is a place for you here.</p>
+            <h2 class="h2">{{ $about['story_heading'] }}</h2>
+            @foreach (preg_split('/\R\s*\R/', trim((string) $about['story'])) as $paragraph)
+                @if (trim($paragraph) !== '')
+                    <p class="body-copy">{!! nl2br(e(trim($paragraph))) !!}</p>
+                @endif
+            @endforeach
         </div>
-        <div role="img" aria-label="Photo placeholder: congregation" class="placeholder bg-ice story__photo">
-            <span class="placeholder__note">[Photo: the Tribe together]</span>
-            <div class="story__badge"><x-crown :width="36" :height="30" fill="var(--midnight)" /></div>
-        </div>
+        @if ($about['story_photo'])
+            <div class="placeholder story__photo story__photo--real">
+                <img src="{{ \App\Models\PageContent::photoUrl($about['story_photo']) }}" alt="{{ $about['story_photo_alt'] ?? '' }}" loading="lazy" decoding="async">
+                <div class="story__badge"><x-crown :width="36" :height="30" fill="var(--midnight)" /></div>
+            </div>
+        @else
+            <div role="img" aria-label="Photo placeholder: congregation" class="placeholder bg-ice story__photo">
+                <span class="placeholder__note">[Photo: the Tribe together]</span>
+                <div class="story__badge"><x-crown :width="36" :height="30" fill="var(--midnight)" /></div>
+            </div>
+        @endif
     </section>
 
     <section class="container section grid-auto" style="--min: 340px">
         <div class="pillar bg-navy">
             <span class="eyebrow eyebrow--gold">OUR MISSION</span>
-            <span class="pillar__text">To help young people know Christ, grow in Him and live out their royal calling.</span>
+            <span class="pillar__text">{{ $about['mission'] }}</span>
         </div>
         <div class="pillar bg-gold">
             <span class="eyebrow eyebrow--ink">OUR VISION</span>
-            <span class="pillar__text">A generation of believers who lead with excellence in every sphere of life.</span>
+            <span class="pillar__text">{{ $about['vision'] }}</span>
         </div>
         <div class="pillar card">
             <span class="eyebrow">OUR VALUES</span>
@@ -54,9 +66,15 @@
         <div class="grid-auto" style="--min: 260px">
             @foreach ($about['leaders'] as $leader)
                 <div class="stack" style="gap: 14px">
-                    <div role="img" aria-label="Photo placeholder: {{ $leader['role'] }}" class="leader__photo bg-{{ $leader['swatch'] }}">
-                        <span class="leader__note">[Photo]</span>
-                    </div>
+                    @if (! empty($leader['photo']))
+                        <div class="leader__photo leader__photo--real bg-{{ $leader['swatch'] ?? 'navy' }}">
+                            <img src="{{ \App\Models\PageContent::photoUrl($leader['photo']) }}" alt="{{ $leader['name'] }}" loading="lazy" decoding="async">
+                        </div>
+                    @else
+                        <div role="img" aria-label="Photo placeholder: {{ $leader['role'] }}" class="leader__photo bg-{{ $leader['swatch'] ?? 'navy' }}">
+                            <span class="leader__note">[Photo]</span>
+                        </div>
+                    @endif
                     <span class="stack" style="gap: 2px">
                         <span class="leader__name">{{ $leader['name'] }}</span>
                         <span class="leader__role">{{ $leader['role'] }}</span>

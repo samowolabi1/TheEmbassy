@@ -1,16 +1,26 @@
 <?php
 
-// Content for the About page.
+// Starting content for the About page. Staff edit all of it in admin (Pages), which saves over these defaults.
 
 return [
+
+    'hero_title' => 'A royal tribe, raising a generation for Christ.',
+    'hero_text' => ':church is a youth parish of The Redeemed Christian Church of God, built for students, creatives and young professionals.',
+
+    'story_heading' => 'Church that feels like family.',
+    'story' => "[Your story: when the parish started, who started it and why. Two or three short paragraphs work best.]\n\nToday we gather every Sunday to worship, learn the Word and build friendships that last beyond the service. Whether you are in school, starting a career or building a business, there is a place for you here.",
+    'story_photo' => null,
+
+    'mission' => 'To help young people know Christ, grow in Him and live out their royal calling.',
+    'vision' => 'A generation of believers who lead with excellence in every sphere of life.',
 
     'values' => ['Worship', 'The Word', 'Family', 'Purpose', 'Service'],
 
     'leaders' => [
-        ['name' => "[Pastor's name]", 'role' => 'Pastor in Charge', 'swatch' => 'navy'],
-        ['name' => '[Name]', 'role' => 'Assistant Pastor', 'swatch' => 'gold'],
-        ['name' => '[Name]', 'role' => 'Youth Pastor', 'swatch' => 'ice'],
-        ['name' => '[Name]', 'role' => 'Coordinator, Units', 'swatch' => 'mid'],
+        ['name' => "[Pastor's name]", 'role' => 'Pastor in Charge', 'swatch' => 'navy', 'photo' => null],
+        ['name' => '[Name]', 'role' => 'Assistant Pastor', 'swatch' => 'gold', 'photo' => null],
+        ['name' => '[Name]', 'role' => 'Youth Pastor', 'swatch' => 'ice', 'photo' => null],
+        ['name' => '[Name]', 'role' => 'Coordinator, Units', 'swatch' => 'mid', 'photo' => null],
     ],
 
     'beliefs' => [
@@ -22,6 +32,7 @@ return [
         'The return of Jesus Christ.',
     ],
 
+    // Shown until units in admin have descriptions.
     'units' => [
         ['name' => 'Choir', 'text' => 'Lead the Tribe in worship every Sunday and at special services.'],
         ['name' => 'Media & tech', 'text' => 'Livestream, sound, lights, photography and social media.'],

@@ -1,6 +1,6 @@
 <?php
 
-// Content for the home page: the testimony.
+// Starting content for the home page testimony; staff edit it in admin (Pages).
 // Announcements, the declaration, events, notices and market products come from the admin dashboard.
 
 return [

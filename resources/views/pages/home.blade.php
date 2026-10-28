@@ -337,9 +337,13 @@
         </div>
         <figure class="panel bg-navy testimony">
             <x-crown :width="52" :height="44" />
-            <blockquote class="testimony__quote">"{{ $testimony['quote'] }}"</blockquote>
+            <blockquote class="testimony__quote">"{{ trim($testimony['quote'], '"“” ') }}"</blockquote>
             <figcaption class="testimony__who">
-                <span class="avatar testimony__avatar">{{ $testimony['initials'] }}</span>
+                @if (! empty($testimony['photo']))
+                    <img src="{{ \App\Models\PageContent::photoUrl($testimony['photo']) }}" alt="" class="avatar testimony__avatar" style="object-fit: cover" width="48" height="48" loading="lazy">
+                @else
+                    <span class="avatar testimony__avatar">{{ $testimony['initials'] }}</span>
+                @endif
                 <span class="stack">
                     <span class="testimony__name">{{ $testimony['name'] }}</span>
                     <span class="testimony__role">{{ $testimony['role'] }}</span>

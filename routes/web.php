@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\GiveController;
 use App\Http\Controllers\MarketController;
 use App\Http\Controllers\NewsletterSubscriptionController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrayerRequestController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TicketOrderController;
 use App\Http\Controllers\Unit;
 use App\Http\Controllers\Vendor;
@@ -34,7 +36,11 @@ Route::post('/give', [GiveController::class, 'store'])->middleware('throttle:10,
 Route::get('/give/thanks/{gift}', [GiveController::class, 'thanks'])->middleware('signed')->name('give.thanks');
 
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
-Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
+Route::get('/blog/feed', [BlogController::class, 'feed'])->name('blog.feed');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->where('slug', '[a-z0-9-]+')->name('blog.show');
+Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
+Route::get('/gallery/{album}', [GalleryController::class, 'show'])->name('gallery.show');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 // Member marketplace.
 Route::get('/market', [MarketController::class, 'index'])->name('market.index');
@@ -291,6 +297,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/content', Admin\ContentController::class)->name('content');
             Route::resource('announcements', Admin\AnnouncementController::class)->only(['store', 'edit', 'update', 'destroy']);
             Route::post('/declarations', [Admin\DeclarationController::class, 'store'])->name('declarations.store');
+            Route::post('/posts/images', [Admin\PostController::class, 'upload'])->name('posts.upload');
+            Route::get('/posts/{post}/preview', [Admin\PostController::class, 'preview'])->name('posts.preview');
+            Route::resource('posts', Admin\PostController::class)->except('show');
+            Route::get('/pages/{page}', [Admin\PageContentController::class, 'edit'])->whereIn('page', ['about', 'home'])->name('pages.edit');
+            Route::put('/pages/{page}', [Admin\PageContentController::class, 'update'])->whereIn('page', ['about', 'home'])->name('pages.update');
+        });
+
+        Route::middleware('can:manage,"gallery"')->prefix('gallery')->name('gallery.')->group(function () {
+            Route::get('/', [Admin\GalleryController::class, 'index'])->name('index');
+            Route::post('/', [Admin\GalleryController::class, 'store'])->name('store');
+            Route::get('/{album}', [Admin\GalleryController::class, 'edit'])->name('edit');
+            Route::put('/{album}', [Admin\GalleryController::class, 'update'])->name('update');
+            Route::delete('/{album}', [Admin\GalleryController::class, 'destroy'])->name('destroy');
+            Route::post('/{album}/photos', [Admin\GalleryController::class, 'upload'])->name('upload');
+            Route::post('/{album}/videos', [Admin\GalleryController::class, 'video'])->name('video');
+            Route::put('/{album}/items', [Admin\GalleryController::class, 'items'])->name('items');
+            Route::delete('/{album}/items/{item}', [Admin\GalleryController::class, 'destroyItem'])->name('items.destroy');
         });
 
         Route::middleware('can:manage,"notices"')->group(function () {

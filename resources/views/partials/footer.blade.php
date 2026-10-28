@@ -58,6 +58,7 @@
                 <a href="{{ route('watch') }}">Sermons</a>
                 <a href="{{ route('blog.index') }}">Blog</a>
                 <a href="{{ route('events') }}">Events</a>
+                <a href="{{ route('gallery.index') }}">Gallery</a>
                 <a href="{{ route('notices.index') }}">Notice board</a>
                 <a href="{{ route('market.index') }}">{{ config('church.brand.market_name') }}</a>
             </div>

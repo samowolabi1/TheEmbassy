@@ -32,6 +32,9 @@
         ],
         'CONTENT' => [
             ['id' => 'content', 'area' => 'content', 'label' => 'Content & announcements', 'route' => 'admin.content'],
+            ['id' => 'blog', 'area' => 'content', 'label' => 'Blog', 'route' => 'admin.posts.index'],
+            ['id' => 'pages', 'area' => 'content', 'label' => 'Pages (About, home)', 'route' => 'admin.pages.edit', 'params' => ['about']],
+            ['id' => 'gallery', 'area' => 'gallery', 'label' => 'Gallery', 'route' => 'admin.gallery.index'],
             ['id' => 'notices', 'area' => 'notices', 'label' => 'Notice board', 'route' => 'admin.notices.index',
                 'badge' => $count('notices', fn () => \App\Models\Notice::where('status', \App\Models\Notice::IN_REVIEW)->count())],
             ['id' => 'live', 'area' => 'sermons', 'label' => 'Sermons & live', 'route' => 'admin.sermons.index'],
@@ -78,7 +81,7 @@
                     <span class="side__label">{{ $group }}</span>
                     @foreach ($items as $item)
                         @if (\Illuminate\Support\Facades\Route::has($item['route']))
-                            <a href="{{ route($item['route']) }}" class="side__link" @if ($item['id'] === $active) aria-current="page" @endif>
+                            <a href="{{ route($item['route'], $item['params'] ?? []) }}" class="side__link" @if ($item['id'] === $active) aria-current="page" @endif>
                                 {{ $item['label'] }}
                                 @if ($item['badge'] ?? null)
                                     <span class="side__badge"><span class="sr-only">to do: </span>{{ $item['badge'] }}</span>

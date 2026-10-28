@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Announcement;
 use App\Models\Declaration;
+use App\Models\Post;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -38,6 +39,7 @@ class PagesTest extends TestCase
 
     public function test_every_blog_article_has_a_page(): void
     {
+        $this->assertSame(count(config('content.posts.posts')), Post::count());
         foreach (config('content.posts.posts') as $post) {
             $this->get(route('blog.show', $post['slug']))
                 ->assertOk()

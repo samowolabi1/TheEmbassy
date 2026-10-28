@@ -259,3 +259,16 @@
     padding: 26px;
   }
 }
+
+/* Photos uploaded in admin */
+.story__photo--real img,
+.leader__photo--real img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.leader__photo--real {
+  overflow: hidden;
+}

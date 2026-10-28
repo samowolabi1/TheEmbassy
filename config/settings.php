@@ -22,18 +22,6 @@ return [
         ],
     ],
 
-    'leaders' => [
-        'title' => 'Leaders (About page)',
-        'fields' => [
-            'content.about.leaders.0.name' => ['label' => 'Pastor in Charge', 'type' => 'text'],
-            'content.about.leaders.1.name' => ['label' => 'Assistant Pastor', 'type' => 'text'],
-            'content.about.leaders.2.name' => ['label' => 'Youth Pastor', 'type' => 'text'],
-            'content.about.leaders.3.name' => ['label' => 'Coordinator, Units', 'type' => 'text'],
-            'content.home.testimony.name' => ['label' => 'Home page testimony: member name', 'type' => 'text'],
-            'content.home.testimony.quote' => ['label' => 'Home page testimony: words', 'type' => 'textarea'],
-        ],
-    ],
-
     'bank' => [
         'title' => 'Bank transfer details (Give page)',
         'fields' => [

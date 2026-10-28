@@ -15,7 +15,8 @@ return [
         'finance' => 'Giving & tokens',
         'expenses' => 'Expenses & budgets',
         'market' => 'Market',
-        'content' => 'Content & announcements',
+        'content' => 'Content: announcements, blog and pages',
+        'gallery' => 'Photo gallery',
         'notices' => 'Notice board',
         'sermons' => 'Sermons & live',
         'events' => 'Events & tickets',
@@ -26,10 +27,10 @@ return [
 
     'roles' => [
         'admin' => ['name' => 'Administrator', 'areas' => ['*']],
-        'pastor' => ['name' => 'Pastor', 'areas' => ['members', 'attendance', 'care', 'welfare', 'units', 'subscribers', 'finance', 'expenses', 'market', 'content', 'notices', 'sermons', 'events', 'prayer', 'messages']],
+        'pastor' => ['name' => 'Pastor', 'areas' => ['members', 'attendance', 'care', 'welfare', 'units', 'subscribers', 'finance', 'expenses', 'market', 'content', 'gallery', 'notices', 'sermons', 'events', 'prayer', 'messages']],
         'finance' => ['name' => 'Finance', 'areas' => ['finance', 'expenses', 'market']],
-        'secretary' => ['name' => 'Church office', 'areas' => ['members', 'attendance', 'care', 'units', 'subscribers', 'market', 'content', 'notices', 'events', 'prayer', 'messages']],
-        'media' => ['name' => 'Media', 'areas' => ['content', 'notices', 'sermons', 'events']],
+        'secretary' => ['name' => 'Church office', 'areas' => ['members', 'attendance', 'care', 'units', 'subscribers', 'market', 'content', 'gallery', 'notices', 'events', 'prayer', 'messages']],
+        'media' => ['name' => 'Media', 'areas' => ['content', 'gallery', 'notices', 'sermons', 'events']],
         'usher' => ['name' => 'Ushering', 'areas' => ['attendance', 'events']],
     ],
 

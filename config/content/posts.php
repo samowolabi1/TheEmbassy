@@ -1,7 +1,7 @@
 <?php
 
-// Blog articles. Each one gets a page at /blog/{slug}.
-// Only the featured article has body copy in the design; the others show a placeholder until written.
+// Blog topics, and the design's starter articles. The articles are copied into the database the first time
+// migrations run (see App\Services\Content\LegacyContent); after that, write and edit them in admin under Blog.
 // Body blocks: ['p', text], ['h2', text], ['quote', text, cite], ['reflect', title, [items]].
 
 $author = [

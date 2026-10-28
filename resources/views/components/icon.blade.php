@@ -25,6 +25,8 @@
         'bank' => ['body' => '<path d="M3 10l9-6 9 6"/><path d="M5 10v8M9 10v8M15 10v8M19 10v8M3 20h18"/>'],
         'phone' => ['body' => '<rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/>'],
         'link' => ['body' => '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'],
+        'download' => ['body' => '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>'],
+        'image' => ['body' => '<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 17l-5-5-9 8"/>'],
         'plus' => ['body' => '<path d="M12 5v14M5 12h14"/>'],
         'minus' => ['body' => '<path d="M5 12h14"/>'],
         'sign-out' => ['body' => '<path d="M15 4h4v16h-4"/><path d="M10 8l-4 4 4 4M6 12h10"/>'],
