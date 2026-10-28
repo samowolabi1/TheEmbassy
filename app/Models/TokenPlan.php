@@ -36,6 +36,18 @@ class TokenPlan extends Model
         return $this->hasMany(Member::class);
     }
 
+    /**
+     * Create the plans in config/finance.php the first time.
+     */
+    public static function ensureDefaults(): void
+    {
+        if (static::query()->doesntExist()) {
+            foreach (config('finance.token_plans') as $plan) {
+                static::create($plan);
+            }
+        }
+    }
+
     public static function default(): ?self
     {
         return static::firstWhere('is_default', true);

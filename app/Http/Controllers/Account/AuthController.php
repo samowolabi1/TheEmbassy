@@ -104,7 +104,10 @@ class AuthController extends Controller
                 $user = User::create(['name' => $data['name'], 'email' => Str::lower($data['email']), 'password' => $data['password']]);
             }
 
-            $member = new Member(collect($data)->only(['name', 'phone', 'gender', 'birthday', 'address', 'unit_id', 'fellowship_id'])->all());
+            // Someone the office already added to the register is linked, not added twice.
+            $details = collect($data)->only(['name', 'phone', 'gender', 'birthday', 'address', 'unit_id', 'fellowship_id'])->filter(fn ($v) => filled($v))->all();
+            $member = Member::whereNull('user_id')->where('email', $user->email)->first();
+            $member ? $member->fill(array_diff_key($details, array_filter($member->only(array_keys($details))))) : $member = new Member($details);
             $member->email = $user->email;
             $member->user()->associate($user)->save();
         });

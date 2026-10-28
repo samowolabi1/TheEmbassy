@@ -46,6 +46,18 @@ class Fund extends Model
     }
 
     /**
+     * Create the funds in config/finance.php the first time, so the church starts with the usual ones.
+     */
+    public static function ensureDefaults(): void
+    {
+        if (static::query()->doesntExist()) {
+            foreach (config('finance.funds') as $i => $fund) {
+                static::create([...$fund, 'sort' => $i]);
+            }
+        }
+    }
+
+    /**
      * Everything received into this fund, in kobo.
      */
     public function raised(): int

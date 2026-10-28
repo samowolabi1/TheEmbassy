@@ -49,21 +49,4 @@ class PageController extends Controller
     {
         return view('pages.watch', ['sermons' => config('content.sermons')]);
     }
-
-    /**
-     * The Give page.
-     */
-    public function give(): View
-    {
-        return view('pages.give', [
-            'presets' => [5000, 10000, 20000, 50000],
-            'defaultAmount' => 10000,
-            'funds' => [
-                'tithe' => 'Tithe',
-                'offering' => 'Offering',
-                'building' => 'Building fund',
-                'missions' => 'Missions & welfare',
-            ],
-        ]);
-    }
 }

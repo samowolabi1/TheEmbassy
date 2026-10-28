@@ -22,18 +22,14 @@
                 </div>
             </div>
 
-            <form class="give-form" data-give-form data-paystack-key="{{ config('services.paystack.public_key') }}" novalidate>
-                <fieldset class="segmented">
-                    <legend class="sr-only">How often</legend>
-                    <label><input type="radio" name="frequency" value="once" checked><span>One time</span></label>
-                    <label><input type="radio" name="frequency" value="monthly"><span>Monthly</span></label>
-                </fieldset>
+            <form method="POST" action="{{ route('give.store') }}#amount" class="give-form" data-give-form @if ($paymentsEnabled) data-payments-on @endif novalidate>
+                @csrf
 
                 <div class="stack" style="gap: 10px">
                     <label class="give-label" for="amount">AMOUNT</label>
                     <div class="amount">
                         <span class="amount__currency" aria-hidden="true">₦</span>
-                        <input id="amount" name="amount" type="text" inputmode="numeric" autocomplete="off" value="{{ $naira($defaultAmount) }}" aria-describedby="amount-help" data-amount>
+                        <input id="amount" name="amount" type="text" inputmode="numeric" autocomplete="off" value="{{ old('amount', $naira($defaultAmount)) }}" aria-describedby="amount-help" data-amount>
                     </div>
                     <span id="amount-help" class="sr-only">Amount in naira</span>
                     <div class="presets" role="group" aria-label="Quick amounts">
@@ -46,18 +42,22 @@
                 <fieldset class="stack funds-wrap">
                     <legend class="give-label">GIVE TOWARDS</legend>
                     <div class="funds">
-                        @foreach ($funds as $id => $name)
-                            <label class="fund"><input type="radio" name="fund" value="{{ $id }}" @checked($loop->first)><span>{{ $name }}</span></label>
+                        @foreach ($funds as $fund)
+                            <label class="fund"><input type="radio" name="fund" value="{{ $fund->id }}" @checked((int) old('fund', $funds->first()->id) === $fund->id) @if ($appeal?->is($fund)) data-appeal-fund @endif><span>{{ $fund->name }}</span></label>
                         @endforeach
                     </div>
                 </fieldset>
 
                 <label class="field give-email">EMAIL FOR YOUR RECEIPT
-                    <input type="email" name="email" required placeholder="you@example.com" autocomplete="email">
+                    <input type="email" name="email" value="{{ old('email', auth()->user()?->email) }}" required placeholder="you@example.com" autocomplete="email">
+                </label>
+                <label class="field give-email">YOUR NAME (OPTIONAL)
+                    <input type="text" name="name" value="{{ old('name', $member?->name) }}" maxlength="100" autocomplete="name">
                 </label>
 
-                <p class="give-error" role="alert" hidden data-give-error></p>
-                <button type="submit" class="btn btn--gold give-submit">Give ₦<span data-amount-label>{{ $naira($defaultAmount) }}</span><span data-freq-label></span></button>
+                @php($giveError = $errors->first('amount') ?: $errors->first('fund') ?: $errors->first('email'))
+                <p class="give-error" role="alert" @unless ($giveError) hidden @endunless data-give-error>{{ $giveError }}</p>
+                <button type="submit" class="btn btn--gold give-submit">Give ₦<span data-amount-label>{{ $naira($defaultAmount) }}</span></button>
                 <span class="give-note">Card, bank transfer or USSD on the next step</span>
             </form>
         </div>
@@ -90,24 +90,27 @@
         </div>
     </section>
 
-    <section class="container section--tight section--last">
-        <div class="building bg-gold">
-            <div class="stack" style="gap: 14px">
-                <span class="eyebrow eyebrow--ink">BUILDING FUND</span>
-                <h2 class="h2" style="color: inherit; font-size: clamp(32px, 4vw, 52px)">A new home for the Tribe.</h2>
-                <span class="building__text">We're raising funds for a youth sanctuary with space for worship, study and community.</span>
-            </div>
-            <div class="building__card">
-                <div class="building__amounts">
-                    <span class="building__raised">₦[raised]</span>
-                    <span class="building__target">of ₦[target]</span>
+    @if ($appeal)
+        @php($percent = min(100, (int) floor($appealRaised * 100 / max(1, $appeal->target))))
+        <section class="container section--tight section--last">
+            <div class="building bg-gold">
+                <div class="stack" style="gap: 14px">
+                    <span class="eyebrow eyebrow--ink">{{ strtoupper($appeal->name) }}</span>
+                    <h2 class="h2" style="color: inherit; font-size: clamp(32px, 4vw, 52px)">A new home for the Tribe.</h2>
+                    <span class="building__text">{{ $appeal->description ?: 'Every gift brings us closer.' }}</span>
                 </div>
-                <div class="progress" role="progressbar" aria-label="Building fund progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="40">
-                    <div class="progress__bar" style="width: 40%"></div>
+                <div class="building__card">
+                    <div class="building__amounts">
+                        <span class="building__raised">₦{{ number_format($appealRaised / 100) }}</span>
+                        <span class="building__target">of ₦{{ number_format($appeal->target / 100) }}</span>
+                    </div>
+                    <div class="progress" role="progressbar" aria-label="{{ $appeal->name }} progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $percent }}">
+                        <div class="progress__bar" style="width: {{ $percent }}%"></div>
+                    </div>
+                    <span class="building__givers">{{ number_format($appealGivers) }} {{ \Illuminate\Support\Str::plural('giver', $appealGivers) }} so far</span>
+                    <a href="#amount" class="btn btn--navy btn--md" style="align-self: flex-start" data-pick-fund>Give to the {{ \Illuminate\Support\Str::lower($appeal->name) }}</a>
                 </div>
-                <span class="building__givers">[Number] givers so far</span>
-                <a href="#amount" class="btn btn--navy btn--md" style="align-self: flex-start" data-pick-fund>Give to the building fund</a>
             </div>
-        </div>
-    </section>
+        </section>
+    @endif
 @endsection

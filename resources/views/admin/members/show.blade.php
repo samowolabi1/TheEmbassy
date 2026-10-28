@@ -52,7 +52,7 @@
                 {{ $member->tokenPlan ? $member->tokenPlan->name.' · '.$member->tokenPlan->amountLabel().' a month' : 'No plan' }}<br>
                 <strong>{{ $member->tokenStatus() }}</strong>@if ($member->tokenAmountOwed()) · ₦{{ number_format($member->tokenAmountOwed() / 100) }} owed @endif
             </p>
-            @if (auth()->user()->canManage('finance') && \Illuminate\Support\Facades\Route::has('admin.finance.index') && $member->status === 'active' && $member->tokenPlan && ! $member->tokenPlan->isExempt())
+            @if (auth()->user()->canManage('finance') && $member->status === 'active' && $member->tokenPlan && ! $member->tokenPlan->isExempt())
                 <a href="{{ route('admin.finance.index') }}#record-tokens" class="btn btn--ghost btn--xs" style="align-self: flex-start">Record a token payment</a>
             @endif
             <h2>Recent services</h2>

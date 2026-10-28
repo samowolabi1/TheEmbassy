@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\GiveController;
 use App\Http\Controllers\MarketController;
 use App\Http\Controllers\NewsletterSubscriptionController;
 use App\Http\Controllers\NoticeController;
@@ -26,7 +27,9 @@ Route::middleware('signed')->group(function () {
     Route::get('/tickets/{order}', [TicketOrderController::class, 'show'])->name('tickets.show');
     Route::post('/tickets/{order}/pay', [TicketOrderController::class, 'pay'])->middleware('throttle:10,1')->name('tickets.pay');
 });
-Route::get('/give', [PageController::class, 'give'])->name('give');
+Route::get('/give', [GiveController::class, 'create'])->name('give');
+Route::post('/give', [GiveController::class, 'store'])->middleware('throttle:10,1')->name('give.store');
+Route::get('/give/thanks/{gift}', [GiveController::class, 'thanks'])->middleware('signed')->name('give.thanks');
 
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
@@ -131,6 +134,29 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/fellowships', [Admin\UnitController::class, 'storeFellowship'])->name('fellowships.store');
             Route::put('/fellowships/{fellowship}', [Admin\UnitController::class, 'updateFellowship'])->name('fellowships.update');
             Route::delete('/fellowships/{fellowship}', [Admin\UnitController::class, 'destroyFellowship'])->name('fellowships.destroy');
+        });
+
+        Route::middleware('can:manage,"finance"')->group(function () {
+            Route::get('/finance', [Admin\FinanceController::class, 'index'])->name('finance.index');
+            Route::get('/finance/export', [Admin\FinanceController::class, 'export'])->name('finance.export');
+            Route::post('/finance/gifts', [Admin\FinanceController::class, 'storeGift'])->name('gifts.store');
+            Route::delete('/finance/gifts/{gift}', [Admin\FinanceController::class, 'destroyGift'])->name('gifts.destroy');
+            Route::post('/finance/funds', [Admin\FinanceController::class, 'storeFund'])->name('funds.store');
+            Route::put('/finance/funds/{fund}', [Admin\FinanceController::class, 'updateFund'])->name('funds.update');
+            Route::post('/finance/token-plans', [Admin\FinanceController::class, 'storePlan'])->name('token-plans.store');
+            Route::put('/finance/token-plans/{plan}', [Admin\FinanceController::class, 'updatePlan'])->name('token-plans.update');
+            Route::post('/finance/tokens', [Admin\FinanceController::class, 'storeTokenPayment'])->name('tokens.store');
+            Route::post('/finance/tokens/remind', [Admin\FinanceController::class, 'remind'])->name('tokens.remind');
+        });
+
+        Route::middleware('can:manage,"expenses"')->group(function () {
+            Route::get('/expenses', [Admin\ExpenseController::class, 'index'])->name('expenses.index');
+            Route::get('/expenses/export', [Admin\ExpenseController::class, 'export'])->name('expenses.export');
+            Route::post('/expenses', [Admin\ExpenseController::class, 'store'])->name('expenses.store');
+            Route::get('/expenses/{expense}/receipt', [Admin\ExpenseController::class, 'receipt'])->name('expenses.receipt');
+            Route::post('/expenses/{expense}/approve', [Admin\ExpenseController::class, 'approve'])->name('expenses.approve');
+            Route::post('/expenses/{expense}/decline', [Admin\ExpenseController::class, 'decline'])->name('expenses.decline');
+            Route::put('/budgets', [Admin\ExpenseController::class, 'budgets'])->name('budgets.update');
         });
 
         Route::middleware('can:manage,"prayer"')->group(function () {

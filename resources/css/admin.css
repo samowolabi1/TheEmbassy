@@ -976,3 +976,69 @@ a.stat-tile--navy:hover {
 .list-item--edit[open] > summary {
   margin-bottom: 14px;
 }
+
+/* Finance */
+.fund-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  padding: 0 20px 20px;
+}
+.fund-tile {
+  border: 1px solid var(--admin-line);
+  border-radius: 18px;
+  padding: 16px;
+}
+.fund-tile > summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  list-style: none;
+}
+.fund-tile > summary::-webkit-details-marker {
+  display: none;
+}
+.fund-tile__name {
+  font-weight: 700;
+  font-size: 14px;
+}
+.fund-tile__num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--navy);
+}
+.fund-tile__foot {
+  font-size: 12px;
+  color: var(--slate);
+}
+.fund-tile--add {
+  border-style: dashed;
+}
+.budget-line {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.budget-line__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.budget-line__over {
+  color: #a6531a;
+}
+.meter {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--admin-line);
+  overflow: hidden;
+}
+.meter span {
+  display: block;
+  height: 100%;
+  background: var(--navy);
+}
