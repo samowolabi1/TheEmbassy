@@ -3,6 +3,7 @@
 use App\Models\User;
 use App\Services\Care\FollowUps;
 use App\Services\Market\SubscriptionReminders;
+use App\Services\Units\DutyReminders;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Str;
 
@@ -64,6 +65,11 @@ Artisan::command('care:scan', function (FollowUps $followUps) {
     $this->info("Raised {$result['raised']} follow-ups for members not seen lately; closed {$result['closed']} for members who are back.");
 })->purpose('Raise follow-ups for members who have missed several Sundays, and close them when they return');
 
+Artisan::command('units:remind', function (DutyReminders $reminders) {
+    $this->info('Sent '.$reminders->send().' rota reminders.');
+})->purpose('Email members serving at a service in the next two days');
+
 // Run `php artisan schedule:run` every minute from cron (see the README).
+Schedule::command('units:remind')->dailyAt('09:00')->timezone('Africa/Lagos');
 Schedule::command('care:scan')->dailyAt('07:00')->timezone('Africa/Lagos');
 Schedule::command('market:remind')->dailyAt('08:00')->timezone('Africa/Lagos');

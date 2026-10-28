@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Setting;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Gate;
@@ -27,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::define('access-admin', fn (User $user) => $user->isStaff());
         Gate::define('manage', fn (User $user, string $area) => $user->canManage($area));
+        // A unit's HOD and assistant run its area; staff who manage units can open any of them.
+        Gate::define('lead-unit', fn (User $user, Unit $unit) => $unit->isLedBy($user->member) || $user->canManage('units'));
         Gate::define('run-shop', fn (User $user) => $user->shop?->isApproved() ?? false);
 
         // Sellers reset their password on the seller pages; everyone else on the member pages.

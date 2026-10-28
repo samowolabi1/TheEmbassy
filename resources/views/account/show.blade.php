@@ -8,6 +8,9 @@
             @if ($member?->status === 'active')
                 <a href="{{ route('check-in') }}" class="btn btn--gold btn--sm">Check in to a service</a>
             @endif
+            @foreach ($ledUnits as $led)
+                <a href="{{ route('unit.show', $led) }}" class="btn btn--navy btn--sm">Lead {{ $led->name }}</a>
+            @endforeach
             @if ($user->isStaff())
                 <a href="{{ route('admin.dashboard') }}" class="btn btn--navy btn--sm">Admin dashboard</a>
             @endif
@@ -80,6 +83,52 @@
                     <a href="{{ route('give') }}" class="btn btn--outline" style="align-self: flex-start">Give</a>
                 </div>
             </div>
+
+            @if ($member->unit && ($meetings->isNotEmpty() || $duties->isNotEmpty() || $unitMessages->isNotEmpty()))
+                <div class="account-grid">
+                    <div class="card">
+                        <h2>{{ $member->unit->name }}</h2>
+                        @if ($errors->has('meeting'))<p class="notice-alert" role="alert" style="margin: 0; background: #fdecea; color: #8a1c12">{{ $errors->first('meeting') }}</p>@endif
+                        @forelse ($meetings as $meeting)
+                            <div class="stack" style="gap: 6px">
+                                <strong>{{ $meeting->title }}</strong>
+                                <span class="field-hint">{{ $meeting->starts_at->format('D j M, g:i A') }}{{ $meeting->location ? ' · '.$meeting->location : '' }}</span>
+                                @if ($meeting->online_url)<a href="{{ $meeting->online_url }}" class="btn btn--outline btn--sm" style="align-self: flex-start" target="_blank" rel="noopener">Join online</a>@endif
+                                @if (in_array($meeting->id, $checkedInMeetings, true))
+                                    <span class="status-chip status-chip--ok">✓ Checked in</span>
+                                @elseif ($meeting->checkInIsOpen())
+                                    <form method="POST" action="{{ route('meetings.check-in', $meeting) }}" style="display: flex; gap: 8px; flex-wrap: wrap">
+                                        @csrf
+                                        <label class="sr-only" for="meeting-code-{{ $meeting->id }}">Meeting code</label>
+                                        <input id="meeting-code-{{ $meeting->id }}" type="text" name="code" inputmode="numeric" maxlength="7" required placeholder="Code" class="select-sm" style="height: 44px; border-radius: 12px; border: 1px solid var(--field-line); padding: 0 12px; width: 120px">
+                                        <button type="submit" class="btn btn--navy btn--sm">Check in</button>
+                                    </form>
+                                @endif
+                            </div>
+                        @empty
+                            <span class="field-hint">No meetings scheduled.</span>
+                        @endforelse
+                    </div>
+                    @if ($duties->isNotEmpty())
+                        <div class="card">
+                            <h2>Your duties</h2>
+                            <ul class="mini-list">
+                                @foreach ($duties as $duty)
+                                    <li><span>{{ $duty->service->starts_at?->format('D j M, g:i A') ?? $duty->service->held_on->format('D j M') }}</span><strong>{{ $duty->role }}</strong></li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    @if ($unitMessages->isNotEmpty())
+                        <div class="card">
+                            <h2>From your unit</h2>
+                            @foreach ($unitMessages as $um)
+                                <div class="stack" style="gap: 4px"><strong>{{ $um->subject }}</strong><span class="field-hint" style="white-space: pre-line">{{ \Illuminate\Support\Str::limit($um->body, 220) }}</span></div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            @endif
 
             <form method="POST" action="{{ route('account.update') }}" class="card notice-form__main" style="flex: none">
                 @csrf

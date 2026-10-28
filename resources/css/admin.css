@@ -1149,3 +1149,8 @@ input[type='file'] {
   font-weight: 800;
   font-size: 13px;
 }
+.attendance-grid th,
+.attendance-grid td {
+  padding-left: 8px;
+  padding-right: 8px;
+}

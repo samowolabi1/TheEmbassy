@@ -16,8 +16,9 @@
                     <summary>
                         <span class="list-item__main">
                             <span class="list-item__title">{{ $unit->name }}</span>
-                            <span class="list-item__meta">{{ $unit->members_count }} {{ \Illuminate\Support\Str::plural('member', $unit->members_count) }}{{ $unit->leader_name ? ' · Led by '.$unit->leader_name : '' }}</span>
+                            <span class="list-item__meta">{{ $unit->members_count }} {{ \Illuminate\Support\Str::plural('member', $unit->members_count) }}{{ $unit->hod ? ' · HOD '.$unit->hod->name : ($unit->leader_name ? ' · Led by '.$unit->leader_name : ' · No HOD yet') }}{{ $unit->kind !== 'general' ? ' · '.$kinds[$unit->kind].' tools' : '' }}</span>
                         </span>
+                        <a href="{{ route('unit.show', $unit) }}" class="btn btn--ghost btn--xs">Open unit area</a>
                         <span class="btn btn--ghost btn--xs">Edit</span>
                     </summary>
                     <form method="POST" action="{{ route('admin.units.update', $unit) }}" class="form">
@@ -27,6 +28,33 @@
                             <label class="field">Name <input type="text" name="name" value="{{ $unit->name }}" required maxlength="60"></label>
                             <label class="field">Leader <input type="text" name="leader_name" value="{{ $unit->leader_name }}" maxlength="100"></label>
                         </div>
+                        <div class="form-row">
+                            <label class="field">HOD
+                                <select name="hod_member_id">
+                                    <option value="">Not set</option>
+                                    @foreach ($members as $m)
+                                        <option value="{{ $m->id }}" @selected($unit->hod_member_id === $m->id)>{{ $m->name }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="field">Assistant HOD
+                                <select name="assistant_member_id">
+                                    <option value="">Not set</option>
+                                    @foreach ($members as $m)
+                                        <option value="{{ $m->id }}" @selected($unit->assistant_member_id === $m->id)>{{ $m->name }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="field">Type
+                                <select name="kind">
+                                    @foreach ($kinds as $key => $label)
+                                        <option value="{{ $key }}" @selected($unit->kind === $key)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                        </div>
+                        @error('assistant_member_id', 'unit') <span class="field-error">{{ $message }}</span> @enderror
+                        <span class="field__hint">The HOD and assistant sign in with their member account to run the unit's area. Welfare and media units get their own tools.</span>
                         <label class="field">What they do <input type="text" name="description" value="{{ $unit->description }}" maxlength="500"></label>
                         <div class="list-item__actions">
                             <button type="submit" class="btn btn--navy btn--xs">Save</button>

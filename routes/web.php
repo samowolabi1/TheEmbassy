@@ -13,6 +13,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrayerRequestController;
 use App\Http\Controllers\TicketOrderController;
+use App\Http\Controllers\Unit;
 use App\Http\Controllers\Vendor;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
@@ -106,6 +107,28 @@ Route::middleware('auth')->group(function () {
 // First-timer card for visitors (e.g. from a QR code at the door).
 Route::get('/welcome', [WelcomeController::class, 'create'])->name('welcome');
 Route::post('/welcome', [WelcomeController::class, 'store'])->middleware('throttle:5,1')->name('welcome.store');
+
+// Unit leaders' area: a unit's HOD and assistant (and staff who manage units).
+Route::middleware(['auth', 'can:lead-unit,unit'])->prefix('units/{unit}')->name('unit.')->group(function () {
+    Route::get('/', [Unit\UnitController::class, 'show'])->name('show');
+    Route::get('/members', [Unit\UnitController::class, 'members'])->name('members');
+    Route::post('/members', [Unit\UnitController::class, 'addMember'])->name('members.add');
+    Route::delete('/members/{member}', [Unit\UnitController::class, 'removeMember'])->name('members.remove');
+    Route::get('/attendance', [Unit\UnitController::class, 'attendance'])->name('attendance');
+    Route::get('/messages', [Unit\UnitController::class, 'messages'])->name('messages');
+    Route::post('/messages', [Unit\UnitController::class, 'sendMessage'])->middleware('throttle:10,1')->name('messages.send');
+    Route::get('/rota', [Unit\RotaController::class, 'index'])->name('rota');
+    Route::post('/rota', [Unit\RotaController::class, 'store'])->name('rota.store');
+    Route::delete('/rota/{duty}', [Unit\RotaController::class, 'destroy'])->name('rota.destroy');
+    Route::get('/meetings', [Unit\MeetingController::class, 'index'])->name('meetings.index');
+    Route::post('/meetings', [Unit\MeetingController::class, 'store'])->name('meetings.store');
+    Route::get('/meetings/{meeting}', [Unit\MeetingController::class, 'show'])->name('meetings.show');
+    Route::put('/meetings/{meeting}', [Unit\MeetingController::class, 'update'])->name('meetings.update');
+    Route::post('/meetings/{meeting}/present', [Unit\MeetingController::class, 'mark'])->name('meetings.mark');
+    Route::get('/meetings/{meeting}/screen', [Unit\MeetingController::class, 'screen'])->name('meetings.screen');
+    Route::delete('/meetings/{meeting}', [Unit\MeetingController::class, 'destroy'])->name('meetings.destroy');
+});
+Route::post('/meetings/{meeting}/check-in', [Unit\MeetingController::class, 'checkIn'])->middleware(['auth', 'throttle:10,1'])->name('meetings.check-in');
 
 // Contact and legal pages.
 Route::get('/contact', [ContactController::class, 'create'])->name('contact');

@@ -6,6 +6,7 @@ use App\Services\Care\FollowUps;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -141,6 +142,34 @@ class Member extends Model
         if ($welcome && $wasPending) {
             app(FollowUps::class)->forNewMember($this);
         }
+    }
+
+    /**
+     * Unit meetings they were at.
+     *
+     * @return BelongsToMany<UnitMeeting, $this>
+     */
+    public function meetings(): BelongsToMany
+    {
+        return $this->belongsToMany(UnitMeeting::class)->withPivot('mode', 'checked_in_at');
+    }
+
+    /**
+     * @return HasMany<Duty, $this>
+     */
+    public function duties(): HasMany
+    {
+        return $this->hasMany(Duty::class);
+    }
+
+    /**
+     * Units this member heads or assists.
+     *
+     * @return Collection<int, Unit>
+     */
+    public function ledUnits(): Collection
+    {
+        return Unit::where('hod_member_id', $this->id)->orWhere('assistant_member_id', $this->id)->orderBy('name')->get();
     }
 
     /**

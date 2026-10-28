@@ -7,6 +7,8 @@ use App\Models\Fellowship;
 use App\Models\Member;
 use App\Models\TokenPayment;
 use App\Models\Unit;
+use App\Models\UnitMeeting;
+use App\Models\UnitMessage;
 use App\Services\Payments\Payments;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,6 +33,11 @@ class AccountController extends Controller
             'gifts' => $member ? $member->gifts()->with('fund')->where('status', 'paid')->latest('given_on')->take(10)->get() : collect(),
             'units' => Unit::orderBy('name')->get(),
             'fellowships' => Fellowship::orderBy('name')->get(),
+            'ledUnits' => $member?->ledUnits() ?? collect(),
+            'meetings' => $member?->unit_id ? UnitMeeting::where('unit_id', $member->unit_id)->where('starts_at', '>=', now()->subHours(3))->orderBy('starts_at')->take(3)->get() : collect(),
+            'checkedInMeetings' => $member ? $member->meetings()->pluck('unit_meetings.id')->all() : [],
+            'duties' => $member ? $member->duties()->with('service', 'unit')->whereHas('service', fn ($q) => $q->where('held_on', '>=', today()->startOfDay()))->get() : collect(),
+            'unitMessages' => $member?->unit_id ? UnitMessage::where('unit_id', $member->unit_id)->latest()->take(3)->get() : collect(),
         ]);
     }
 
