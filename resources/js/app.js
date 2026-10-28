@@ -5,5 +5,6 @@ import './filters';
 import './share';
 import './countdown';
 import './give';
+import './check-in';
 import './notices';
 import './booking';

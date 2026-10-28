@@ -33,13 +33,14 @@ class SettingsController extends Controller
         $rules = [];
         foreach (config('settings') as $group) {
             foreach ($group['fields'] as $key => $field) {
-                $rules[$this->inputName($key)] = match ($field['type']) {
+                $rules[$this->inputName($key)] = [...match ($field['type']) {
                     'url' => ['nullable', 'url:http,https', 'max:500'],
                     'email' => ['nullable', 'email', 'max:255'],
                     'checkbox' => ['nullable', 'boolean'],
                     'textarea' => ['nullable', 'string', 'max:1000'],
+                    'number' => ['nullable'],
                     default => ['nullable', 'string', 'max:255'],
-                };
+                }, ...($field['rules'] ?? [])];
             }
         }
         $rules[$this->inputName('church.map_embed_url')][] = 'starts_with:https://www.google.com/maps/embed';
@@ -53,7 +54,8 @@ class SettingsController extends Controller
         $values = [];
         foreach (Setting::keys() as $key) {
             $value = $data[$this->inputName($key)] ?? null;
-            $values[$key] = is_bool($value) || in_array($key, ['church.live.is_live'], true) ? ($value ? '1' : '') : $value;
+            $type = collect(config('settings'))->firstWhere(fn ($g) => isset($g['fields'][$key]))['fields'][$key]['type'];
+            $values[$key] = $type === 'checkbox' ? ($value ? '1' : '0') : $value;
         }
         Setting::putMany($values);
 

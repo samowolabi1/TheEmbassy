@@ -98,6 +98,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/account', [Account\AccountController::class, 'show'])->name('account');
     Route::put('/account', [Account\AccountController::class, 'update'])->name('account.update');
     Route::get('/account/tokens', [Account\AccountController::class, 'tokens'])->name('account.tokens');
+    Route::get('/check-in', [Account\CheckInController::class, 'show'])->name('check-in');
+    Route::post('/check-in', [Account\CheckInController::class, 'store'])->middleware('throttle:10,1')->name('check-in.store');
     Route::post('/account/tokens', [Account\AccountController::class, 'payTokens'])->middleware('throttle:10,1')->name('account.tokens.pay');
 });
 
@@ -137,6 +139,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/attendance', [Admin\AttendanceController::class, 'index'])->name('attendance.index');
             Route::post('/attendance', [Admin\AttendanceController::class, 'store'])->name('attendance.store');
             Route::get('/attendance/{service}', [Admin\AttendanceController::class, 'show'])->name('attendance.show');
+            Route::get('/attendance/{service}/screen', [Admin\AttendanceController::class, 'screen'])->name('attendance.screen');
             Route::put('/attendance/{service}', [Admin\AttendanceController::class, 'update'])->name('attendance.update');
             Route::post('/attendance/{service}/present', [Admin\AttendanceController::class, 'mark'])->name('attendance.mark');
             Route::delete('/attendance/{service}', [Admin\AttendanceController::class, 'destroy'])->name('attendance.destroy');

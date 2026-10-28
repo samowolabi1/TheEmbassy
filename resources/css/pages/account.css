@@ -132,3 +132,16 @@
   color: var(--bronze);
   font-weight: 700;
 }
+.checkin-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+}
+.checkin-card__title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--navy);
+}

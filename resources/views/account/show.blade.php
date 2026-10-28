@@ -5,6 +5,9 @@
         <span class="eyebrow">MY ACCOUNT</span>
         <h1 class="display notices-hero__title">Hi, {{ \Illuminate\Support\Str::before($member?->name ?? $user->name, ' ') }}.</h1>
         <div style="display: flex; flex-wrap: wrap; gap: 10px">
+            @if ($member?->status === 'active')
+                <a href="{{ route('check-in') }}" class="btn btn--gold btn--sm">Check in to a service</a>
+            @endif
             @if ($user->isStaff())
                 <a href="{{ route('admin.dashboard') }}" class="btn btn--navy btn--sm">Admin dashboard</a>
             @endif

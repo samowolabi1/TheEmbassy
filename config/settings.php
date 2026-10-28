@@ -43,6 +43,20 @@ return [
         ],
     ],
 
+    'checkin' => [
+        'title' => 'Attendance check-in',
+        'fields' => [
+            'church.checkin.latitude' => ['label' => 'Venue latitude', 'type' => 'number', 'rules' => ['numeric', 'between:-90,90'], 'hint' => 'Stand in the church and press "Use my location" below, or copy it from Google Maps.'],
+            'church.checkin.longitude' => ['label' => 'Venue longitude', 'type' => 'number', 'rules' => ['numeric', 'between:-180,180']],
+            'church.checkin.radius' => ['label' => 'Check-in radius (metres)', 'type' => 'number', 'rules' => ['integer', 'between:30,2000'], 'hint' => 'How far from the venue members can check in. 100–200 m suits most buildings.'],
+            'church.checkin.max_accuracy' => ['label' => 'Roughest location accepted (metres)', 'type' => 'number', 'rules' => ['integer', 'between:20,1000']],
+            'church.checkin.opens_before' => ['label' => 'Check-in opens (minutes before the service)', 'type' => 'number', 'rules' => ['integer', 'between:0,240']],
+            'church.checkin.closes_after' => ['label' => 'Check-in closes (minutes after the service ends)', 'type' => 'number', 'rules' => ['integer', 'between:0,240']],
+            'church.checkin.require_code' => ['label' => 'In person, also ask for the code on the check-in screen (recommended: GPS alone can be faked)', 'type' => 'checkbox'],
+            'church.care.absent_after' => ['label' => 'Check on members after this many missed Sundays in a row', 'type' => 'number', 'rules' => ['integer', 'between:1,12']],
+        ],
+    ],
+
     'live' => [
         'title' => 'Live stream',
         'fields' => [

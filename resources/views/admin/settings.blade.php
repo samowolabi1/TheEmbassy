@@ -91,7 +91,7 @@
     <form method="POST" action="{{ route('admin.settings.update') }}" class="stack" style="gap: 20px">
         @csrf
         @method('PUT')
-        @foreach ($groups as $group)
+        @foreach ($groups as $groupKey => $group)
             <section class="box form">
                 <h2>{{ $group['title'] }}</h2>
                 <div class="grid-auto" style="--min: 260px; --gap: 14px 18px">
@@ -116,6 +116,9 @@
                         @endif
                     @endforeach
                 </div>
+                @if ($groupKey === 'checkin')
+                    <div><button type="button" class="btn btn--ghost btn--xs" data-use-location hidden>Use my location (stand inside the church)</button></div>
+                @endif
             </section>
         @endforeach
         <div><button type="submit" class="btn btn--gold">Save settings</button></div>

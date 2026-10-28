@@ -1,4 +1,5 @@
 // Admin enhancements; every form still works without them.
+import './check-in';
 
 // Ask before destructive actions: <form data-confirm="Delete this?">.
 for (const form of document.querySelectorAll('form[data-confirm]')) {

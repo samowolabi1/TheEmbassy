@@ -41,6 +41,30 @@ return [
     'phone' => null,
     'email' => env('CHURCH_EMAIL'),
 
+    // Members checking themselves in to services. Set in admin › Settings & roles.
+    'checkin' => [
+        // The venue. In-person check-in only works within `radius` metres of it.
+        'latitude' => null,
+        'longitude' => null,
+        'radius' => 150,
+        // Phone locations rougher than this are refused (ask them to step outside or see an usher).
+        'max_accuracy' => 200,
+        // Also ask for the code on the check-in screen, which changes every minute. GPS alone can be faked.
+        'require_code' => true,
+        // When check-in opens and closes, in minutes around the service start and end.
+        'opens_before' => 30,
+        'closes_after' => 30,
+    ],
+
+    // Pastoral care: who to check on.
+    'care' => [
+        // Raise a follow-up when an active member has missed this many Sunday services in a row.
+        'absent_after' => 3,
+        // Days to call a first-timer, and to welcome a newly approved member.
+        'first_timer_days' => 2,
+        'new_member_days' => 7,
+    ],
+
     // The Watch page player. Set in admin › Settings & roles.
     'live' => [
         'video_id' => null,
