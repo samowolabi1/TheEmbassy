@@ -1,7 +1,7 @@
 <?php
 
-// Messages and series shown on the home and Watch pages.
-// `url` is where a message plays (e.g. its YouTube link). '#' until videos are linked.
+// Example messages and series, shown on the home and Watch pages until the church adds its own
+// in admin › Sermons & live. `url` is where a message plays (e.g. its YouTube link).
 // `swatch` is the thumbnail colour: navy, gold, mid, ice, wash or night.
 
 return [
@@ -28,12 +28,6 @@ return [
         ['title' => 'Crowned', 'accent' => 'for More', 'label' => 'Now showing · 3 episodes', 'style' => 'navy', 'url' => '#'],
         ['title' => 'Tribe', 'accent' => 'Life', 'label' => '5 episodes', 'style' => 'gold', 'url' => '#'],
         ['title' => 'Kingdom', 'accent' => 'Builders', 'label' => '4 episodes', 'style' => 'ice', 'url' => '#'],
-    ],
-
-    'upcoming_live' => [
-        ['title' => 'Midweek prayer', 'when' => '[Day] · [Time]'],
-        ['title' => 'Worship Night', 'when' => 'Fri 6 Nov · 6:00 PM'],
-        ['title' => 'Royal Youth Convention', 'when' => 'Sat 14 Nov · 4:00 PM'],
     ],
 
 ];

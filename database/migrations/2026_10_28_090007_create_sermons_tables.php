@@ -25,6 +25,7 @@ return new class extends Migration
             $table->foreignId('sermon_series_id')->nullable()->constrained()->nullOnDelete();
             $table->string('preacher')->nullable();
             $table->date('preached_on')->index();
+            $table->string('scripture', 60)->nullable();
             $table->string('length', 20)->nullable();
             $table->string('url')->nullable();
             $table->string('swatch', 10)->default('navy');

@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * A message in the library: Sunday, midweek, podcast or special service.
  */
-#[Fillable(['title', 'kind', 'sermon_series_id', 'preacher', 'preached_on', 'length', 'url', 'swatch', 'is_published'])]
+#[Fillable(['title', 'kind', 'sermon_series_id', 'preacher', 'preached_on', 'scripture', 'length', 'url', 'swatch', 'is_published'])]
 class Sermon extends Model
 {
     use HasFactory;

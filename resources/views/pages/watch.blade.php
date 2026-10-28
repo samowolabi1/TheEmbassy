@@ -32,8 +32,8 @@
                 </div>
                 <div class="live__meta">
                     <div class="stack" style="gap: 4px">
-                        <h1 class="live__title">Sunday Service: Crowned for More, week 3</h1>
-                        <span class="live__when">Every Sunday at {{ config('church.sunday_time') }} · 1 Peter 2:9</span>
+                        <h1 class="live__title">{{ $headline['kind'] }}: {{ trim($headline['series_title'].' '.$headline['series_accent']) }}@if ($headline['week']), week {{ $headline['week'] }}@endif</h1>
+                        <span class="live__when">Every Sunday at {{ config('church.sunday_time') }}@if ($headline['scripture']) · {{ $headline['scripture'] }}@endif</span>
                     </div>
                     <a href="{{ $links['youtube'] }}" class="btn btn--youtube btn--md"><x-icon name="youtube" />Subscribe</a>
                 </div>
@@ -41,7 +41,7 @@
 
             <aside class="upcoming">
                 <span class="eyebrow">COMING UP LIVE</span>
-                @foreach ($sermons['upcoming_live'] as $u)
+                @foreach ($upcoming as $u)
                     <div class="upcoming__item">
                         <span class="upcoming__title">{{ $u['title'] }}</span>
                         <span class="upcoming__when">{{ $u['when'] }}</span>
@@ -65,7 +65,7 @@
             <h2 class="h2">Binge a whole series.</h2>
         </div>
         <div class="grid-auto" style="--min: 320px">
-            @foreach ($sermons['series'] as $s)
+            @foreach ($series as $s)
                 <a href="{{ $s['url'] }}" class="series series--{{ $s['style'] }}">
                     <span class="tag series__tag">{{ $s['label'] }}</span>
                     <span class="series__title">{{ $s['title'] }}<br><span class="series__accent">{{ $s['accent'] }}</span></span>
@@ -84,12 +84,12 @@
             </label>
         </div>
         <div role="tablist" aria-label="Filter messages" class="filters">
-            @foreach ($sermons['filters'] as $id => $label)
+            @foreach ($filters as $id => $label)
                 <button type="button" role="tab" class="filter" aria-selected="{{ $loop->first ? 'true' : 'false' }}" data-filter="{{ $id }}">{{ $label }}</button>
             @endforeach
         </div>
         <div class="grid-auto" style="--min: 300px; --gap: 22px">
-            @foreach ($sermons['messages'] as $m)
+            @foreach ($messages as $m)
                 <a href="{{ $m['url'] }}" class="message" data-filter-item data-tag="{{ $m['type'] }}" data-search="{{ $m['title'] }} {{ $m['meta'] }} {{ $m['kind'] }}">
                     <div class="message__thumb bg-{{ $m['swatch'] }}">
                         <span class="icon-circle message__play"><x-icon name="play" :size="18" /></span>

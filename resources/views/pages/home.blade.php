@@ -58,17 +58,17 @@
                 <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 4" data-slide hidden>
                     <div class="slide__copy">
                         <span class="slide__kicker slide__kicker--outline">NEW SERMON SERIES</span>
-                        <h1 class="display slide__title">Crowned<br><span class="accent">for More</span></h1>
+                        <h1 class="display slide__title">{{ $headline['series_title'] }}<br><span class="accent">{{ $headline['series_accent'] }}</span></h1>
                         <p class="slide__text">A series on identity, purpose and living as a royal priesthood. New episodes every Sunday.</p>
                         <div class="slide__ctas">
-                            <a href="{{ $headline['url'] ?? route('watch') }}" class="btn btn--gold"><x-icon name="play" :size="16" />Watch week 3</a>
+                            <a href="{{ $headline['url'] ?? route('watch') }}" class="btn btn--gold"><x-icon name="play" :size="16" />Watch {{ $headline['week'] ? 'week '.$headline['week'] : 'now' }}</a>
                             <a href="{{ route('watch') }}" class="btn btn--outline-light">All episodes</a>
                         </div>
                     </div>
                     <div role="img" aria-label="Photo placeholder: series artwork" class="placeholder slide__media bg-night hero__bordered">
                         <x-crown :width="360" :height="300" jewels band class="crown-bg slide__crown" style="opacity: 0.9" />
                         <span class="placeholder__note placeholder__note--right">[Series artwork]</span>
-                        <span class="slide__series">CROWNED FOR MORE</span>
+                        <span class="slide__series">{{ strtoupper(trim($headline['series_title'].' '.$headline['series_accent'])) }}</span>
                     </div>
                 </div>
 
@@ -180,12 +180,12 @@
                 <x-crown :width="380" :height="320" jewels class="crown-bg" style="right: -80px; top: -40px; opacity: 0.12" />
                 <span class="tag tag--gold" style="position: relative">NEW SERIES</span>
                 <div class="feature-message__body">
-                    <span class="feature-message__title">Crowned<br><span class="accent">for More</span></span>
+                    <span class="feature-message__title">{{ $headline['series_title'] }}<br><span class="accent">{{ $headline['series_accent'] }}</span></span>
                     <span class="feature-message__now">
                         <span class="icon-circle feature-message__play"><x-icon name="play" /></span>
                         <span class="stack">
-                            <span class="feature-message__name">Week 3: {{ $headline['title'] }}</span>
-                            <span class="feature-message__meta">1 Peter 2:9 · {{ $headline['length'] }} · YouTube</span>
+                            <span class="feature-message__name">@if ($headline['week'])Week {{ $headline['week'] }}: @endif{{ $headline['title'] ?? 'Coming soon' }}</span>
+                            <span class="feature-message__meta">{{ collect([$headline['scripture'], $headline['length'], 'YouTube'])->filter()->join(' · ') }}</span>
                         </span>
                     </span>
                 </div>

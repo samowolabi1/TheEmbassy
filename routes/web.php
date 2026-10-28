@@ -204,6 +204,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/notices/{notice}/reject', [Admin\NoticeController::class, 'reject'])->name('notices.reject');
         });
 
+        Route::middleware('can:manage,"sermons"')->group(function () {
+            Route::post('/sermons/live', [Admin\SermonController::class, 'live'])->name('sermons.live');
+            Route::post('/series', [Admin\SermonController::class, 'storeSeries'])->name('series.store');
+            Route::put('/series/{series}', [Admin\SermonController::class, 'updateSeries'])->name('series.update');
+            Route::delete('/series/{series}', [Admin\SermonController::class, 'destroySeries'])->name('series.destroy');
+            Route::resource('sermons', Admin\SermonController::class)->except('show');
+        });
+
         Route::middleware('can:manage,"events"')->group(function () {
             Route::get('/events/{event}/attendees.csv', [Admin\EventController::class, 'export'])->name('events.export');
             Route::resource('events', Admin\EventController::class);
