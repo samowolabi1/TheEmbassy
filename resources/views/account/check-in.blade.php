@@ -50,7 +50,7 @@
                                     <input type="hidden" name="service" value="{{ $service->id }}">
                                     <input type="hidden" name="mode" value="online">
                                     <label class="field">Code on the live stream
-                                        <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required placeholder="6 digits">
+                                        <input type="text" name="code" value="{{ $code }}" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required placeholder="6 digits">
                                     </label>
                                     <button type="submit" class="btn btn--gold">I'm watching online</button>
                                 </form>

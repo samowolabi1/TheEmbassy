@@ -16,6 +16,7 @@ The public website, built with [Laravel](https://laravel.com) 13 from the "RCCG 
 | `/notices` | Paid notice board for other churches and businesses; `/notices/advertise` to place one |
 | `/join`, `/login`, `/account` | Membership sign-up, sign-in, and the member's own page (details, giving, tokens) |
 | `/welcome` | First-timer card for visitors; print it as a QR code at the door |
+| `/check-in` | Members check in to a service, at church (location and screen code) or online (stream code) |
 | `/contact`, `/privacy`, `/terms` | Contact form and legal pages |
 | `/vendor` | Sellers manage listings, enquiries, subscription and shop details (sign in at `/vendor/login`) |
 
@@ -32,7 +33,7 @@ There are three kinds of account, all in the `users` table:
 | Administrator | Everything, including Settings & roles |
 | Pastor | Everything except Settings & roles |
 | Finance | Giving & tokens, expenses & budgets, the market |
-| Church office | Members, attendance & first-timers, units, subscribers, the market, content, notices, events, prayer, messages |
+| Church office | Members, attendance & first-timers, follow-up & care, units, subscribers, the market, content, notices, events, prayer, messages |
 | Media | Content, notices, sermons & live, events |
 | Ushering | Attendance & first-timers, events (door check-in) |
 
@@ -52,7 +53,8 @@ Staff sign in at `/admin`. Every area in the design's sidebar is built:
 - **Dashboard**: members, first-timers, giving, tokens and market income this month, the last eight Sundays' attendance, what needs attention, giving by fund, latest gifts, upcoming events, prayer requests and new members. Each person only sees the panels their role covers.
 - **Members**: the register by status (members, waiting for approval, inactive), search and filters, profiles with milestones (baptised, believers' class, workers' training) and token plan, approval, and CSV import and export.
 - **First-timers & follow-up**: cards from `/welcome` or typed in by staff; mark each person as called with a note, and add them to the register.
-- **Attendance**: each service's headcount in person and online, and which members were there (which sets "last attended").
+- **Attendance**: schedule services with self check-in at church and online, show the code screen, see who checked in, tick people present by hand, and record headcounts.
+- **Follow-up & care**: follow-ups for first-timers, new members and members not seen lately, assigned to the care team with outcomes recorded.
 - **Units & fellowships**: the service units and house fellowships members choose from.
 - **Newsletter subscribers**: search, remove, download as CSV.
 - **Giving & tokens**: totals for this month, last month or this year; fund balances and appeal targets; every transaction with CSV export; cash offerings counted at services; token plans; tokens paid at the office; members in arrears with email and WhatsApp reminders.
@@ -61,6 +63,27 @@ Staff sign in at `/admin`. Every area in the design's sidebar is built:
 - **Content & announcements**, **Notice board**, **Events & tickets**, **Prayer requests**, **Contact messages**.
 - **Sermons & live**: the message library and series on the home and Watch pages, and the YouTube stream in the Watch page player.
 - **Settings & roles**: staff and their roles, and the church's details (address, service times, bank details, leaders, live stream, social links). Saved values replace the placeholders across the site.
+
+## Attendance and follow-up
+
+**Members check themselves in** at `/check-in` (or by scanning the QR code on the church screen), from 30 minutes before a service until 30 minutes after it ends. Staff schedule services under **Attendance**, optionally repeating weekly, and choose whether each takes in-person check-in, online check-in, or both.
+
+- **At church**, the member's phone location must be within the radius the church sets around the venue (150 m by default) and accurate enough (200 m). A phone's location can be faked with a browser extension, so members also enter the six-digit code on the **check-in screen**, which changes every minute. Churches that would rather not use the code can switch it off in Settings. Only the distance from the venue is stored, never the member's coordinates.
+- **Online**, members enter the code shown on the live stream while check-in is open; codes from the last three minutes are accepted to allow for stream delay. Show the code screen as a browser source or overlay in the streaming software. This counts people who were really watching, rather than counting views.
+- Each member checks in once per service. Ushers can still tick people present by hand (no phone, no account), and record each service's headcount.
+- Location needs HTTPS: browsers only share location with secure sites.
+
+Set the venue under **Settings & roles › Attendance check-in**. The easiest way is to stand inside the church and press "Use my location".
+
+**Follow-up & care** is a single list for the pastoral team. Follow-ups are raised automatically, and can also be added by hand:
+
+| Who | When | Due |
+| --- | --- | --- |
+| First-timers (cards from `/welcome` or typed in) | when the card is added | within 2 days |
+| Members who joined online, once approved | on approval | within a week |
+| Active members who've missed Sundays | after 3 in a row (adjustable) | the next day |
+
+Only Sundays where attendance was actually taken count as missed, members aren't counted as missing Sundays before they joined, and anyone seen at any service since (midweek included) isn't flagged. When someone comes back, their follow-up closes itself. Staff assign follow-ups to each other (the person gets an email), call or WhatsApp from the list, and record how it went. Member profiles show attendance over the last eight Sundays and their follow-up history. `php artisan care:scan` runs every morning from the scheduler.
 
 ## Money: giving, tokens, tickets, the market and the notice board
 
@@ -115,7 +138,7 @@ php artisan config:cache && php artisan route:cache && php artisan view:cache
 
 The web server's document root is `public/`, and `storage/` and `bootstrap/cache/` must be writable.
 
-**3. The scheduler.** Seller renewal reminders go out each morning. Add one cron entry:
+**3. The scheduler.** Absence follow-ups and seller renewal reminders run each morning. Add one cron entry:
 
 ```
 * * * * * cd /path/to/site && php artisan schedule:run >> /dev/null 2>&1
@@ -170,7 +193,7 @@ Anything still in `[brackets]` is a placeholder waiting for real details; most d
 
 ## Where things are
 
-- `routes/web.php`: all routes; `routes/console.php`: `admin:create`, `admin:revoke`, `market:remind` and the schedule
+- `routes/web.php`: all routes; `routes/console.php`: `admin:create`, `admin:revoke`, `care:scan`, `market:remind` and the schedule
 - `app/Http/Controllers/`: public pages and forms, `Account/` (members), `Vendor/` (sellers), `Admin/` (dashboard)
 - `app/Models/`: people (`User`, `Member`, `Unit`, `Fellowship`, `FirstTimer`, `Service`), money (`Payment`, `Fund`, `Gift`, `TokenPlan`, `TokenPayment`, `Expense`, `Budget`), events and notices (`Event`, `TicketType`, `TicketOrder`, `Ticket`, `Notice`), the market (`Shop`, `Product`, `Enquiry`, `VendorPlan`, `VendorSubscription`, `Coupon`), content (`Announcement`, `Declaration`, `Sermon`, `SermonSeries`, `PrayerRequest`, `NewsletterSubscriber`, `ContactMessage`, `Setting`)
 - `app/Services/`: Paystack and payment settlement, shop approval and seller reminders, the sermon library
