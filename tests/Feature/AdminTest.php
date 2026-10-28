@@ -110,8 +110,8 @@ class AdminTest extends TestCase
     public function test_subscribers_can_be_searched_exported_and_removed(): void
     {
         $this->actingAs($this->admin());
-        $ada = NewsletterSubscriber::create(['email' => 'ada@example.com']);
-        NewsletterSubscriber::create(['email' => '=cmd@example.com']);
+        $ada = NewsletterSubscriber::create(['email' => 'ada@example.com', 'confirmed_at' => now()]);
+        NewsletterSubscriber::create(['email' => '=cmd@example.com', 'confirmed_at' => now()]);
 
         $this->get('/admin/subscribers?q=ada')->assertSee('ada@example.com')->assertDontSee('=cmd@example.com');
 

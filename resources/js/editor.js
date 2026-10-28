@@ -104,3 +104,18 @@ for (const form of document.querySelectorAll('form[data-unsaved-warning]')) {
         if (dirty) e.preventDefault();
     });
 }
+
+// Announcement sending: SMS length and pages, and keep the WhatsApp link in step with the text.
+const smsText = document.querySelector('[data-sms-text]');
+if (smsText) {
+    const count = document.querySelector('[data-sms-count]');
+    const share = document.querySelector('[data-whatsapp-share]');
+    const sync = () => {
+        const n = [...smsText.value].length;
+        const pages = n <= 160 ? 1 : Math.ceil(n / 153);
+        count.textContent = `${n} characters · ${pages} SMS ${pages === 1 ? 'page' : 'pages'} per person.`;
+        if (share) share.href = `https://wa.me/?text=${encodeURIComponent(smsText.value)}`;
+    };
+    smsText.addEventListener('input', sync);
+    sync();
+}

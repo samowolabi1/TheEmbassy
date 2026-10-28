@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Account;
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\AppController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EventController;
@@ -88,6 +89,21 @@ Route::middleware('throttle:5,1')->group(function () {
     Route::post('/prayer-requests', [PrayerRequestController::class, 'store'])->name('prayer-requests.store');
     Route::post('/newsletter', [NewsletterSubscriptionController::class, 'store'])->name('newsletter.store');
 });
+
+// The installable app: manifest, icons, service worker, offline page and notifications.
+Route::get('/manifest.webmanifest', [AppController::class, 'manifest'])->name('app.manifest');
+Route::get('/app-icon-{size}.png', [AppController::class, 'icon'])->whereNumber('size')->name('app.icon');
+Route::get('/sw.js', [AppController::class, 'serviceWorker'])->name('app.sw');
+Route::get('/offline', [AppController::class, 'offline'])->name('app.offline');
+Route::middleware('throttle:20,1')->group(function () {
+    Route::post('/push/subscribe', [AppController::class, 'subscribe'])->name('push.subscribe');
+    Route::post('/push/unsubscribe', [AppController::class, 'unsubscribe'])->name('push.unsubscribe');
+});
+
+// Weekly email: confirm and unsubscribe links (the token is the secret).
+Route::get('/newsletter/confirm/{token}', [NewsletterSubscriptionController::class, 'confirm'])->where('token', '[A-Za-z0-9]{40}')->name('newsletter.confirm');
+Route::get('/newsletter/unsubscribe/{token}', [NewsletterSubscriptionController::class, 'unsubscribeForm'])->where('token', '[A-Za-z0-9]{40}')->name('newsletter.unsubscribe');
+Route::post('/newsletter/unsubscribe/{token}', [NewsletterSubscriptionController::class, 'unsubscribe'])->where('token', '[A-Za-z0-9]{40}')->middleware('throttle:20,1')->name('newsletter.unsubscribe.store');
 
 // Member accounts: joining the church register, signing in, and the member's own page.
 Route::middleware('guest')->group(function () {
@@ -290,12 +306,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::middleware('can:manage,"subscribers"')->group(function () {
             Route::get('/subscribers', [Admin\SubscriberController::class, 'index'])->name('subscribers.index');
             Route::get('/subscribers/export', [Admin\SubscriberController::class, 'export'])->name('subscribers.export');
+            Route::get('/subscribers/preview', [Admin\SubscriberController::class, 'preview'])->name('subscribers.preview');
+            Route::post('/subscribers/send', [Admin\SubscriberController::class, 'send'])->name('subscribers.send');
             Route::delete('/subscribers/{subscriber}', [Admin\SubscriberController::class, 'destroy'])->name('subscribers.destroy');
         });
 
         Route::middleware('can:manage,"content"')->group(function () {
             Route::get('/content', Admin\ContentController::class)->name('content');
             Route::resource('announcements', Admin\AnnouncementController::class)->only(['store', 'edit', 'update', 'destroy']);
+            Route::get('/announcements/{announcement}/send', [Admin\BroadcastController::class, 'create'])->name('announcements.send');
+            Route::post('/announcements/{announcement}/send', [Admin\BroadcastController::class, 'store'])->middleware('throttle:10,1')->name('announcements.send.store');
             Route::post('/declarations', [Admin\DeclarationController::class, 'store'])->name('declarations.store');
             Route::post('/posts/images', [Admin\PostController::class, 'upload'])->name('posts.upload');
             Route::get('/posts/{post}/preview', [Admin\PostController::class, 'preview'])->name('posts.preview');

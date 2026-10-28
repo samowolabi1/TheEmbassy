@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
 
         $announcements = [
             ['tag' => 'Prayer', 'tone' => 'wash', 'title' => 'Midweek prayer moves online', 'body' => 'Join on YouTube Live every [Day] at [Time].'],
-            ['tag' => 'Units', 'tone' => 'ice', 'title' => 'Choir and media auditions are open', 'body' => 'Sign up in the app before 20 November.'],
+            ['tag' => 'Units', 'tone' => 'ice', 'title' => 'Choir and media auditions are open', 'body' => 'Sign up with the unit heads or in your account before 20 November.'],
             ['tag' => 'This Sunday', 'tone' => 'wash', 'title' => 'Thanksgiving service and family lunch', 'body' => 'Wear white and gold. Lunch is served after service.'],
         ];
 

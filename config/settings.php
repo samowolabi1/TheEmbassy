@@ -62,6 +62,32 @@ return [
         ],
     ],
 
+    'newsletter' => [
+        'title' => 'Weekly email',
+        'fields' => [
+            'church.newsletter.enabled' => ['label' => 'Send the weekly email automatically on Monday mornings', 'type' => 'checkbox'],
+            'church.newsletter.send_at' => ['label' => 'Time to send (Lagos time, 24-hour)', 'type' => 'text', 'rules' => ['regex:/^([01]\\d|2[0-3]):[0-5]\\d$/'], 'hint' => 'e.g. 07:00'],
+        ],
+    ],
+
+    'sms' => [
+        'title' => 'Text messages (Termii)',
+        'fields' => [
+            'services.termii.api_key' => ['label' => 'Termii API key', 'type' => 'secret', 'hint' => 'From termii.com › Dashboard › API settings. Stored encrypted.'],
+            'services.termii.sender_id' => ['label' => 'Sender ID', 'type' => 'text', 'rules' => ['regex:/^[A-Za-z0-9 ]{3,11}$/'], 'hint' => 'The approved name messages come from, up to 11 letters, e.g. RoyalTribe.'],
+            'services.termii.channel' => ['label' => 'Route (generic or dnd)', 'type' => 'text', 'rules' => ['in:generic,dnd'], 'hint' => '"dnd" also reaches numbers on Do-Not-Disturb but is sent one at a time and costs more. Ask Termii to enable it first.'],
+            'services.termii.base_url' => ['label' => 'Termii base URL', 'type' => 'url', 'hint' => 'Shown in your Termii dashboard, e.g. https://v3.api.termii.com'],
+        ],
+    ],
+
+    'push' => [
+        'title' => 'App notifications',
+        'fields' => [
+            'services.webpush.public_key' => ['label' => 'Public key', 'type' => 'text', 'hint' => 'Created by `php artisan push:keys`. Changing the keys means everyone has to allow notifications again.'],
+            'services.webpush.private_key' => ['label' => 'Private key', 'type' => 'secret'],
+        ],
+    ],
+
     'youtube' => [
         'title' => 'YouTube broadcasts',
         'fields' => [

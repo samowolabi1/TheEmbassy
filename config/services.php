@@ -57,6 +57,20 @@ return [
     // Google sign-in for the church's YouTube channel, so broadcasts are created automatically.
     // Create an OAuth client (type "Web application") in Google Cloud with the YouTube Data API
     // enabled, and add {APP_URL}/youtube/callback as an authorised redirect URI.
+    // Bulk SMS for announcements (termii.com). Use the base URL shown in the Termii dashboard.
+    'termii' => [
+        'api_key' => env('TERMII_API_KEY'),
+        'sender_id' => env('TERMII_SENDER_ID'),
+        'channel' => env('TERMII_CHANNEL', 'generic'), // generic, or dnd for numbers on Do-Not-Disturb
+        'base_url' => env('TERMII_BASE_URL', 'https://v3.api.termii.com'),
+    ],
+
+    // App notifications (web push). Create the keys once with `php artisan push:keys`.
+    'webpush' => [
+        'public_key' => env('WEBPUSH_PUBLIC_KEY'),
+        'private_key' => env('WEBPUSH_PRIVATE_KEY'),
+    ],
+
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),

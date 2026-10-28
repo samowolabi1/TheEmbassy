@@ -33,7 +33,7 @@
                     </div>
                 </div>
             </div>
-            <span class="box__note" style="text-align: center; max-width: 300px">The newest three live announcements show on the home page. Sending by SMS, WhatsApp or push comes with the member app.</span>
+            <span class="box__note" style="text-align: center; max-width: 300px">The newest three live announcements show on the home page. Use "Send" on an announcement to text members, notify the app, or share it to WhatsApp.</span>
         </aside>
     </div>
 
@@ -93,6 +93,9 @@
                     </span>
                     <span class="pill pill--{{ $a->status() }}">{{ $a->status() }}</span>
                     <span class="list-item__actions">
+                        @if ($a->status() === 'live')
+                            <a href="{{ route('admin.announcements.send', $a) }}" class="btn btn--ghost btn--xs">Send<span class="sr-only"> {{ $a->title }}</span></a>
+                        @endif
                         <a href="{{ route('admin.announcements.edit', $a) }}" class="btn btn--ghost btn--xs">Edit<span class="sr-only"> {{ $a->title }}</span></a>
                         <form method="POST" action="{{ route('admin.announcements.destroy', $a) }}" data-confirm="Delete &quot;{{ $a->title }}&quot;?">
                             @csrf

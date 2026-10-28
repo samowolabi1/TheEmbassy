@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
 /**
  * Someone in the church family. They may have a login (user) or be on the register only.
  */
-#[Fillable(['name', 'phone', 'email', 'gender', 'birthday', 'anniversary', 'address', 'unit_id', 'fellowship_id', 'token_plan_id', 'tokens_from', 'joined_on', 'baptised', 'believers_class', 'workers_training', 'notes'])]
+#[Fillable(['name', 'phone', 'email', 'gender', 'birthday', 'anniversary', 'address', 'unit_id', 'fellowship_id', 'token_plan_id', 'tokens_from', 'joined_on', 'baptised', 'believers_class', 'workers_training', 'notes', 'notify_sms'])]
 class Member extends Model
 {
     use HasFactory;
@@ -51,6 +51,7 @@ class Member extends Model
             'baptised' => 'boolean',
             'believers_class' => 'boolean',
             'workers_training' => 'boolean',
+            'notify_sms' => 'boolean',
         ];
     }
 
@@ -270,14 +271,21 @@ class Member extends Model
      */
     public function whatsappUrl(): ?string
     {
-        $digits = preg_replace('/\D/', '', (string) $this->phone);
-        if ($digits === '') {
-            return null;
-        }
+        $digits = static::internationalPhone($this->phone);
+
+        return $digits ? 'https://wa.me/'.$digits : null;
+    }
+
+    /**
+     * A phone number as digits with the country code (Nigerian 0… numbers become 234…), or null.
+     */
+    public static function internationalPhone(?string $phone): ?string
+    {
+        $digits = preg_replace('/\D/', '', (string) $phone);
         if (str_starts_with($digits, '0') && strlen($digits) === 11) {
             $digits = '234'.substr($digits, 1);
         }
 
-        return 'https://wa.me/'.$digits;
+        return strlen($digits) >= 10 && strlen($digits) <= 15 ? $digits : null;
     }
 }

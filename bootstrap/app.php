@@ -24,7 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             default => route('account'),
         });
         // Paystack signs its webhooks instead; see PaymentController::webhook.
-        $middleware->validateCsrfTokens(except: ['webhooks/paystack']);
+        $middleware->validateCsrfTokens(except: ['webhooks/paystack', 'newsletter/unsubscribe/*']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

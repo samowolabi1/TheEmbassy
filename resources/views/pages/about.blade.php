@@ -106,7 +106,11 @@
                 <span class="eyebrow">UNITS</span>
                 <h2 class="h2">Every gift has a place.</h2>
             </div>
-            <a href="{{ route('home') }}#app" class="btn btn--navy btn--md">Join a unit in the app</a>
+            @auth
+                <a href="{{ route('account') }}" class="btn btn--navy btn--md">Choose your unit</a>
+            @else
+                <a href="{{ route('join') }}" class="btn btn--navy btn--md">Join a unit</a>
+            @endauth
         </div>
         <div class="grid-auto" style="--min: 270px; --gap: 14px">
             @foreach ($about['units'] as $unit)

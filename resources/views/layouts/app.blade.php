@@ -7,6 +7,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="manifest" href="{{ route('app.manifest') }}">
+    <link rel="apple-touch-icon" href="{{ route('app.icon', 192) }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="{{ config('church.short_name') }}">
+    @if (config('services.webpush.public_key'))
+        <meta name="push-key" content="{{ config('services.webpush.public_key') }}">
+    @endif
     <title>{{ $title }}</title>
     <meta name="description" content="{{ $description }}">
     <meta property="og:title" content="{{ $title }}">

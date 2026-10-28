@@ -173,9 +173,22 @@
                     <label class="field">Address or area
                         <input type="text" name="address" value="{{ old('address', $member->address) }}" maxlength="255">
                     </label>
+                    <label class="check"><input type="checkbox" name="notify_sms" value="1" @checked(old('notify_sms', $member->notify_sms))>Text me church announcements</label>
                     <button type="submit" class="btn btn--navy" style="align-self: flex-start">Save details</button>
                 </fieldset>
             </form>
+
+            <div class="card notice-form__main" style="flex: none">
+                <h2>Notifications on this phone</h2>
+                <p class="lede" style="margin: 0">Get church announcements as notifications on this phone or computer.</p>
+                <div class="app-actions">
+                    <button type="button" class="btn btn--outline" data-install aria-controls="install-hint" hidden>Install the app</button>
+                    <button type="button" class="btn btn--navy" data-push-toggle data-on-label="Turn on notifications" data-off-label="Turn off notifications" hidden>Turn on notifications</button>
+                    <span class="app-actions__status" data-push-status aria-live="polite"></span>
+                </div>
+                <p id="install-hint" class="field-hint" hidden>On iPhone: tap Share in Safari, then "Add to Home Screen". On Android: open the browser menu and choose "Install app".</p>
+                <noscript><p class="field-hint">Notifications need JavaScript turned on.</p></noscript>
+            </div>
         @endunless
     </section>
 @endsection

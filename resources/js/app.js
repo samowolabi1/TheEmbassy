@@ -9,3 +9,4 @@ import './check-in';
 import './notices';
 import './booking';
 import './gallery';
+import './app-shell';

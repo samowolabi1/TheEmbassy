@@ -99,7 +99,7 @@
             <div class="gathering bg-wash">
                 <span class="gathering__when">MONTHLY</span>
                 <span class="gathering__title">Unit meetings</span>
-                <span class="gathering__text" style="color: var(--body)">Dates in the app</span>
+                <span class="gathering__text" style="color: var(--body)">Dates from your unit head</span>
             </div>
         </div>
     </section>

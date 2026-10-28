@@ -85,6 +85,12 @@ return [
         'is_live' => false,
     ],
 
+    // The weekly email (admin › Weekly email). send_at is Lagos time on Mondays.
+    'newsletter' => [
+        'enabled' => true,
+        'send_at' => '07:00',
+    ],
+
     'bank' => [
         'name' => '[Bank name]',
         'account_number' => '[Account number]',

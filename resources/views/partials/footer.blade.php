@@ -25,7 +25,7 @@
                 <label class="honeypot" aria-hidden="true">Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
                 <button class="btn btn--gold foot__submit" type="submit">Subscribe</button>
                 @if (session('subscribed'))
-                    <p class="foot__status" id="newsletter-status" role="status">You're subscribed. See you on Monday.</p>
+                    <p class="foot__status" id="newsletter-status" role="status">Almost done: check your inbox and confirm.</p>
                 @endif
                 @error('email', 'newsletter')
                     <p class="foot__status" id="newsletter-status" role="alert">{{ $message }}</p>

@@ -19,7 +19,7 @@
             ['id' => 'welfare', 'area' => 'welfare', 'label' => 'Welfare', 'route' => 'admin.welfare',
                 'badge' => $count('welfare', fn () => \App\Models\WelfareCase::where('status', 'awaiting_pastor')->count())],
             ['id' => 'units', 'area' => 'units', 'label' => 'Units & fellowships', 'route' => 'admin.units.index'],
-            ['id' => 'subscribers', 'area' => 'subscribers', 'label' => 'Newsletter subscribers', 'route' => 'admin.subscribers.index'],
+            ['id' => 'subscribers', 'area' => 'subscribers', 'label' => 'Weekly email', 'route' => 'admin.subscribers.index'],
         ],
         'MONEY' => [
             ['id' => 'finance', 'area' => 'finance', 'label' => 'Giving & tokens', 'route' => 'admin.finance.index'],

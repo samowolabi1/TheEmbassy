@@ -236,7 +236,7 @@
             <div class="stack events-panel__copy">
                 <span class="eyebrow">UPCOMING EVENTS</span>
                 <h2 class="display events-panel__title">Don't miss what's next.</h2>
-                <span class="events-panel__text">RSVP in the app and get a reminder before each event.</span>
+                <span class="events-panel__text">RSVP online and add each event to your calendar.</span>
                 <a href="{{ route('events') }}" class="btn btn--gold" style="align-self: flex-start; margin-top: 6px">See the calendar</a>
             </div>
             <div class="stack events-panel__list">
@@ -363,11 +363,22 @@
         <div class="panel bg-ice stack" style="gap: 16px">
             <span class="eyebrow">{{ strtoupper(config('church.brand.app_name')) }}</span>
             <h2 class="cta-title">Church in your pocket.</h2>
-            <p class="cta-text">Watch live, take sermon notes, join the prayer wall, pay your token and shop from members.</p>
-            <div class="store-links">
-                <a href="{{ $links['app_store'] }}" class="store-link">App Store</a>
-                <a href="{{ $links['google_play'] }}" class="store-link">Google Play</a>
+            <p class="cta-text">Put the Tribe on your home screen: watch live, check in on Sundays, pay your token, give, and get announcements as notifications.</p>
+            <div class="app-actions">
+                <button type="button" class="btn btn--navy" data-install aria-controls="install-hint" hidden>Install the app</button>
+                <button type="button" class="btn btn--outline" data-push-toggle data-on-label="Turn on notifications" data-off-label="Turn off notifications" hidden>Turn on notifications</button>
+                <span class="app-actions__status" data-push-status aria-live="polite"></span>
+                <span class="app-actions__status" data-installed hidden>You're using the app.</span>
             </div>
+            <p id="install-hint" class="cta-text" style="font-size: 14px" hidden>On iPhone: tap the Share button in Safari, then "Add to Home Screen". On Android: open the browser menu and choose "Install app" or "Add to Home screen".</p>
+            @php $stores = array_filter(['App Store' => $links['app_store'], 'Google Play' => $links['google_play']], fn ($url) => $url && $url !== '#'); @endphp
+            @if ($stores)
+                <div class="store-links">
+                    @foreach ($stores as $label => $url)
+                        <a href="{{ $url }}" class="store-link">{{ $label }}</a>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </section>
 

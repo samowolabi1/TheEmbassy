@@ -11,7 +11,7 @@ return [
         'care' => 'Follow-up & care',
         'welfare' => 'Welfare (cases and approvals above the HOD\'s limit)',
         'units' => 'Units & fellowships',
-        'subscribers' => 'Newsletter subscribers',
+        'subscribers' => 'Weekly email & subscribers',
         'finance' => 'Giving & tokens',
         'expenses' => 'Expenses & budgets',
         'market' => 'Market',

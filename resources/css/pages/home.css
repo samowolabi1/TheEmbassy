@@ -822,3 +822,18 @@
     padding: 26px !important;
   }
 }
+
+.app-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.app-actions__status {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.app-actions__status:empty {
+  display: none;
+}

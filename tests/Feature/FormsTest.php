@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\NewsletterSubscriber;
 use App\Models\PrayerRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class FormsTest extends TestCase
@@ -52,6 +53,7 @@ class FormsTest extends TestCase
 
     public function test_newsletter_signup_is_saved_once(): void
     {
+        Mail::fake();
         $this->from('/about')->post('/newsletter', ['email' => 'Ada@Example.com'])
             ->assertRedirect(url('/about').'#newsletter')
             ->assertSessionHas('subscribed');

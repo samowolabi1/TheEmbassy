@@ -53,7 +53,7 @@ class AccountController extends Controller
             'fellowship_id' => ['nullable', Rule::exists('fellowships', 'id')],
         ]);
 
-        $member->update($data);
+        $member->update([...$data, 'notify_sms' => $request->boolean('notify_sms')]);
 
         return back()->with('status', 'Your details are saved.');
     }
