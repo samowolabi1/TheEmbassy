@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Care\FollowUps;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class FirstTimer extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        // Every new card gets a call scheduled.
+        static::created(fn (FirstTimer $firstTimer) => app(FollowUps::class)->forFirstTimer($firstTimer));
+    }
 
     /**
      * Get the attributes that should be cast.

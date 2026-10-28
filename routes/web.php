@@ -152,6 +152,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('/first-timers/{firstTimer}', [Admin\FirstTimerController::class, 'destroy'])->name('first-timers.destroy');
         });
 
+        Route::middleware('can:manage,"care"')->group(function () {
+            Route::get('/care', [Admin\CareController::class, 'index'])->name('care.index');
+            Route::post('/care', [Admin\CareController::class, 'store'])->name('care.store');
+            Route::post('/care/{followUp}/assign', [Admin\CareController::class, 'assign'])->name('care.assign');
+            Route::post('/care/{followUp}/done', [Admin\CareController::class, 'complete'])->name('care.complete');
+        });
+
         Route::middleware('can:manage,"units"')->group(function () {
             Route::get('/units', [Admin\UnitController::class, 'index'])->name('units.index');
             Route::post('/units', [Admin\UnitController::class, 'storeUnit'])->name('units.store');

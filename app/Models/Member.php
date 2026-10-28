@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Care\FollowUps;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -124,16 +125,43 @@ class Member extends Model
     }
 
     /**
-     * Approve a member: they start owing tokens from this month on their plan.
+     * Approve a member: they start owing tokens from this month on their plan. People who joined
+     * themselves get a welcome follow-up; records the office adds or imports don't.
      */
-    public function approve(): void
+    public function approve(bool $welcome = false): void
     {
+        $wasPending = $this->status === self::PENDING;
         $this->forceFill([
             'status' => self::ACTIVE,
             'joined_on' => $this->joined_on ?? today(),
             'token_plan_id' => $this->token_plan_id ?? TokenPlan::default()?->id,
             'tokens_from' => $this->tokens_from ?? today()->startOfMonth(),
         ])->save();
+
+        if ($welcome && $wasPending) {
+            app(FollowUps::class)->forNewMember($this);
+        }
+    }
+
+    /**
+     * @return HasMany<FollowUp, $this>
+     */
+    public function followUps(): HasMany
+    {
+        return $this->hasMany(FollowUp::class);
+    }
+
+    /**
+     * Of the last `$count` Sundays where attendance was taken, how many they were at.
+     *
+     * @return array{attended: int, of: int}
+     */
+    public function recentSundays(int $count = 8): array
+    {
+        $ids = Service::where('kind', 'sunday')->where('held_on', '<=', today()->endOfDay())
+            ->whereHas('members')->orderByDesc('held_on')->take($count)->pluck('id');
+
+        return ['attended' => $this->services()->whereIn('services.id', $ids)->count(), 'of' => $ids->count()];
     }
 
     public function initials(): string

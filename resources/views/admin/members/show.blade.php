@@ -55,7 +55,9 @@
             @if (auth()->user()->canManage('finance') && $member->status === 'active' && $member->tokenPlan && ! $member->tokenPlan->isExempt())
                 <a href="{{ route('admin.finance.index') }}#record-tokens" class="btn btn--ghost btn--xs" style="align-self: flex-start">Record a token payment</a>
             @endif
-            <h2>Recent services</h2>
+            <h2>Attendance</h2>
+            @php($sundays = $member->recentSundays())
+            <p class="box__note" style="margin: 0">@if ($sundays['of'])At <strong>{{ $sundays['attended'] }} of the last {{ $sundays['of'] }}</strong> Sundays where attendance was taken.@else No Sunday attendance taken yet.@endif</p>
             @forelse ($recentServices as $service)
                 <span class="box__note" style="margin: 0">{{ $service->held_on->format('D j M') }} · {{ $service->label() }}</span>
             @empty
@@ -63,6 +65,22 @@
             @endforelse
         </section>
     </div>
+
+    @if (auth()->user()->canManage('care'))
+        <section class="box box--flush">
+            <div class="box__head"><h2>Follow-ups</h2><a href="{{ route('admin.care.index') }}#new-follow-up" class="box__link">Add a follow-up</a></div>
+            @forelse ($member->followUps()->with('doer')->latest()->take(8)->get() as $f)
+                <div class="list-item">
+                    <span class="list-item__main">
+                        <span class="list-item__title">{{ $f->reasonLabel() }}@if ($f->note) · <span style="font-weight: 500">{{ $f->note }}</span>@endif</span>
+                        <span class="list-item__meta">{{ $f->done_at ? (\App\Models\FollowUp::OUTCOMES[$f->outcome] ?? 'Done').' '.$f->done_at->format('j M Y').($f->doer ? ' by '.$f->doer->name : '').($f->outcome_note ? ': '.$f->outcome_note : '') : 'Open, due '.$f->due_on->format('j M') }}</span>
+                    </span>
+                </div>
+            @empty
+                <p class="empty-state">No follow-ups yet.</p>
+            @endforelse
+        </section>
+    @endif
 
     <form method="POST" action="{{ route('admin.members.destroy', $member) }}" data-confirm="Remove {{ $member->name }} from the register? Their giving records stay." style="align-self: flex-start">
         @csrf

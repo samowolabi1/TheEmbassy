@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Services\Care\FollowUps;
 use App\Services\Market\SubscriptionReminders;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Str;
@@ -58,5 +59,11 @@ Artisan::command('market:remind', function (SubscriptionReminders $reminders) {
     $this->info("Sent {$sent['ending']} renewal reminders and {$sent['lapsed']} lapsed notices.");
 })->purpose('Email sellers whose market subscription is ending or has just ended');
 
+Artisan::command('care:scan', function (FollowUps $followUps) {
+    $result = $followUps->scanAbsences();
+    $this->info("Raised {$result['raised']} follow-ups for members not seen lately; closed {$result['closed']} for members who are back.");
+})->purpose('Raise follow-ups for members who have missed several Sundays, and close them when they return');
+
 // Run `php artisan schedule:run` every minute from cron (see the README).
+Schedule::command('care:scan')->dailyAt('07:00')->timezone('Africa/Lagos');
 Schedule::command('market:remind')->dailyAt('08:00')->timezone('Africa/Lagos');

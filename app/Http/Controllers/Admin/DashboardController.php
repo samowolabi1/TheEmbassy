@@ -8,6 +8,7 @@ use App\Models\Declaration;
 use App\Models\Event;
 use App\Models\Expense;
 use App\Models\FirstTimer;
+use App\Models\FollowUp;
 use App\Models\Fund;
 use App\Models\Gift;
 use App\Models\Member;
@@ -54,6 +55,11 @@ class DashboardController extends Controller
             $data['tiles'][] = ['label' => 'First-timers ('.now()->format('M').')', 'num' => FirstTimer::where('visited_on', '>=', $monthStart)->count(), 'foot' => FirstTimer::where('visited_on', '>=', $monthStart)->whereNotNull('followed_up_at')->count().' followed up', 'route' => route('admin.first-timers.index')];
             $data['todo'][] = ['count' => FirstTimer::whereNull('followed_up_at')->count(), 'text' => 'First-timers not yet called', 'route' => route('admin.first-timers.index')];
             $data['sundays'] = Service::where('kind', 'sunday')->orderByDesc('held_on')->take(8)->get()->reverse()->values();
+        }
+        if ($can('care')) {
+            $data['todo'][] = ['count' => FollowUp::open()->where('assigned_to', $user->id)->count(), 'text' => 'Your follow-ups', 'route' => route('admin.care.index')];
+            $data['todo'][] = ['count' => FollowUp::open()->whereNull('assigned_to')->count(), 'text' => 'Follow-ups nobody has picked up', 'route' => route('admin.care.index', ['tab' => 'unassigned'])];
+            $data['todo'][] = ['count' => FollowUp::open()->where('reason', 'absent')->count(), 'text' => 'Members not seen lately', 'route' => route('admin.care.index', ['tab' => 'open'])];
         }
         if ($can('finance')) {
             $giving = (int) Gift::paid()->where('given_on', '>=', $monthStart)->sum('amount');

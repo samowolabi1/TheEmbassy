@@ -13,6 +13,8 @@
                 'badge' => $count('members', fn () => \App\Models\Member::where('status', \App\Models\Member::PENDING)->count())],
             ['id' => 'firsttimers', 'area' => 'attendance', 'label' => 'First-timers & follow-up', 'route' => 'admin.first-timers.index',
                 'badge' => $count('attendance', fn () => \App\Models\FirstTimer::whereNull('followed_up_at')->count())],
+            ['id' => 'care', 'area' => 'care', 'label' => 'Follow-up & care', 'route' => 'admin.care.index',
+                'badge' => $count('care', fn () => \App\Models\FollowUp::open()->where(fn ($q) => $q->where('assigned_to', $user->id)->orWhereNull('assigned_to'))->count())],
             ['id' => 'attendance', 'area' => 'attendance', 'label' => 'Attendance', 'route' => 'admin.attendance.index'],
             ['id' => 'units', 'area' => 'units', 'label' => 'Units & fellowships', 'route' => 'admin.units.index'],
             ['id' => 'subscribers', 'area' => 'subscribers', 'label' => 'Newsletter subscribers', 'route' => 'admin.subscribers.index'],

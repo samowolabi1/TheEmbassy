@@ -7,6 +7,7 @@ use App\Models\Fellowship;
 use App\Models\Member;
 use App\Models\TokenPlan;
 use App\Models\Unit;
+use App\Services\Care\FollowUps;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -75,12 +76,16 @@ class MemberController extends Controller
     public function update(Request $request, Member $member): RedirectResponse
     {
         $data = $this->validated($request, $member);
+        $wasPending = $member->status === Member::PENDING;
         $member->fill($data);
         $member->status = $request->validate(['status' => ['required', Rule::in(array_keys(self::TABS))]])['status'];
         $member->save();
 
         if ($member->status === Member::ACTIVE) {
             $member->approve(); // fills in plan and token start if they're missing
+            if ($wasPending) {
+                app(FollowUps::class)->forNewMember($member);
+            }
         }
 
         return redirect()->route('admin.members.show', $member)->with('status', 'Saved.');
@@ -88,7 +93,7 @@ class MemberController extends Controller
 
     public function approve(Member $member): RedirectResponse
     {
-        $member->approve();
+        $member->approve(welcome: true);
 
         return back()->with('status', "{$member->name} is now a member.");
     }

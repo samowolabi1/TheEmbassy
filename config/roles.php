@@ -8,6 +8,7 @@ return [
     'areas' => [
         'members' => 'Members',
         'attendance' => 'Attendance & first-timers',
+        'care' => 'Follow-up & care',
         'units' => 'Units & fellowships',
         'subscribers' => 'Newsletter subscribers',
         'finance' => 'Giving & tokens',
@@ -24,9 +25,9 @@ return [
 
     'roles' => [
         'admin' => ['name' => 'Administrator', 'areas' => ['*']],
-        'pastor' => ['name' => 'Pastor', 'areas' => ['members', 'attendance', 'units', 'subscribers', 'finance', 'expenses', 'market', 'content', 'notices', 'sermons', 'events', 'prayer', 'messages']],
+        'pastor' => ['name' => 'Pastor', 'areas' => ['members', 'attendance', 'care', 'units', 'subscribers', 'finance', 'expenses', 'market', 'content', 'notices', 'sermons', 'events', 'prayer', 'messages']],
         'finance' => ['name' => 'Finance', 'areas' => ['finance', 'expenses', 'market']],
-        'secretary' => ['name' => 'Church office', 'areas' => ['members', 'attendance', 'units', 'subscribers', 'market', 'content', 'notices', 'events', 'prayer', 'messages']],
+        'secretary' => ['name' => 'Church office', 'areas' => ['members', 'attendance', 'care', 'units', 'subscribers', 'market', 'content', 'notices', 'events', 'prayer', 'messages']],
         'media' => ['name' => 'Media', 'areas' => ['content', 'notices', 'sermons', 'events']],
         'usher' => ['name' => 'Ushering', 'areas' => ['attendance', 'events']],
     ],
