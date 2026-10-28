@@ -65,6 +65,15 @@ return [
         ],
     ],
 
+    'social' => [
+        'title' => 'Social media posting (Facebook and Instagram)',
+        'fields' => [
+            'services.meta.page_id' => ['label' => 'Facebook Page ID', 'type' => 'text', 'hint' => 'Facebook Page › About › Page transparency, or Meta Business Suite › Settings.'],
+            'services.meta.page_token' => ['label' => 'Page access token', 'type' => 'secret', 'hint' => 'A long-lived Page token with pages_manage_posts (and instagram_content_publish for Instagram). Stored encrypted.'],
+            'services.meta.instagram_id' => ['label' => 'Instagram business account ID', 'type' => 'text', 'hint' => 'The Instagram professional account linked to the Page.'],
+        ],
+    ],
+
     'live' => [
         'title' => 'Live stream',
         'fields' => [

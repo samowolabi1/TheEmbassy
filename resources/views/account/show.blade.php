@@ -11,6 +11,9 @@
             @if ($member?->status === 'active')
                 <a href="{{ route('account.welfare') }}" class="btn btn--outline btn--sm">Welfare</a>
             @endif
+            @if ($member?->status === 'active' && $member->unit?->isMedia() && ! $member->unit->isLedBy($member))
+                <a href="{{ route('unit.setup.index', $member->unit) }}" class="btn btn--navy btn--sm">Media team</a>
+            @endif
             @foreach ($ledUnits as $led)
                 <a href="{{ route('unit.show', $led) }}" class="btn btn--navy btn--sm">Lead {{ $led->name }}</a>
             @endforeach

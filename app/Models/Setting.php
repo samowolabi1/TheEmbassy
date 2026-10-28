@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 use Throwable;
 
 /**
@@ -38,10 +39,19 @@ class Setting extends Model
         }
 
         $allowed = static::keys();
+        $secret = static::secretKeys();
         foreach ($saved as $key => $value) {
-            if (in_array($key, $allowed, true) && $value !== null && $value !== '') {
-                config([$key => $value]);
+            if (! in_array($key, $allowed, true) || $value === null || $value === '') {
+                continue;
             }
+            if (in_array($key, $secret, true)) {
+                try {
+                    $value = Crypt::decryptString($value);
+                } catch (Throwable) {
+                    continue; // e.g. saved under a different APP_KEY
+                }
+            }
+            config([$key => $value]);
         }
     }
 
@@ -54,6 +64,16 @@ class Setting extends Model
             static::updateOrCreate(['key' => $key], ['value' => $value]);
         }
         Cache::forget(self::CACHE_KEY);
+    }
+
+    /**
+     * Settings stored encrypted, such as access tokens.
+     *
+     * @return list<string>
+     */
+    public static function secretKeys(): array
+    {
+        return collect(config('settings'))->flatMap(fn ($group) => collect($group['fields'])->filter(fn ($f) => $f['type'] === 'secret')->keys())->all();
     }
 
     /**

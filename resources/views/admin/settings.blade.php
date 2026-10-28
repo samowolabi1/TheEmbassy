@@ -102,6 +102,15 @@
                                 <input type="hidden" name="{{ $input }}" value="0">
                                 <input type="checkbox" name="{{ $input }}" value="1" @checked(old($input, $values[$key]))> {{ $field['label'] }}
                             </label>
+                        @elseif ($field['type'] === 'secret')
+                            <label class="field">{{ $field['label'] }}
+                                <input type="password" name="{{ $input }}" value="" autocomplete="off" placeholder="{{ in_array($key, $savedSecrets, true) ? 'Saved. Type a new one to replace it' : 'Not set' }}">
+                                @isset($field['hint']) <span class="field__hint">{{ $field['hint'] }}</span> @endisset
+                                @if (in_array($key, $savedSecrets, true))
+                                    <span class="login__remember" style="font-weight: 500"><input type="checkbox" name="clear__{{ $input }}" value="1"> Remove the saved token</span>
+                                @endif
+                                @error($input) <span class="field-error">{{ $message }}</span> @enderror
+                            </label>
                         @elseif ($field['type'] === 'textarea')
                             <label class="field" style="grid-column: 1 / -1">{{ $field['label'] }}
                                 <textarea name="{{ $input }}" maxlength="1000" style="height: 90px">{{ old($input, $values[$key]) }}</textarea>

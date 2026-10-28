@@ -23,14 +23,15 @@ for (const btn of document.querySelectorAll('[data-share]')) {
 for (const btn of document.querySelectorAll('[data-copy]')) {
     btn.addEventListener('click', async () => {
         const text = btn.dataset.copy || location.href;
+        const label = btn.dataset.copyLabel ?? (btn.getAttribute('aria-label') || btn.textContent);
         try {
             await navigator.clipboard.writeText(text);
             if (btn.hasAttribute('aria-label')) {
                 btn.setAttribute('aria-label', 'Copied');
-                setTimeout(() => btn.setAttribute('aria-label', btn.dataset.copyLabel), 2000);
+                setTimeout(() => btn.setAttribute('aria-label', label), 2000);
             } else {
                 btn.textContent = 'Copied';
-                setTimeout(() => (btn.textContent = btn.dataset.copyLabel), 2000);
+                setTimeout(() => (btn.textContent = label), 2000);
             }
         } catch {
             // Clipboard blocked: the text is still on screen to copy by hand.

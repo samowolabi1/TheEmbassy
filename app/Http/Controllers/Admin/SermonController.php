@@ -92,7 +92,7 @@ class SermonController extends Controller
             'is_live' => ['nullable', 'boolean'],
         ], ['video_id.regex' => 'Paste just the video ID, e.g. dQw4w9WgXcQ (the part after watch?v= in the link).']);
 
-        Setting::putMany(['church.live.video_id' => $data['video_id'] ?? null, 'church.live.is_live' => $request->boolean('is_live') ? '1' : '']);
+        Setting::putMany(['church.live.video_id' => $data['video_id'] ?? null, 'church.live.is_live' => $request->boolean('is_live') ? '1' : '0']);
 
         return back()->with('status', $request->boolean('is_live') ? 'The Watch page now shows you\'re live.' : 'Live stream saved.');
     }

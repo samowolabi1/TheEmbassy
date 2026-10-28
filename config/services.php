@@ -45,4 +45,13 @@ return [
         ],
     ],
 
+    // Posting to the church's Facebook Page and Instagram from the media unit's area. The page ID,
+    // Page access token and Instagram account ID can also be set in admin › Settings & roles.
+    'meta' => [
+        'graph_version' => env('META_GRAPH_VERSION', 'v26.0'),
+        'page_id' => env('META_PAGE_ID'),
+        'page_token' => env('META_PAGE_TOKEN'),
+        'instagram_id' => env('META_INSTAGRAM_ID'),
+    ],
+
 ];

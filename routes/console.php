@@ -3,6 +3,7 @@
 use App\Models\User;
 use App\Services\Care\FollowUps;
 use App\Services\Market\SubscriptionReminders;
+use App\Services\Social\PostPublisher;
 use App\Services\Units\DutyReminders;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Str;
@@ -69,7 +70,12 @@ Artisan::command('units:remind', function (DutyReminders $reminders) {
     $this->info('Sent '.$reminders->send().' rota reminders.');
 })->purpose('Email members serving at a service in the next two days');
 
+Artisan::command('social:publish', function (PostPublisher $publisher) {
+    $this->info('Worked on '.$publisher->publishDue().' social posts.');
+})->purpose('Publish approved social posts that are due, and finish Instagram videos that were processing');
+
 // Run `php artisan schedule:run` every minute from cron (see the README).
+Schedule::command('social:publish')->everyMinute()->withoutOverlapping();
 Schedule::command('units:remind')->dailyAt('09:00')->timezone('Africa/Lagos');
 Schedule::command('care:scan')->dailyAt('07:00')->timezone('Africa/Lagos');
 Schedule::command('market:remind')->dailyAt('08:00')->timezone('Africa/Lagos');

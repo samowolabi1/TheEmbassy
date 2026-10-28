@@ -145,6 +145,38 @@ Route::middleware(['auth', 'can:lead-unit,unit'])->prefix('units/{unit}')->name(
         Route::post('/{case}/log', [Unit\WelfareController::class, 'note'])->name('note');
     });
 });
+// The media unit's tools: equipment, service setup and streaming, social media.
+Route::middleware(['auth', 'can:media-team,unit'])->prefix('units/{unit}/media')->name('unit.')->group(function () {
+    Route::get('/equipment', [Unit\EquipmentController::class, 'index'])->name('equipment.index');
+    Route::post('/equipment/{equipment}/report', [Unit\EquipmentController::class, 'report'])->name('equipment.report');
+    Route::get('/setup', [Unit\SetupController::class, 'index'])->name('setup.index');
+    Route::get('/setup/{service}', [Unit\SetupController::class, 'show'])->name('setup.show');
+    Route::post('/setup/tasks/{task}/toggle', [Unit\SetupController::class, 'toggleTask'])->name('setup.tasks.toggle');
+    Route::get('/social', [Unit\SocialController::class, 'index'])->name('social.index');
+    Route::post('/social', [Unit\SocialController::class, 'store'])->name('social.store');
+    Route::get('/social/{post}', [Unit\SocialController::class, 'show'])->name('social.show');
+    Route::post('/social/{post}/act', [Unit\SocialController::class, 'act'])->name('social.act');
+    Route::delete('/social/{post}', [Unit\SocialController::class, 'destroy'])->name('social.destroy');
+
+    Route::middleware('can:lead-media,unit')->group(function () {
+        Route::post('/equipment', [Unit\EquipmentController::class, 'store'])->name('equipment.store');
+        Route::put('/equipment/{equipment}', [Unit\EquipmentController::class, 'update'])->name('equipment.update');
+        Route::post('/equipment/{equipment}/out', [Unit\EquipmentController::class, 'checkOut'])->name('equipment.out');
+        Route::post('/equipment/{equipment}/in', [Unit\EquipmentController::class, 'checkIn'])->name('equipment.in');
+        Route::post('/issues/{issue}/fixed', [Unit\EquipmentController::class, 'resolve'])->name('equipment.resolve');
+        Route::put('/setup/{service}', [Unit\SetupController::class, 'update'])->name('setup.update');
+        Route::post('/setup/{service}/tasks', [Unit\SetupController::class, 'addTask'])->name('setup.tasks.store');
+        Route::put('/setup/tasks/{task}', [Unit\SetupController::class, 'assignTask'])->name('setup.tasks.assign');
+        Route::post('/setup/{service}/live', [Unit\SetupController::class, 'goLive'])->name('setup.live');
+        Route::post('/setup/{service}/end', [Unit\SetupController::class, 'endLive'])->name('setup.end');
+        Route::put('/checklist', [Unit\SetupController::class, 'checklist'])->name('setup.checklist');
+        Route::post('/streams', [Unit\SetupController::class, 'storeDestination'])->name('streams.store');
+        Route::put('/streams/{destination}', [Unit\SetupController::class, 'updateDestination'])->name('streams.update');
+        Route::delete('/streams/{destination}', [Unit\SetupController::class, 'destroyDestination'])->name('streams.destroy');
+        Route::get('/streams/{destination}/key', [Unit\SetupController::class, 'revealKey'])->name('streams.key');
+    });
+});
+
 Route::post('/meetings/{meeting}/check-in', [Unit\MeetingController::class, 'checkIn'])->middleware(['auth', 'throttle:10,1'])->name('meetings.check-in');
 
 // Contact and legal pages.

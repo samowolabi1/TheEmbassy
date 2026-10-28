@@ -7,6 +7,7 @@ use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\View\View;
 
 /**
@@ -21,7 +22,9 @@ class SettingsController extends Controller
         return view('admin.settings', [
             'groups' => config('settings'),
             // What the site shows now: the saved value, or the default if it's a real value (not a placeholder).
-            'values' => collect(Setting::keys())->mapWithKeys(fn ($key) => [$key => $saved[$key] ?? $this->defaultFor($key)])->all(),
+            // Secrets are never sent back to the page; the form just says whether one is saved.
+            'values' => collect(Setting::keys())->mapWithKeys(fn ($key) => [$key => in_array($key, Setting::secretKeys(), true) ? null : ($saved[$key] ?? $this->defaultFor($key))])->all(),
+            'savedSecrets' => collect(Setting::secretKeys())->filter(fn ($key) => filled($saved[$key] ?? null) || filled(config($key)))->values()->all(),
             'staff' => User::whereNotNull('role')->orderBy('name')->get(),
             'roles' => config('roles.roles'),
             'areas' => config('roles.areas'),
@@ -39,6 +42,7 @@ class SettingsController extends Controller
                     'checkbox' => ['nullable', 'boolean'],
                     'textarea' => ['nullable', 'string', 'max:1000'],
                     'number' => ['nullable'],
+                    'secret' => ['nullable', 'string', 'max:1000'],
                     default => ['nullable', 'string', 'max:255'],
                 }, ...($field['rules'] ?? [])];
             }
@@ -52,7 +56,16 @@ class SettingsController extends Controller
         ]);
 
         $values = [];
-        foreach (Setting::keys() as $key) {
+        foreach (Setting::secretKeys() as $key) {
+            // Leave a saved secret alone unless a new one is typed in, or it's being removed.
+            $value = $data[$this->inputName($key)] ?? null;
+            if ($request->boolean('clear__'.$this->inputName($key))) {
+                $values[$key] = null;
+            } elseif (filled($value)) {
+                $values[$key] = Crypt::encryptString($value);
+            }
+        }
+        foreach (array_diff(Setting::keys(), Setting::secretKeys()) as $key) {
             $value = $data[$this->inputName($key)] ?? null;
             $type = collect(config('settings'))->firstWhere(fn ($g) => isset($g['fields'][$key]))['fields'][$key]['type'];
             $values[$key] = $type === 'checkbox' ? ($value ? '1' : '0') : $value;

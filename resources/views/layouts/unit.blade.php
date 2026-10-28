@@ -1,18 +1,19 @@
 @php
     $user = auth()->user();
-    $nav = [
+    // Leaders see the whole unit area; media team members only see the media tools.
+    $nav = $user->can('lead-unit', $unit) ? [
         ['id' => 'overview', 'label' => 'Overview', 'route' => 'unit.show'],
         ['id' => 'members', 'label' => 'Members', 'route' => 'unit.members'],
         ['id' => 'attendance', 'label' => 'Attendance', 'route' => 'unit.attendance'],
         ['id' => 'meetings', 'label' => 'Meetings', 'route' => 'unit.meetings.index'],
         ['id' => 'rota', 'label' => 'Rota', 'route' => 'unit.rota'],
         ['id' => 'messages', 'label' => 'Messages', 'route' => 'unit.messages'],
-    ];
+    ] : [];
     if ($unit->isWelfare() && $user->can('manage-welfare', $unit)) {
         $nav[] = ['id' => 'welfare', 'label' => 'Welfare cases', 'route' => 'unit.welfare.index'];
         $nav[] = ['id' => 'celebrations', 'label' => 'Celebrations', 'route' => 'unit.welfare.celebrations'];
     }
-    if ($unit->isMedia()) {
+    if ($unit->isMedia() && $user->can('media-team', $unit)) {
         $nav[] = ['id' => 'equipment', 'label' => 'Equipment', 'route' => 'unit.equipment.index'];
         $nav[] = ['id' => 'setup', 'label' => 'Service setup & streaming', 'route' => 'unit.setup.index'];
         $nav[] = ['id' => 'social', 'label' => 'Social media', 'route' => 'unit.social.index'];
@@ -35,9 +36,9 @@
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="admin-shell">
         <aside class="side">
-            <a href="{{ route('unit.show', $unit) }}" class="side__brand">
+            <a href="{{ $nav ? route($nav[0]['route'], $unit) : route('account') }}" class="side__brand">
                 <span class="side__logo"><img src="{{ asset(config('church.brand.logo')) }}" alt="" width="40" height="38"></span>
-                <span class="side__words"><span class="side__name">{{ $unit->name }}</span><span class="side__role">{{ $unit->isLedBy($user->member) ? ($unit->hod_member_id === $user->member?->id ? 'Head of department' : 'Assistant HOD') : 'Unit area' }}</span></span>
+                <span class="side__words"><span class="side__name">{{ $unit->name }}</span><span class="side__role">{{ $unit->isLedBy($user->member) ? ($unit->hod_member_id === $user->member?->id ? 'Head of department' : 'Assistant HOD') : ($user->member?->unit_id === $unit->id ? 'Team member' : 'Unit area') }}</span></span>
             </a>
             <nav class="side__nav" aria-label="{{ $unit->name }}">
                 @foreach ($nav as $item)
