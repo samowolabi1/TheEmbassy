@@ -50,8 +50,9 @@
                 @endif
             </nav>
             <div class="side__user">
-                <span class="avatar side__avatar">{{ mb_strtoupper(mb_substr($user->name, 0, 1)) }}</span>
-                <span class="side__who"><strong>{{ $user->name }}</strong>{{ $unit->name }}</span>
+                @php($displayName = $user->member?->name ?? $user->name)
+                <span class="avatar side__avatar">{{ mb_strtoupper(mb_substr($displayName, 0, 1)) }}</span>
+                <span class="side__who"><strong>{{ $displayName }}</strong>{{ $unit->name }}</span>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="side__signout" aria-label="Sign out"><x-icon name="sign-out" :size="18" /></button>

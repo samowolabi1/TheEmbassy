@@ -31,7 +31,7 @@ There are three kinds of account, all in the `users` table:
 | Role | Admin areas |
 | --- | --- |
 | Administrator | Everything, including Settings & roles |
-| Pastor | Everything except Settings & roles |
+| Pastor | Everything except Settings & roles, including welfare cases and approvals above the HOD's limit |
 | Finance | Giving & tokens, expenses & budgets, the market |
 | Church office | Members, attendance & first-timers, follow-up & care, units, subscribers, the market, content, notices, events, prayer, messages |
 | Media | Content, notices, sermons & live, events |
@@ -84,6 +84,39 @@ Set the venue under **Settings & roles › Attendance check-in**. The easiest wa
 | Active members who've missed Sundays | after 3 in a row (adjustable) | the next day |
 
 Only Sundays where attendance was actually taken count as missed, members aren't counted as missing Sundays before they joined, and anyone seen at any service since (midweek included) isn't flagged. When someone comes back, their follow-up closes itself. Staff assign follow-ups to each other (the person gets an email), call or WhatsApp from the list, and record how it went. Member profiles show attendance over the last eight Sundays and their follow-up history. `php artisan care:scan` runs every morning from the scheduler.
+
+## Units and their heads of department
+
+Each unit (choir, ushering, media, welfare…) has a **head of department (HOD)** and an assistant, set in admin › Units & fellowships. They sign in with their member account and press "Lead {unit}" on their account page to open the unit's own area at `/units/{id}`:
+
+- **Overview**: members, Sunday attendance rate, the next meeting, the rota, members not seen for three weeks, and birthdays coming up.
+- **Members**: add people to the unit (or move them in from another), remove them, call them.
+- **Attendance**: each member against the last eight Sundays where attendance was taken and the unit's recent meetings, with an attendance rate.
+- **Meetings**: rehearsals, planning or prayer meetings at a place or online (Zoom, Meet, Teams link). Members are emailed, see the meeting on their account page and check in with a six-digit code the HOD shows (it changes every minute), or the HOD ticks them. Minutes are kept with the meeting.
+- **Rota**: who serves at each coming service, in what role. Members see their duties on their account page and get an email two days before (`units:remind`).
+- **Messages**: emailed to the whole unit and shown on members' account pages.
+
+Staff who manage units (church office, pastors, administrators) can open any unit's area. A unit's type adds tools: **Welfare** or **Media**.
+
+### Welfare
+
+The welfare unit's HOD and assistant (and pastors) run a confidential case desk:
+
+- **Requests** come from members (account › Welfare) or are opened by the team for a member or someone outside the church. Categories: financial hardship, medical, bereavement, food, rent, school fees, job loss, celebrations, other.
+- **Privacy**: a case is only visible to the welfare HOD and assistant, pastors and administrators, and the case worker it's assigned to. Emails only carry the case reference, and the export has no names or details. Members see where their own request is up to, never the internal notes.
+- **Approval**: the HOD approves support up to a limit set in Settings & roles (₦50,000 to start); above it, the case goes to a pastor, who is emailed. The member is told the decision.
+- **Payments** are recorded against the case (transfer, cash, paid directly to a hospital or school, items bought), can't exceed what was approved, and each one is added to the church's approved expenses as "Welfare support, case WF-…". The month's giving is shown against an optional welfare budget.
+- **Case log**: calls, visits, support and notes, with a next check-in date; the "Due a check-in" tab lists cases to follow up. Case workers (welfare unit members) log their visits from their account page.
+- **Celebrations**: birthdays and wedding anniversaries in the next 30 days, with a WhatsApp greeting to send.
+
+### Media
+
+The media unit's team (its members, the HOD and assistant, and staff with the Media role) gets:
+
+- **Equipment**: the inventory with asset tags, serial numbers, where it's kept, condition and value. Leaders check items out to members with a due date and check them back in; a faulty return or a fault reported by anyone on the team opens a repair, and leaders log the fix and its cost.
+- **Service setup**: each service starts from the unit's checklist (the HOD edits it), with tasks assigned to members and ticked off on the day, next to the stream title and description and the unit's rota.
+- **Streaming**: the stream servers and keys the streaming software (OBS, vMix or a hardware encoder) needs, stored encrypted and shown in full only to leaders. "Go live on the website" puts the YouTube stream in the Watch page player with the live badge; ending it leaves the replay. Browsers can't send a video stream themselves, so the stream comes from the encoder; the app keeps it organised.
+- **Social media**: team members draft posts (caption, photo or video, platforms, optional time) and send them to the HOD, who approves, schedules or publishes. **Facebook Page and Instagram** are posted by the app through Meta's Graph API; Instagram videos are published once Instagram has processed them (`social:publish` runs every minute). **YouTube, X, TikTok and WhatsApp** get a share kit: copy the caption, download the file, open the platform. To connect Facebook and Instagram, an administrator adds the Page ID, a Page access token (with `pages_manage_posts` and `instagram_content_publish`) and the Instagram business account ID in Settings & roles; the token is stored encrypted. Meta fetches photos and videos from the site, so posting only works once the site is on a public HTTPS address.
 
 ## Money: giving, tokens, tickets, the market and the notice board
 
@@ -138,7 +171,7 @@ php artisan config:cache && php artisan route:cache && php artisan view:cache
 
 The web server's document root is `public/`, and `storage/` and `bootstrap/cache/` must be writable.
 
-**3. The scheduler.** Absence follow-ups and seller renewal reminders run each morning. Add one cron entry:
+**3. The scheduler.** Social posts go out every minute; absence follow-ups, rota reminders and seller renewal reminders run each morning. Add one cron entry:
 
 ```
 * * * * * cd /path/to/site && php artisan schedule:run >> /dev/null 2>&1
@@ -193,7 +226,7 @@ Anything still in `[brackets]` is a placeholder waiting for real details; most d
 
 ## Where things are
 
-- `routes/web.php`: all routes; `routes/console.php`: `admin:create`, `admin:revoke`, `care:scan`, `market:remind` and the schedule
+- `routes/web.php`: all routes; `routes/console.php`: `admin:create`, `admin:revoke`, `care:scan`, `units:remind`, `social:publish`, `market:remind` and the schedule
 - `app/Http/Controllers/`: public pages and forms, `Account/` (members), `Vendor/` (sellers), `Admin/` (dashboard)
 - `app/Models/`: people (`User`, `Member`, `Unit`, `Fellowship`, `FirstTimer`, `Service`), money (`Payment`, `Fund`, `Gift`, `TokenPlan`, `TokenPayment`, `Expense`, `Budget`), events and notices (`Event`, `TicketType`, `TicketOrder`, `Ticket`, `Notice`), the market (`Shop`, `Product`, `Enquiry`, `VendorPlan`, `VendorSubscription`, `Coupon`), content (`Announcement`, `Declaration`, `Sermon`, `SermonSeries`, `PrayerRequest`, `NewsletterSubscriber`, `ContactMessage`, `Setting`)
 - `app/Services/`: Paystack and payment settlement, shop approval and seller reminders, the sermon library

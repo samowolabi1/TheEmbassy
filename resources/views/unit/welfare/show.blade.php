@@ -57,7 +57,8 @@
                             <input type="number" name="amount" value="{{ old('amount', $case->amount_approved !== null ? $case->amount_approved / 100 : ($case->amount_requested ? $case->amount_requested / 100 : 0)) }}" min="0" step="1">
                         </label>
                         <label class="field">Note (optional) <input type="text" name="note" maxlength="255"></label>
-                        <button type="submit" class="btn btn--navy">{{ $isPastor ? 'Approve' : 'Approve (or send to a pastor if above ₦'.number_format($limit).')' }}</button>
+                        <button type="submit" class="btn btn--navy">Approve</button>
+                        @unless ($isPastor)<span class="field__hint">Above ₦{{ number_format($limit) }}, this sends it to a pastor to approve.</span>@endunless
                     </form>
                     <form method="POST" action="{{ route('unit.welfare.act', [$unit, $case]) }}" class="form">
                         @csrf

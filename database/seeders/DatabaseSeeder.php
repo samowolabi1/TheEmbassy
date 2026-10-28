@@ -38,8 +38,8 @@ class DatabaseSeeder extends Seeder
         $this->seedEvents();
 
         // Units and house fellowships from the design; the church renames or adds to them in admin.
-        foreach (['Choir', 'Media & tech', 'Ushering', 'Drama', 'Prayer', 'Fellowship'] as $unit) {
-            Unit::firstOrCreate(['name' => $unit]);
+        foreach (['Choir' => 'general', 'Media & tech' => 'media', 'Ushering' => 'general', 'Drama' => 'general', 'Prayer' => 'general', 'Welfare' => 'welfare'] as $unit => $kind) {
+            Unit::firstOrCreate(['name' => $unit], ['kind' => $kind]);
         }
         foreach (['House 1', 'House 4', 'Campus'] as $fellowship) {
             Fellowship::firstOrCreate(['name' => $fellowship]);
