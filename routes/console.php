@@ -5,6 +5,7 @@ use App\Services\Care\FollowUps;
 use App\Services\Market\SubscriptionReminders;
 use App\Services\Social\PostPublisher;
 use App\Services\Units\DutyReminders;
+use App\Services\YouTube\YouTubeBroadcasts;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Str;
 
@@ -74,7 +75,13 @@ Artisan::command('social:publish', function (PostPublisher $publisher) {
     $this->info('Worked on '.$publisher->publishDue().' social posts.');
 })->purpose('Publish approved social posts that are due, and finish Instagram videos that were processing');
 
+Artisan::command('youtube:sync', function (YouTubeBroadcasts $broadcasts) {
+    $r = $broadcasts->run();
+    $this->info("Created {$r['created']} YouTube broadcasts, checked {$r['synced']}, {$r['errors']} problems.");
+})->purpose('Create YouTube broadcasts for coming services and keep the Watch page in step with them');
+
 // Run `php artisan schedule:run` every minute from cron (see the README).
+Schedule::command('youtube:sync')->everyMinute()->withoutOverlapping();
 Schedule::command('social:publish')->everyMinute()->withoutOverlapping();
 Schedule::command('units:remind')->dailyAt('09:00')->timezone('Africa/Lagos');
 Schedule::command('care:scan')->dailyAt('07:00')->timezone('Africa/Lagos');

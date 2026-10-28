@@ -71,6 +71,14 @@ return [
         'new_member_days' => 7,
     ],
 
+    // YouTube broadcasts the app creates once the channel is connected.
+    'youtube' => [
+        // Create broadcasts this many days ahead for services with online check-in (0 = only by hand).
+        'days_ahead' => 7,
+        // public or unlisted.
+        'privacy' => 'public',
+    ],
+
     // The Watch page player. Set in admin › Settings & roles.
     'live' => [
         'video_id' => null,

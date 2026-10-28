@@ -25,6 +25,7 @@
     </header>
 
     @error('youtube_video_id') <p class="flash flash--error" role="alert">{{ $message }}</p> @enderror
+    @error('youtube') <p class="flash flash--error" role="alert">{{ $message }}</p> @enderror
     @if ($setup->isLive())<p class="flash" role="status">● Live since {{ $setup->went_live_at->format('g:i A') }}. The Watch page is showing the stream.</p>@endif
 
     <div class="row">
@@ -64,6 +65,44 @@
         </section>
 
         <section class="box side-col">
+            @if ($youtube)
+                <h2>YouTube broadcast</h2>
+                @if ($setup->youtube_managed)
+                    <p style="margin: 0; font-size: 14px">
+                        <span class="pill {{ $setup->youtube_status === 'live' ? 'pill--warn' : ($setup->youtube_status === 'complete' ? 'pill--draft' : 'pill--ok') }}">{{ ['created' => 'Scheduled', 'ready' => 'Ready', 'testing' => 'Testing', 'live' => '● Live', 'complete' => 'Finished', 'revoked' => 'Removed'][$setup->youtube_status] ?? ucfirst((string) $setup->youtube_status) }}</span>
+                        on {{ $youtube->channel_title }}
+                    </p>
+                    <span class="box__note" style="margin: 0">It goes live by itself when the encoder starts streaming, and the website follows within a minute.</span>
+                    <a href="https://studio.youtube.com/video/{{ $setup->youtube_video_id }}/livestreaming" class="box__link" target="_blank" rel="noopener">Open in YouTube Studio</a>
+                    @if ($canLead)
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                            <form method="POST" action="{{ route('unit.youtube.push', [$unit, $service]) }}">
+                                @csrf
+                                @method('PUT')
+                                <button type="submit" class="btn btn--ghost btn--xs">Send title &amp; description to YouTube</button>
+                            </form>
+                            @unless ($setup->youtube_status === 'live')
+                                <form method="POST" action="{{ route('unit.youtube.destroy', [$unit, $service]) }}" data-confirm="Remove this broadcast from YouTube?">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn--danger btn--xs">Remove</button>
+                                </form>
+                            @endunless
+                        </div>
+                    @endif
+                @else
+                    @if ($setup->youtube_error)<p class="box__note" style="margin: 0; color: #a6531a">{{ $setup->youtube_error }}</p>@endif
+                    @if ($canLead)
+                        <form method="POST" action="{{ route('unit.youtube.create', [$unit, $service]) }}">
+                            @csrf
+                            <button type="submit" class="btn btn--navy btn--xs">{{ $setup->youtube_error ? 'Try again' : 'Create the YouTube broadcast now' }}</button>
+                        </form>
+                    @else
+                        <span class="box__note" style="margin: 0">No broadcast yet.</span>
+                    @endif
+                @endif
+            @endif
+
             <h2>Stream</h2>
             @if ($canLead)
                 <form method="POST" action="{{ route('unit.setup.update', [$unit, $service]) }}" class="form">
@@ -72,7 +111,7 @@
                     <label class="field">Title <input type="text" name="stream_title" value="{{ $setup->stream_title }}" maxlength="100"></label>
                     <label class="field">Description <textarea name="stream_description" maxlength="5000" style="height: 110px">{{ $setup->stream_description }}</textarea></label>
                     <label class="field">YouTube video ID
-                        <input type="text" name="youtube_video_id" value="{{ $setup->youtube_video_id }}" maxlength="20" placeholder="From the live stream's link">
+                        <input type="text" name="youtube_video_id" value="{{ $setup->youtube_video_id }}" maxlength="20" placeholder="From the live stream's link" @readonly($setup->youtube_managed)>
                         <span class="field__hint">Shown in the Watch page player when you go live.</span>
                     </label>
                     <label class="field">Notes for the team <textarea name="notes" maxlength="5000" style="height: 80px">{{ $setup->notes }}</textarea></label>

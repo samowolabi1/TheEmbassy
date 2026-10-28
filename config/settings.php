@@ -74,6 +74,16 @@ return [
         ],
     ],
 
+    'youtube' => [
+        'title' => 'YouTube broadcasts',
+        'fields' => [
+            'services.google.client_id' => ['label' => 'Google OAuth client ID', 'type' => 'text', 'hint' => 'From Google Cloud › APIs & Services › Credentials (a "Web application" client with the YouTube Data API enabled). Add this site\'s /youtube/callback address as an authorised redirect URI.'],
+            'services.google.client_secret' => ['label' => 'Google OAuth client secret', 'type' => 'secret'],
+            'church.youtube.days_ahead' => ['label' => 'Create broadcasts this many days ahead (0 = only by hand)', 'type' => 'number', 'rules' => ['integer', 'between:0,30']],
+            'church.youtube.privacy' => ['label' => 'Broadcast visibility (public or unlisted)', 'type' => 'text', 'rules' => ['in:public,unlisted']],
+        ],
+    ],
+
     'live' => [
         'title' => 'Live stream',
         'fields' => [

@@ -5,10 +5,11 @@ namespace App\Http\Controllers\Unit;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Models\ServiceSetup;
-use App\Models\Setting;
 use App\Models\SetupTask;
 use App\Models\StreamDestination;
 use App\Models\Unit;
+use App\Models\YouTubeConnection;
+use App\Services\YouTube\YouTubeClient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -33,6 +34,8 @@ class SetupController extends Controller
             'destinations' => StreamDestination::orderBy('platform')->get(),
             'canLead' => Gate::allows('lead-media', $unit),
             'live' => ServiceSetup::whereNotNull('went_live_at')->whereNull('ended_at')->with('service')->first(),
+            'youtube' => YouTubeConnection::current(),
+            'youtubeReady' => app(YouTubeClient::class)->configured(),
         ]);
     }
 
@@ -41,12 +44,7 @@ class SetupController extends Controller
      */
     public function show(Unit $unit, Service $service): View
     {
-        $setup = ServiceSetup::firstOrCreate(['service_id' => $service->id], ['stream_title' => $service->label().' · '.($service->starts_at ?? $service->held_on)->format('j M Y')]);
-        if ($setup->wasRecentlyCreated) {
-            foreach ($unit->checklistItems() as $i => $item) {
-                $setup->tasks()->create(['title' => $item, 'sort' => $i]);
-            }
-        }
+        $setup = ServiceSetup::forService($service);
 
         return view('unit.media.setup', [
             'unit' => $unit,
@@ -56,18 +54,23 @@ class SetupController extends Controller
             'canLead' => Gate::allows('lead-media', $unit),
             'destinations' => StreamDestination::where('is_active', true)->get(),
             'duties' => $unit->duties()->with('member')->where('service_id', $service->id)->get(),
+            'youtube' => YouTubeConnection::current(),
         ]);
     }
 
     public function update(Request $request, Unit $unit, Service $service): RedirectResponse
     {
         $setup = ServiceSetup::where('service_id', $service->id)->firstOrFail();
-        $setup->update($request->validate([
+        $data = $request->validate([
             'stream_title' => ['nullable', 'string', 'max:100'],
             'stream_description' => ['nullable', 'string', 'max:5000'],
             'youtube_video_id' => ['nullable', 'string', 'regex:/^[A-Za-z0-9_-]{6,20}$/'],
             'notes' => ['nullable', 'string', 'max:5000'],
-        ], ['youtube_video_id.regex' => 'Paste just the video ID, e.g. dQw4w9WgXcQ.']));
+        ], ['youtube_video_id.regex' => 'Paste just the video ID, e.g. dQw4w9WgXcQ.']);
+        if ($setup->youtube_managed) {
+            unset($data['youtube_video_id']); // the app's own broadcast
+        }
+        $setup->update($data);
 
         return back()->with('status', 'Saved.');
     }
@@ -112,9 +115,7 @@ class SetupController extends Controller
             return back()->withErrors(['youtube_video_id' => 'Add the YouTube video ID for this stream first.']);
         }
 
-        ServiceSetup::whereNotNull('went_live_at')->whereNull('ended_at')->whereKeyNot($setup->id)->update(['ended_at' => now()]);
-        $setup->forceFill(['went_live_at' => $setup->went_live_at ?? now(), 'ended_at' => null])->save();
-        Setting::putMany(['church.live.video_id' => $setup->youtube_video_id, 'church.live.is_live' => '1']);
+        $setup->goLive();
 
         return back()->with('status', 'Live: the Watch page is showing the stream.');
     }
@@ -122,9 +123,7 @@ class SetupController extends Controller
     public function endLive(Unit $unit, Service $service): RedirectResponse
     {
         $setup = ServiceSetup::where('service_id', $service->id)->firstOrFail();
-        $setup->forceFill(['ended_at' => now()])->save();
-        // Keep the video on the Watch page as the replay; just drop the "live" badge.
-        Setting::putMany(['church.live.is_live' => '0']);
+        $setup->endLive();
 
         return back()->with('status', 'Stream ended. The Watch page now shows it as a replay.');
     }

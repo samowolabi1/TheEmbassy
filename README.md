@@ -116,6 +116,7 @@ The media unit's team (its members, the HOD and assistant, and staff with the Me
 - **Equipment**: the inventory with asset tags, serial numbers, where it's kept, condition and value. Leaders check items out to members with a due date and check them back in; a faulty return or a fault reported by anyone on the team opens a repair, and leaders log the fix and its cost.
 - **Service setup**: each service starts from the unit's checklist (the HOD edits it), with tasks assigned to members and ticked off on the day, next to the stream title and description and the unit's rota.
 - **Streaming**: the stream servers and keys the streaming software (OBS, vMix or a hardware encoder) needs, stored encrypted and shown in full only to leaders. "Go live on the website" puts the YouTube stream in the Watch page player with the live badge; ending it leaves the replay. Browsers can't send a video stream themselves, so the stream comes from the encoder; the app keeps it organised.
+- **YouTube broadcasts**: connect the church's channel once with "Sign in with Google" (on the Service setup page). The app then creates a YouTube broadcast for every service with online check-in, 7 days ahead (adjustable in Settings), titled and scheduled for the service and bound to one reusable stream, so the server and key in OBS never change. Broadcasts start when the encoder starts and stop when it stops; within a minute the Watch page goes live and afterwards shows the replay (`youtube:sync`, every minute). Leaders can also create a broadcast by hand, send an edited title and description to YouTube, or remove one. A broadcast that fails to create (e.g. live streaming not yet enabled on the channel) shows the reason and waits for "Try again", so it doesn't use up YouTube's daily limit.
 - **Social media**: team members draft posts (caption, photo or video, platforms, optional time) and send them to the HOD, who approves, schedules or publishes. **Facebook Page and Instagram** are posted by the app through Meta's Graph API; Instagram videos are published once Instagram has processed them (`social:publish` runs every minute). **YouTube, X, TikTok and WhatsApp** get a share kit: copy the caption, download the file, open the platform. To connect Facebook and Instagram, an administrator adds the Page ID, a Page access token (with `pages_manage_posts` and `instagram_content_publish`) and the Instagram business account ID in Settings & roles; the token is stored encrypted. Meta fetches photos and videos from the site, so posting only works once the site is on a public HTTPS address.
 
 ## Money: giving, tokens, tickets, the market and the notice board
@@ -171,7 +172,7 @@ php artisan config:cache && php artisan route:cache && php artisan view:cache
 
 The web server's document root is `public/`, and `storage/` and `bootstrap/cache/` must be writable.
 
-**3. The scheduler.** Social posts go out every minute; absence follow-ups, rota reminders and seller renewal reminders run each morning. Add one cron entry:
+**3. The scheduler.** Social posts and YouTube syncing run every minute; absence follow-ups, rota reminders and seller renewal reminders run each morning. Add one cron entry:
 
 ```
 * * * * * cd /path/to/site && php artisan schedule:run >> /dev/null 2>&1
@@ -188,7 +189,9 @@ The web server's document root is `public/`, and `storage/` and `bootstrap/cache
 - **Sermons & live**: add the first messages and the current series.
 - **Members**: import the existing register from a spreadsheet.
 
-**7. Backups.** Back up the database daily and `storage/app` (uploaded photos and receipts).
+**7. YouTube (optional).** In Google Cloud: create a project, enable the YouTube Data API v3, set up the OAuth consent screen (External), and create an OAuth client of type "Web application" with `https://<site>/youtube/callback` as an authorised redirect URI. Put the client ID and secret in Settings & roles › YouTube broadcasts (or `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`), then the media HOD connects the channel from Service setup & streaming. While the consent screen is in "Testing", Google ends the sign-in after 7 days and the page will ask to connect again; publish the app (Google reviews the YouTube permission, which can take a few weeks) for a lasting connection. Live streaming must be turned on for the channel in YouTube Studio.
+
+**8. Backups.** Back up the database daily and `storage/app` (uploaded photos and receipts).
 
 ### Deploying for another church
 
@@ -226,7 +229,7 @@ Anything still in `[brackets]` is a placeholder waiting for real details; most d
 
 ## Where things are
 
-- `routes/web.php`: all routes; `routes/console.php`: `admin:create`, `admin:revoke`, `care:scan`, `units:remind`, `social:publish`, `market:remind` and the schedule
+- `routes/web.php`: all routes; `routes/console.php`: `admin:create`, `admin:revoke`, `care:scan`, `units:remind`, `social:publish`, `youtube:sync`, `market:remind` and the schedule
 - `app/Http/Controllers/`: public pages and forms, `Account/` (members), `Vendor/` (sellers), `Admin/` (dashboard)
 - `app/Models/`: people (`User`, `Member`, `Unit`, `Fellowship`, `FirstTimer`, `Service`), money (`Payment`, `Fund`, `Gift`, `TokenPlan`, `TokenPayment`, `Expense`, `Budget`), events and notices (`Event`, `TicketType`, `TicketOrder`, `Ticket`, `Notice`), the market (`Shop`, `Product`, `Enquiry`, `VendorPlan`, `VendorSubscription`, `Coupon`), content (`Announcement`, `Declaration`, `Sermon`, `SermonSeries`, `PrayerRequest`, `NewsletterSubscriber`, `ContactMessage`, `Setting`)
 - `app/Services/`: Paystack and payment settlement, shop approval and seller reminders, the sermon library

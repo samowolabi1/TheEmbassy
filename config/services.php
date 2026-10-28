@@ -54,4 +54,12 @@ return [
         'instagram_id' => env('META_INSTAGRAM_ID'),
     ],
 
+    // Google sign-in for the church's YouTube channel, so broadcasts are created automatically.
+    // Create an OAuth client (type "Web application") in Google Cloud with the YouTube Data API
+    // enabled, and add {APP_URL}/youtube/callback as an authorised redirect URI.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+    ],
+
 ];

@@ -174,8 +174,16 @@ Route::middleware(['auth', 'can:media-team,unit'])->prefix('units/{unit}/media')
         Route::put('/streams/{destination}', [Unit\SetupController::class, 'updateDestination'])->name('streams.update');
         Route::delete('/streams/{destination}', [Unit\SetupController::class, 'destroyDestination'])->name('streams.destroy');
         Route::get('/streams/{destination}/key', [Unit\SetupController::class, 'revealKey'])->name('streams.key');
+        Route::post('/youtube/connect', [Unit\YouTubeController::class, 'connect'])->name('youtube.connect');
+        Route::delete('/youtube', [Unit\YouTubeController::class, 'disconnect'])->name('youtube.disconnect');
+        Route::post('/setup/{service}/youtube', [Unit\YouTubeController::class, 'create'])->name('youtube.create');
+        Route::put('/setup/{service}/youtube', [Unit\YouTubeController::class, 'push'])->name('youtube.push');
+        Route::delete('/setup/{service}/youtube', [Unit\YouTubeController::class, 'destroy'])->name('youtube.destroy');
     });
 });
+
+// Google sends the media leader back here after YouTube sign-in (register this address in Google Cloud).
+Route::get('/youtube/callback', [Unit\YouTubeController::class, 'callback'])->middleware('auth')->name('youtube.callback');
 
 Route::post('/meetings/{meeting}/check-in', [Unit\MeetingController::class, 'checkIn'])->middleware(['auth', 'throttle:10,1'])->name('meetings.check-in');
 
