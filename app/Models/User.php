@@ -28,8 +28,45 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_admin' => 'boolean',
         ];
+    }
+
+    /**
+     * Church staff can open the admin dashboard.
+     */
+    public function isStaff(): bool
+    {
+        return $this->role !== null && array_key_exists($this->role, config('roles.roles'));
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Whether this person's role covers an admin area (see config/roles.php).
+     */
+    public function canManage(string $area): bool
+    {
+        $areas = $this->isStaff() ? config("roles.roles.{$this->role}.areas") : [];
+
+        return in_array('*', $areas, true) || in_array($area, $areas, true);
+    }
+
+    public function roleName(): ?string
+    {
+        return $this->isStaff() ? config("roles.roles.{$this->role}.name") : null;
+    }
+
+    /**
+     * Their record on the church register, if they're a member.
+     *
+     * @return HasOne<Member, $this>
+     */
+    public function member(): HasOne
+    {
+        return $this->hasOne(Member::class);
     }
 
     /**

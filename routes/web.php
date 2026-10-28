@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Account;
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\MarketController;
 use App\Http\Controllers\NewsletterSubscriptionController;
@@ -74,11 +76,36 @@ Route::middleware('throttle:5,1')->group(function () {
     Route::post('/newsletter', [NewsletterSubscriptionController::class, 'store'])->name('newsletter.store');
 });
 
+// Member accounts: joining the church register, signing in, and the member's own page.
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [Account\AuthController::class, 'create'])->name('login');
+    Route::post('/login', [Account\AuthController::class, 'store'])->name('login.store');
+    Route::get('/forgot-password', [Account\AuthController::class, 'forgot'])->name('password.request');
+    Route::post('/forgot-password', [Account\AuthController::class, 'sendLink'])->middleware('throttle:5,1')->name('password.email');
+    Route::get('/reset-password/{token}', [Account\AuthController::class, 'editPassword'])->name('password.reset');
+    Route::post('/reset-password', [Account\AuthController::class, 'updatePassword'])->middleware('throttle:10,1')->name('password.update');
+});
+Route::get('/join', [Account\AuthController::class, 'join'])->name('join');
+Route::post('/join', [Account\AuthController::class, 'storeJoin'])->middleware('throttle:5,1')->name('join.store');
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [Account\AuthController::class, 'destroy'])->name('logout');
+    Route::get('/account', [Account\AccountController::class, 'show'])->name('account');
+    Route::put('/account', [Account\AccountController::class, 'update'])->name('account.update');
+    Route::get('/account/tokens', [Account\AccountController::class, 'tokens'])->name('account.tokens');
+    Route::post('/account/tokens', [Account\AccountController::class, 'payTokens'])->middleware('throttle:10,1')->name('account.tokens.pay');
+});
+
+// Contact and legal pages.
+Route::get('/contact', [ContactController::class, 'create'])->name('contact');
+Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:5,1')->name('contact.store');
+Route::view('/privacy', 'pages.privacy')->name('privacy');
+Route::view('/terms', 'pages.terms')->name('terms');
+
 // Paystack: the payer's return and Paystack's signed notifications (no CSRF token on the webhook).
 Route::get('/payments/callback', [PaymentController::class, 'callback'])->name('payments.callback');
 Route::post('/webhooks/paystack', [PaymentController::class, 'webhook'])->name('webhooks.paystack');
 
-// Church admin. Accounts are created with `php artisan admin:create`; there is no public sign-up.
+// Church admin. The first administrator is created with `php artisan admin:create`; they add other staff in Settings & roles.
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('/login', [Admin\AuthController::class, 'create'])->name('login');
@@ -89,34 +116,60 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/logout', [Admin\AuthController::class, 'destroy'])->name('logout');
         Route::get('/', Admin\DashboardController::class)->name('dashboard');
 
-        Route::get('/prayer-requests', [Admin\PrayerRequestController::class, 'index'])->name('prayer-requests.index');
-        Route::patch('/prayer-requests/{prayerRequest}', [Admin\PrayerRequestController::class, 'update'])->name('prayer-requests.update');
-        Route::delete('/prayer-requests/{prayerRequest}', [Admin\PrayerRequestController::class, 'destroy'])->name('prayer-requests.destroy');
+        Route::middleware('can:manage,"prayer"')->group(function () {
+            Route::get('/prayer-requests', [Admin\PrayerRequestController::class, 'index'])->name('prayer-requests.index');
+            Route::patch('/prayer-requests/{prayerRequest}', [Admin\PrayerRequestController::class, 'update'])->name('prayer-requests.update');
+            Route::delete('/prayer-requests/{prayerRequest}', [Admin\PrayerRequestController::class, 'destroy'])->name('prayer-requests.destroy');
+        });
 
-        Route::get('/subscribers', [Admin\SubscriberController::class, 'index'])->name('subscribers.index');
-        Route::get('/subscribers/export', [Admin\SubscriberController::class, 'export'])->name('subscribers.export');
-        Route::delete('/subscribers/{subscriber}', [Admin\SubscriberController::class, 'destroy'])->name('subscribers.destroy');
+        Route::middleware('can:manage,"subscribers"')->group(function () {
+            Route::get('/subscribers', [Admin\SubscriberController::class, 'index'])->name('subscribers.index');
+            Route::get('/subscribers/export', [Admin\SubscriberController::class, 'export'])->name('subscribers.export');
+            Route::delete('/subscribers/{subscriber}', [Admin\SubscriberController::class, 'destroy'])->name('subscribers.destroy');
+        });
 
-        Route::get('/content', Admin\ContentController::class)->name('content');
-        Route::resource('announcements', Admin\AnnouncementController::class)->only(['store', 'edit', 'update', 'destroy']);
-        Route::post('/declarations', [Admin\DeclarationController::class, 'store'])->name('declarations.store');
+        Route::middleware('can:manage,"content"')->group(function () {
+            Route::get('/content', Admin\ContentController::class)->name('content');
+            Route::resource('announcements', Admin\AnnouncementController::class)->only(['store', 'edit', 'update', 'destroy']);
+            Route::post('/declarations', [Admin\DeclarationController::class, 'store'])->name('declarations.store');
+        });
 
-        Route::get('/notices', [Admin\NoticeController::class, 'index'])->name('notices.index');
-        Route::post('/notices/{notice}/approve', [Admin\NoticeController::class, 'approve'])->name('notices.approve');
-        Route::post('/notices/{notice}/reject', [Admin\NoticeController::class, 'reject'])->name('notices.reject');
+        Route::middleware('can:manage,"notices"')->group(function () {
+            Route::get('/notices', [Admin\NoticeController::class, 'index'])->name('notices.index');
+            Route::post('/notices/{notice}/approve', [Admin\NoticeController::class, 'approve'])->name('notices.approve');
+            Route::post('/notices/{notice}/reject', [Admin\NoticeController::class, 'reject'])->name('notices.reject');
+        });
 
-        Route::get('/events/{event}/attendees.csv', [Admin\EventController::class, 'export'])->name('events.export');
-        Route::resource('events', Admin\EventController::class);
-        Route::get('/tickets', [Admin\TicketController::class, 'lookup'])->name('tickets.lookup');
-        Route::get('/tickets/{ticket}', [Admin\TicketController::class, 'show'])->name('tickets.show');
-        Route::post('/tickets/{ticket}/check-in', [Admin\TicketController::class, 'checkIn'])->name('tickets.check-in');
+        Route::middleware('can:manage,"events"')->group(function () {
+            Route::get('/events/{event}/attendees.csv', [Admin\EventController::class, 'export'])->name('events.export');
+            Route::resource('events', Admin\EventController::class);
+            Route::get('/tickets', [Admin\TicketController::class, 'lookup'])->name('tickets.lookup');
+            Route::get('/tickets/{ticket}', [Admin\TicketController::class, 'show'])->name('tickets.show');
+            Route::post('/tickets/{ticket}/check-in', [Admin\TicketController::class, 'checkIn'])->name('tickets.check-in');
+        });
 
-        Route::get('/market', [Admin\MarketController::class, 'index'])->name('market.index');
-        Route::post('/market/plans', [Admin\MarketController::class, 'plans'])->name('market.plans');
-        Route::post('/market/coupons', [Admin\MarketController::class, 'storeCoupon'])->name('market.coupons.store');
-        Route::post('/market/coupons/{coupon}/toggle', [Admin\MarketController::class, 'toggleCoupon'])->name('market.coupons.toggle');
-        Route::post('/market/shops/{shop}/approve', [Admin\MarketController::class, 'approve'])->name('market.approve');
-        Route::post('/market/shops/{shop}/decline', [Admin\MarketController::class, 'decline'])->name('market.decline');
-        Route::post('/market/shops/{shop}/suspend', [Admin\MarketController::class, 'toggleSuspend'])->name('market.suspend');
+        Route::middleware('can:manage,"market"')->group(function () {
+            Route::get('/market', [Admin\MarketController::class, 'index'])->name('market.index');
+            Route::post('/market/plans', [Admin\MarketController::class, 'plans'])->name('market.plans');
+            Route::post('/market/coupons', [Admin\MarketController::class, 'storeCoupon'])->name('market.coupons.store');
+            Route::post('/market/coupons/{coupon}/toggle', [Admin\MarketController::class, 'toggleCoupon'])->name('market.coupons.toggle');
+            Route::post('/market/shops/{shop}/approve', [Admin\MarketController::class, 'approve'])->name('market.approve');
+            Route::post('/market/shops/{shop}/decline', [Admin\MarketController::class, 'decline'])->name('market.decline');
+            Route::post('/market/shops/{shop}/suspend', [Admin\MarketController::class, 'toggleSuspend'])->name('market.suspend');
+        });
+
+        Route::middleware('can:manage,"messages"')->group(function () {
+            Route::get('/messages', [Admin\ContactMessageController::class, 'index'])->name('messages.index');
+            Route::patch('/messages/{message}', [Admin\ContactMessageController::class, 'update'])->name('messages.update');
+            Route::delete('/messages/{message}', [Admin\ContactMessageController::class, 'destroy'])->name('messages.destroy');
+        });
+
+        Route::middleware('can:manage,"settings"')->group(function () {
+            Route::get('/settings', [Admin\SettingsController::class, 'edit'])->name('settings.edit');
+            Route::put('/settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
+            Route::post('/staff', [Admin\StaffController::class, 'store'])->name('staff.store');
+            Route::patch('/staff/{user}', [Admin\StaffController::class, 'update'])->name('staff.update');
+            Route::delete('/staff/{user}', [Admin\StaffController::class, 'destroy'])->name('staff.destroy');
+        });
     });
 });

@@ -258,10 +258,10 @@ class AdminTest extends TestCase
             ->assertSuccessful();
 
         $user = User::firstWhere('email', 'pastor@example.com');
-        $this->assertTrue($user->is_admin);
+        $this->assertTrue($user->isAdmin());
         $this->assertSame('Pastor Ade', $user->name);
 
         $this->artisan('admin:revoke', ['email' => 'pastor@example.com'])->assertSuccessful();
-        $this->assertFalse($user->fresh()->is_admin);
+        $this->assertFalse($user->fresh()->isStaff());
     }
 }

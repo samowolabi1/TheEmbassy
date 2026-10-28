@@ -29,7 +29,7 @@ Artisan::command('admin:create {email} {--name= : Display name, e.g. "Pastor Ade
     if ($password !== '') {
         $user->password = $password;
     }
-    $user->is_admin = true;
+    $user->role = 'admin';
     $user->save();
 
     $this->info("{$user->email} can now sign in at ".route('admin.login'));
@@ -47,6 +47,6 @@ Artisan::command('admin:revoke {email}', function (string $email) {
         return 1;
     }
 
-    $user->forceFill(['is_admin' => false])->save();
-    $this->info("{$email} no longer has admin access.");
-})->purpose('Remove admin access from an account');
+    $user->forceFill(['role' => null])->save();
+    $this->info("{$email} no longer has staff access.");
+})->purpose('Remove staff access from an account');

@@ -12,9 +12,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Vendors sign in at /vendor; church staff at /admin.
-        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('vendor*') ? route('vendor.login') : route('admin.login'));
-        $middleware->redirectUsersTo(fn (Request $request) => $request->is('vendor*') ? route('vendor.orders.index') : route('admin.dashboard'));
+        // Sellers sign in at /vendor, church staff at /admin, and members at /login.
+        $middleware->redirectGuestsTo(fn (Request $request) => match (true) {
+            $request->is('vendor*') => route('vendor.login'),
+            $request->is('admin*') => route('admin.login'),
+            default => route('login'),
+        });
+        $middleware->redirectUsersTo(fn (Request $request) => match (true) {
+            $request->is('vendor*') => route('vendor.products.index'),
+            $request->is('admin*') => route('admin.dashboard'),
+            default => route('account'),
+        });
         // Paystack signs its webhooks instead; see PaymentController::webhook.
         $middleware->validateCsrfTokens(except: ['webhooks/paystack']);
     })

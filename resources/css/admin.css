@@ -898,3 +898,17 @@ a.stat-tile--navy:hover {
   font-size: 12px;
   color: var(--slate);
 }
+
+.flash--error {
+  background: #fdecea;
+  color: #8a1c12;
+}
+.select-sm {
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--admin-line);
+  background: var(--white);
+  padding: 0 12px;
+  font: inherit;
+  font-size: 13px;
+}

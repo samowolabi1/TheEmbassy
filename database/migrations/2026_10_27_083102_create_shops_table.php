@@ -29,6 +29,9 @@ return new class extends Migration
             $table->string('status', 20)->default('pending')->index();
             $table->string('decline_reason')->nullable();
             $table->timestamp('approved_at')->nullable();
+            // The subscription end date we last emailed about, so each reminder goes once.
+            $table->timestamp('reminded_for')->nullable();
+            $table->timestamp('lapse_noticed_for')->nullable();
             $table->timestamps();
         });
     }

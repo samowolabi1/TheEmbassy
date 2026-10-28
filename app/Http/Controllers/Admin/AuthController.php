@@ -38,12 +38,12 @@ class AuthController extends Controller
             ]);
         }
 
-        if (! Auth::attempt($credentials, $request->boolean('remember')) || ! $request->user()->is_admin) {
+        if (! Auth::attempt($credentials, $request->boolean('remember')) || ! $request->user()->isStaff()) {
             Auth::logout();
             RateLimiter::hit($key);
 
             throw ValidationException::withMessages([
-                'email' => 'That email and password don\'t match an admin account.',
+                'email' => 'That email and password don\'t match a staff account.',
             ]);
         }
 

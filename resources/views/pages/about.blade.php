@@ -104,10 +104,14 @@
         <div class="stack" style="gap: 20px">
             <span class="eyebrow">PLAN YOUR VISIT</span>
             <h2 class="h2">We saved you a seat.</h2>
-            <div role="img" aria-label="Map placeholder" class="placeholder bg-ice visit__map">
-                <span class="placeholder__note">[Map]</span>
-                <span class="visit__pin"></span>
-            </div>
+            @if (str_starts_with((string) config('church.map_embed_url'), 'https://www.google.com/maps/embed'))
+                <iframe src="{{ config('church.map_embed_url') }}" title="Map to {{ config('church.short_name') }}" class="visit__map" style="border: 0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            @else
+                <div role="img" aria-label="Map placeholder" class="placeholder bg-ice visit__map">
+                    <span class="placeholder__note">[Map]</span>
+                    <span class="visit__pin"></span>
+                </div>
+            @endif
             <div class="grid-auto" style="--min: 200px; --gap: 12px">
                 <div class="card visit__fact">
                     <span class="visit__label">ADDRESS</span>
@@ -129,7 +133,7 @@
                         <span class="faq__icon faq__icon--plus"><x-icon name="plus" /></span>
                         <span class="faq__icon faq__icon--minus"><x-icon name="minus" /></span>
                     </summary>
-                    <p>{{ $faq['a'] }}</p>
+                    <p>{{ strtr($faq['a'], [':length' => config('church.service_length'), ':parking' => config('church.parking')]) }}</p>
                 </details>
             @endforeach
         </div>

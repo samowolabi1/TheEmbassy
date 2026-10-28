@@ -2,7 +2,7 @@
 
 // Church details, branding and links used across the site.
 // To deploy for another church, change this file and config/content/, and replace the logo in public/images.
-// Values in [brackets] are placeholders from the design: replace them with real details.
+// Values in [brackets] are placeholders: the church fills them in at admin › Settings & roles (config/settings.php).
 
 $marketName = env('CHURCH_MARKET_NAME', 'Tribe Market');
 
@@ -35,6 +35,17 @@ return [
     'midweek_time' => '[Time]',
     'handle' => '@[yourhandle]',
     'directions_url' => '#',
+    'map_embed_url' => null,
+    'service_length' => '[length]',
+    'parking' => '[Parking details]',
+    'phone' => null,
+    'email' => env('CHURCH_EMAIL'),
+
+    // The Watch page player. Set in admin › Settings & roles.
+    'live' => [
+        'video_id' => null,
+        'is_live' => false,
+    ],
 
     'bank' => [
         'name' => '[Bank name]',
@@ -55,10 +66,6 @@ return [
         'audiomack' => '#',
         'app_store' => '#',
         'google_play' => '#',
-        'login' => '#',
-        'contact' => '#',
-        'privacy' => '#',
-        'terms' => '#',
         'rccg_beliefs' => 'https://www.rccg.org',
     ],
 

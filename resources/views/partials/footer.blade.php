@@ -67,14 +67,14 @@
                 <a href="{{ route('home') }}#prayer">Prayer request</a>
                 <a href="{{ route('about') }}#units">Join a unit</a>
                 <a href="{{ route('notices.create') }}">Advertise with us</a>
-                <a href="{{ $links['contact'] }}">Contact us</a>
+                <a href="{{ route('contact') }}">Contact us</a>
             </div>
         </div>
     </div>
     <div class="foot__base">
         <div class="foot__base-inner">
             <span>© {{ now()->year }} {{ config('church.name') }}</span>
-            <span class="foot__legal"><a href="{{ $links['privacy'] }}">Privacy</a><a href="{{ $links['terms'] }}">Terms</a></span>
+            <span class="foot__legal"><a href="{{ route('privacy') }}">Privacy</a><a href="{{ route('terms') }}">Terms</a></span>
         </div>
     </div>
 </footer>

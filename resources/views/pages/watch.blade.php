@@ -19,9 +19,16 @@
             <div class="live__main">
                 <div class="player">
                     <x-crown :width="420" :height="350" class="crown-bg" style="right: -60px; bottom: -80px; opacity: 0.1" />
-                    <span class="player__live"><span class="player__dot"></span>LIVE ON YOUTUBE</span>
-                    <span class="player__note">[YouTube live player]</span>
-                    <a href="{{ $links['youtube_live'] }}" class="player__play" aria-label="Play livestream"><x-icon name="play" :size="30" /></a>
+                    @if ($videoId = preg_match('/^[A-Za-z0-9_-]{6,20}$/', (string) config('church.live.video_id')) ? config('church.live.video_id') : null)
+                        <iframe class="player__frame" src="https://www.youtube-nocookie.com/embed/{{ $videoId }}" title="{{ config('church.short_name') }} live stream"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+                    @else
+                        <span class="player__note">[YouTube live player]</span>
+                        <a href="{{ $links['youtube_live'] }}" class="player__play" aria-label="Play livestream"><x-icon name="play" :size="30" /></a>
+                    @endif
+                    @if (config('church.live.is_live'))
+                        <span class="player__live"><span class="player__dot"></span>LIVE ON YOUTUBE</span>
+                    @endif
                 </div>
                 <div class="live__meta">
                     <div class="stack" style="gap: 4px">

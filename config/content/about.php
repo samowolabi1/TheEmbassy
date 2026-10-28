@@ -33,8 +33,8 @@ return [
 
     'faqs' => [
         ['q' => 'What should I wear?', 'a' => 'Come as you are. Most people dress smart casual, and nobody will judge your outfit.'],
-        ['q' => 'How long is the service?', 'a' => 'Sunday service runs for about [length]. Stay after for refreshments and to meet the Tribe.'],
-        ['q' => 'Is there parking?', 'a' => '[Parking details]. Our ushers will guide you when you arrive.'],
+        ['q' => 'How long is the service?', 'a' => 'Sunday service runs for about :length. Stay after for refreshments and to meet the Tribe.'],
+        ['q' => 'Is there parking?', 'a' => ':parking. Our ushers will guide you when you arrive.'],
         ['q' => 'I am new to church. Will I fit in?', 'a' => 'Yes. Many of us came for the first time not knowing anyone. Our welcome team will introduce you around.'],
         ['q' => 'Can I watch online first?', 'a' => 'Absolutely. We stream every Sunday on YouTube and in the Royal Tribe app.'],
     ],

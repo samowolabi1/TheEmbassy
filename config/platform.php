@@ -9,7 +9,9 @@ return [
     'fees' => [
         'notices' => (float) env('PLATFORM_FEE_NOTICES', 0),
         'tickets' => (float) env('PLATFORM_FEE_TICKETS', 0),
-        'market' => (float) env('PLATFORM_FEE_MARKET', 0),
+        'market' => (float) env('PLATFORM_FEE_MARKET', 0), // seller subscriptions
+        'giving' => (float) env('PLATFORM_FEE_GIVING', 0),
+        'tokens' => (float) env('PLATFORM_FEE_TOKENS', 0),
     ],
 
 ];

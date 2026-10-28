@@ -33,7 +33,7 @@
             </nav>
 
             <div class="head__actions">
-                <a class="btn btn--outline head__btn head__login" href="{{ config('church.links.login') }}">Log in</a>
+                <a class="btn btn--outline head__btn head__login" href="{{ route('login') }}">Log in</a>
                 <a class="btn btn--navy head__btn" href="{{ route('give') }}">Give</a>
                 <button class="burger" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu" data-menu-toggle>
                     <span data-icon-open><x-icon name="menu" :size="22" /></span>
@@ -50,7 +50,7 @@
                 </a>
             @endforeach
             <div class="nav-mobile__actions">
-                <a class="btn btn--outline" href="{{ config('church.links.login') }}">Log in</a>
+                <a class="btn btn--outline" href="{{ route('login') }}">Log in</a>
                 <a class="btn btn--gold" href="{{ route('watch') }}">Watch live</a>
             </div>
         </nav>

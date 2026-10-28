@@ -39,7 +39,7 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn (array $attributes) => [
-            'is_admin' => true,
+            'role' => 'admin',
         ]);
     }
 
@@ -51,5 +51,13 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    /**
+     * Staff with a narrower role, e.g. 'finance' or 'media'.
+     */
+    public function staff(string $role): static
+    {
+        return $this->state(fn (array $attributes) => ['role' => $role]);
     }
 }

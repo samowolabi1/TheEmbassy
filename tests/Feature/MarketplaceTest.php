@@ -94,7 +94,7 @@ class MarketplaceTest extends TestCase
         $this->assertTrue($shop->isApproved());
         $this->assertFalse($shop->isListed()); // not until they subscribe
         $this->assertSame('kemi@example.com', $shop->user->email);
-        $this->assertFalse($shop->user->is_admin);
+        $this->assertFalse($shop->user->isStaff());
         Mail::assertSent(VendorApproved::class, fn ($mail) => $mail->hasTo('kemi@example.com'));
     }
 
