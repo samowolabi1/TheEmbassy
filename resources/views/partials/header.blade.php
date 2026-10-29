@@ -1,8 +1,11 @@
 @php
-    $nav = collect(config('church.nav'))->map(fn ($l) => [
-        ...$l,
-        'href' => route($l['route']).(isset($l['fragment']) ? '#'.$l['fragment'] : ''),
-    ]);
+    $nav = collect(config('church.nav'))
+        // Members see the community in the menu.
+        ->when(auth()->user()?->canJoinCommunity(), fn ($n) => $n->push(['id' => 'community', 'label' => 'Community', 'route' => 'community.index']))
+        ->map(fn ($l) => [
+            ...$l,
+            'href' => route($l['route']).(isset($l['fragment']) ? '#'.$l['fragment'] : ''),
+        ]);
     $banner = config('church.banner');
 @endphp
 

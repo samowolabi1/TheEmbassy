@@ -4,6 +4,7 @@ use App\Http\Controllers\Account;
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\AppController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\Community;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GalleryController;
@@ -128,6 +129,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/check-in', [Account\CheckInController::class, 'show'])->name('check-in');
     Route::post('/check-in', [Account\CheckInController::class, 'store'])->middleware('throttle:10,1')->name('check-in.store');
     Route::post('/account/tokens', [Account\AccountController::class, 'payTokens'])->middleware('throttle:10,1')->name('account.tokens.pay');
+});
+
+// The members' community: chat rooms and the Bible quiz (approved members and staff).
+Route::middleware(['auth', 'can:join-community'])->prefix('community')->name('community.')->group(function () {
+    Route::get('/', [Community\RoomController::class, 'index'])->name('index');
+    Route::get('/quiz/{quiz}', [Community\QuizController::class, 'show'])->name('quiz');
+    Route::post('/quiz/{quiz}/start', [Community\QuizController::class, 'start'])->name('quiz.start');
+    Route::post('/quiz/{quiz}', [Community\QuizController::class, 'submit'])->name('quiz.submit');
+    Route::get('/{room}', [Community\RoomController::class, 'show'])->name('room');
+    Route::get('/{room}/updates', [Community\RoomController::class, 'updates'])->middleware('throttle:60,1')->name('updates');
+    Route::post('/{room}/messages', [Community\MessageController::class, 'store'])->middleware('throttle:20,1')->name('messages.store');
+    Route::middleware('throttle:60,1')->group(function () {
+        Route::put('/messages/{message}', [Community\MessageController::class, 'update'])->name('messages.update');
+        Route::delete('/messages/{message}', [Community\MessageController::class, 'destroy'])->name('messages.destroy');
+        Route::post('/messages/{message}/react', [Community\MessageController::class, 'react'])->name('messages.react');
+        Route::post('/messages/{message}/vote', [Community\MessageController::class, 'vote'])->name('messages.vote');
+        Route::post('/messages/{message}/report', [Community\MessageController::class, 'report'])->name('messages.report');
+    });
 });
 
 // First-timer card for visitors (e.g. from a QR code at the door).
@@ -322,6 +341,21 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('posts', Admin\PostController::class)->except('show');
             Route::get('/pages/{page}', [Admin\PageContentController::class, 'edit'])->whereIn('page', ['about', 'home'])->name('pages.edit');
             Route::put('/pages/{page}', [Admin\PageContentController::class, 'update'])->whereIn('page', ['about', 'home'])->name('pages.update');
+        });
+
+        Route::middleware('can:manage,"community"')->prefix('community')->name('community.')->group(function () {
+            Route::get('/', [Admin\CommunityController::class, 'index'])->name('index');
+            Route::post('/reports/{report}', [Admin\CommunityController::class, 'resolve'])->name('reports.resolve');
+            Route::post('/members/{user}/mute', [Admin\CommunityController::class, 'muteUser'])->name('mute');
+            Route::delete('/members/{user}/mute', [Admin\CommunityController::class, 'unmute'])->name('unmute');
+            Route::post('/rooms', [Admin\CommunityController::class, 'storeRoom'])->name('rooms.store');
+            Route::put('/rooms/{room:id}', [Admin\CommunityController::class, 'updateRoom'])->name('rooms.update');
+            Route::delete('/rooms/{room:id}', [Admin\CommunityController::class, 'destroyRoom'])->name('rooms.destroy');
+            Route::get('/quizzes/new', [Admin\CommunityController::class, 'createQuiz'])->name('quizzes.create');
+            Route::post('/quizzes', [Admin\CommunityController::class, 'storeQuiz'])->name('quizzes.store');
+            Route::get('/quizzes/{quiz}', [Admin\CommunityController::class, 'editQuiz'])->name('quizzes.edit');
+            Route::put('/quizzes/{quiz}', [Admin\CommunityController::class, 'updateQuiz'])->name('quizzes.update');
+            Route::delete('/quizzes/{quiz}', [Admin\CommunityController::class, 'destroyQuiz'])->name('quizzes.destroy');
         });
 
         Route::middleware('can:manage,"gallery"')->prefix('gallery')->name('gallery.')->group(function () {

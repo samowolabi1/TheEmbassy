@@ -27,6 +27,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'community_muted_until' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -47,6 +48,41 @@ class User extends Authenticatable
     /**
      * Whether this person's role covers an admin area (see config/roles.php).
      */
+    /**
+     * Approved members (and staff) can open the community.
+     */
+    public function canJoinCommunity(): bool
+    {
+        return $this->isStaff() || $this->member?->status === Member::ACTIVE;
+    }
+
+    /**
+     * Moderators remove messages, mute people and post in locked rooms.
+     */
+    public function moderatesCommunity(): bool
+    {
+        return $this->canManage('community');
+    }
+
+    public function isMutedInCommunity(): bool
+    {
+        return $this->community_muted_until?->isFuture() ?? false;
+    }
+
+    /**
+     * The name others see in the community: the member's name, or the account name.
+     */
+    public function communityName(): string
+    {
+        return $this->member?->name ?: $this->name;
+    }
+
+    public function initials(): string
+    {
+        return collect(preg_split('/\s+/', preg_replace('/[^\pL\s]/u', '', $this->communityName())))
+            ->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->join('') ?: '?';
+    }
+
     public function canManage(string $area): bool
     {
         $areas = $this->isStaff() ? config("roles.roles.{$this->role}.areas") : [];

@@ -9,6 +9,7 @@
                 <a href="{{ route('check-in') }}" class="btn btn--gold btn--sm">Check in to a service</a>
             @endif
             @if ($member?->status === 'active')
+                <a href="{{ route('community.index') }}" class="btn btn--navy btn--sm">Community</a>
                 <a href="{{ route('account.welfare') }}" class="btn btn--outline btn--sm">Welfare</a>
             @endif
             @if ($member?->status === 'active' && $member->unit?->isMedia() && ! $member->unit->isLedBy($member))

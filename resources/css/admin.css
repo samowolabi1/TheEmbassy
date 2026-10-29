@@ -1356,3 +1356,51 @@ input[type='file'] {
 .form .item-tile .field input {
   height: 42px;
 }
+
+/* Community moderation and quizzes */
+.list-item--report {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.report-quote {
+  display: block;
+  padding: 8px 12px;
+  border-left: 3px solid var(--gold);
+  background: var(--ivory);
+  border-radius: 6px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 8px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.quiz-option input[type='text'] {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--field-line);
+  background: var(--ivory);
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.quiz-option input[type='radio'] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--navy);
+}
+.quiz-admin-list {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

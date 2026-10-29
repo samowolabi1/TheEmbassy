@@ -19,6 +19,7 @@ The public website, built with [Laravel](https://laravel.com) 13 from the "RCCG 
 | `/welcome` | First-timer card for visitors; print it as a QR code at the door |
 | `/check-in` | Members check in to a service, at church (location and screen code) or online (stream code) |
 | `/contact`, `/privacy`, `/terms` | Contact form and legal pages |
+| `/community` | The members' community (approved members and staff only): chat rooms, polls, the Bible quiz and birthdays |
 | `/sitemap.xml` | Every public page, article, album and upcoming event, for search engines |
 | `/newsletter/confirm/…`, `/newsletter/unsubscribe/…` | Links in the weekly email to confirm a sign-up or stop it |
 
@@ -38,8 +39,8 @@ There are three kinds of account, all in the `users` table:
 | Administrator | Everything, including Settings & roles |
 | Pastor | Everything except Settings & roles, including welfare cases and approvals above the HOD's limit |
 | Finance | Giving & tokens, expenses & budgets, the market |
-| Church office | Members, attendance & first-timers, follow-up & care, units, the weekly email, the market, content (announcements, blog, pages), gallery, notices, events, prayer, messages |
-| Media | Content (announcements, blog, pages), gallery, notices, sermons & live, events |
+| Church office | Members, attendance & first-timers, follow-up & care, units, the weekly email, the market, content (announcements, blog, pages), gallery, community moderation, notices, events, prayer, messages |
+| Media | Content (announcements, blog, pages), gallery, community moderation, notices, sermons & live, events |
 | Ushering | Attendance & first-timers, events (door check-in) |
 
 Create the first administrator from the command line; they add everyone else in **Settings & roles**, which emails each new person a link to set their password:
@@ -72,6 +73,15 @@ Staff sign in at `/admin`. Every area in the design's sidebar is built:
 - **Gallery**: albums with a date, description and optional event; drop in up to 40 photos at a time with an upload progress bar, add YouTube videos, write captions, set the order and the cover, then publish. Photos are turned upright, resized (2000 px, plus a 640 px thumbnail), saved as WebP, and stripped of location and camera data.
 - **Sermons & live**: the message library and series on the home and Watch pages, and the YouTube stream in the Watch page player.
 - **Settings & roles**: staff and their roles, and the church's details (address, service times, bank details, live stream, social links). Saved values replace the placeholders across the site.
+
+## The members' community
+
+Approved members (and staff) get **Community** in the menu and on their account page.
+
+- **Rooms**: General, Prayer & praise, Word & devotion, Campus life, Career & hustle and Banter & fun to start. Staff add, rename, reorder and delete rooms. A room can be tied to a unit so only that unit's members see it, or set to "announcements only".
+- **Chat**: text with clickable links, photos (resized, location data removed), replies, six reactions (🙏 ❤️ 😂 🔥 👏 🙌), and polls that close after an hour to a week. People edit their own messages for 15 minutes and delete them any time. Messages appear for everyone within a few seconds without reloading, unread counts show on each room, and people who turned on app notifications get one when someone replies to them. Everything also works without JavaScript.
+- **Fun**: a weekly **Bible quiz** staff write in admin (timed questions, one go each, scored on the server, leaderboard with the fastest time breaking ties; answers are shown once it closes), and **birthdays this week** (day and month only, never the year).
+- **Safety**: house rules on the community page; members report a message with a reason; moderators (the "Community" area: administrators, pastors, church office and media) keep or remove it, and can mute the writer for 1 to 30 days with a reason they see. Moderators can remove any message and post in announcements-only rooms. Removed messages show as "Message removed" so replies still make sense.
 
 ## Attendance and follow-up
 
@@ -250,11 +260,11 @@ Anything still in `[brackets]` is a placeholder waiting for real details; most d
 
 - `routes/web.php`: all routes; `routes/console.php`: `admin:create`, `admin:revoke`, `care:scan`, `units:remind`, `social:publish`, `youtube:sync`, `market:remind`, `newsletter:queue`, `messages:send`, `push:keys`, `blog:prune-images` and the schedule
 - `app/Http/Controllers/`: public pages and forms, `Account/` (members), `Vendor/` (sellers), `Admin/` (dashboard)
-- `app/Models/`: people (`User`, `Member`, `Unit`, `Fellowship`, `FirstTimer`, `Service`), money (`Payment`, `Fund`, `Gift`, `TokenPlan`, `TokenPayment`, `Expense`, `Budget`), events and notices (`Event`, `TicketType`, `TicketOrder`, `Ticket`, `Notice`), the market (`Shop`, `Product`, `Enquiry`, `VendorPlan`, `VendorSubscription`, `Coupon`), messaging (`NewsletterSubscriber`, `NewsletterIssue`, `Broadcast`, `PushSubscription`), content (`Announcement`, `Declaration`, `Post`, `PageContent`, `GalleryAlbum`, `GalleryItem`, `Sermon`, `SermonSeries`, `PrayerRequest`, `ContactMessage`, `Setting`)
+- `app/Models/`: people (`User`, `Member`, `Unit`, `Fellowship`, `FirstTimer`, `Service`), money (`Payment`, `Fund`, `Gift`, `TokenPlan`, `TokenPayment`, `Expense`, `Budget`), events and notices (`Event`, `TicketType`, `TicketOrder`, `Ticket`, `Notice`), the market (`Shop`, `Product`, `Enquiry`, `VendorPlan`, `VendorSubscription`, `Coupon`), messaging (`NewsletterSubscriber`, `NewsletterIssue`, `Broadcast`, `PushSubscription`), community (`CommunityRoom`, `CommunityMessage`, `CommunityReaction`, `CommunityVote`, `CommunityRead`, `CommunityReport`, `Quiz`, `QuizQuestion`, `QuizAttempt`), content (`Announcement`, `Declaration`, `Post`, `PageContent`, `GalleryAlbum`, `GalleryItem`, `Sermon`, `SermonSeries`, `PrayerRequest`, `ContactMessage`, `Setting`)
 - `app/Services/`: Paystack and payment settlement, shop approval and seller reminders, the sermon library, `Messaging/` (weekly email, Termii texts, web push, the broadcaster), `Content/Markdown` (safe article rendering) and `Content/Images` (photo resizing)
 - `resources/views/`: `layouts/` (site, admin, seller), `partials/`, `components/`, `pages/`, `account/`, `blog/`, `market/`, `vendor/`, `admin/`, `mail/`
 - `resources/css/`: `base.css` holds the design tokens; `partials/` and `pages/` hold the rest; `admin.css` is the dashboard's own stylesheet
-- `resources/js/`: mobile menu, carousel, filters, share/copy buttons, countdown, give form, gallery viewer, the app shell (install button, notifications); in admin, the article editor and gallery uploads
+- `resources/js/`: mobile menu, carousel, filters, share/copy buttons, countdown, give form, gallery viewer, community chat and quiz, the app shell (install button, notifications); in admin, the article editor and gallery uploads
 
 ## Forms
 

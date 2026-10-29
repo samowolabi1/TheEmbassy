@@ -10,3 +10,4 @@ import './notices';
 import './booking';
 import './gallery';
 import './app-shell';
+import './community';

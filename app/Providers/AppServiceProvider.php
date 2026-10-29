@@ -37,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('lead-media', fn (User $user, Unit $unit) => $unit->isMedia() && ($unit->isLedBy($user->member) || $user->canManage('sermons') || $user->canManage('units')));
         // Welfare cases are confidential: the welfare unit's leaders and staff with the welfare area only.
         Gate::define('manage-welfare', fn (User $user, Unit $unit) => $unit->isWelfare() && ($unit->isLedBy($user->member) || $user->canManage('welfare')));
+        Gate::define('join-community', fn (User $user) => $user->canJoinCommunity());
         Gate::define('run-shop', fn (User $user) => $user->shop?->isApproved() ?? false);
 
         // Sellers reset their password on the seller pages; everyone else on the member pages.
