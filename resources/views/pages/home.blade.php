@@ -363,7 +363,7 @@
         <div class="panel bg-ice stack" style="gap: 16px">
             <span class="eyebrow">{{ strtoupper(config('church.brand.app_name')) }}</span>
             <h2 class="cta-title">Church in your pocket.</h2>
-            <p class="cta-text">Put the Tribe on your home screen: watch live, check in on Sundays, pay your token, give, and get announcements as notifications.</p>
+            <p class="cta-text">Put the Tribe on your home screen: watch live, check in on Sundays and earn tokens to spend in the {{ config('church.brand.market_name') }}, and get announcements as notifications.</p>
             <div class="app-actions">
                 <button type="button" class="btn btn--navy" data-install aria-controls="install-hint" hidden>Install the app</button>
                 <button type="button" class="btn btn--outline" data-push-toggle data-on-label="Turn on notifications" data-off-label="Turn off notifications" hidden>Turn on notifications</button>

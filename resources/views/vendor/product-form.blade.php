@@ -55,6 +55,15 @@
                 <span class="field__hint">JPG, PNG or WebP, up to 2 MB.{{ $product->imageUrl() ? ' Choosing a new one replaces it.' : '' }}</span>
                 @error('image') <span class="field-error">{{ $message }}</span> @enderror
             </label>
+            <fieldset class="token-option">
+                <legend class="sr-only">Tokens</legend>
+                <label class="login__remember"><input type="checkbox" name="accepts_tokens" value="1" @checked(old('accepts_tokens', $product->acceptsTokens()))>Members can get this with tokens</label>
+                <label class="field">Price in tokens
+                    <input type="number" name="token_price" value="{{ old('token_price', $product->token_price) }}" min="1" step="1" placeholder="e.g. {{ max(1, (int) round(($product->price ?: 100000) / 100 / max(1, (int) config('tokens.naira_per_token', 10)))) }}">
+                    <span class="field__hint">Members earn tokens for taking part in church life. When one buys this with tokens, they come to you after you hand it over, and you can use them to pay your subscription (1 token = ₦{{ (int) config('tokens.naira_per_token', 10) }}). It's up to you.</span>
+                    @error('token_price') <span class="field-error">{{ $message }}</span> @enderror
+                </label>
+            </fieldset>
             <label class="login__remember"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $product->is_active))>Show it in the market</label>
             <button type="submit" class="btn btn--gold" style="align-self: flex-start">{{ $product->exists ? 'Save' : 'Add listing' }}</button>
         </form>

@@ -66,6 +66,15 @@
                     <input type="text" name="coupon" value="{{ old('coupon') }}" maxlength="40" autocomplete="off" style="text-transform: uppercase">
                     @error('coupon') <span class="field-error">{{ $message }}</span> @enderror
                 </label>
+                <fieldset class="choice-group">
+                    <legend>Pay with</legend>
+                    <div class="choices">
+                        <label class="choice"><input type="radio" name="pay_with" value="money" @checked(old('pay_with', 'money') === 'money')><span>Money (Paystack)</span></label>
+                        <label class="choice"><input type="radio" name="pay_with" value="tokens" @checked(old('pay_with') === 'tokens')><span>Tokens · you have {{ number_format($tokenBalance) }}</span></label>
+                    </div>
+                    <span class="field__hint">1 token = ₦{{ $nairaPerToken }}. @foreach ($plans as $plan){{ $plan->name }}: {{ number_format((int) ceil($plan->price / (100 * $nairaPerToken))) }} tokens{{ $loop->last ? '.' : ' · ' }}@endforeach You earn tokens when members buy from you with theirs, and by taking part in church life.</span>
+                    @error('pay_with') <span class="field-error">{{ $message }}</span> @enderror
+                </fieldset>
                 <div>
                     <button type="submit" class="btn btn--gold">Continue</button>
                 </div>
@@ -91,7 +100,7 @@
                             <td style="font-weight: 700">{{ $subscription->plan->name }}</td>
                             <td>{{ $subscription->starts_at->format('j M Y') }} – {{ $subscription->ends_at->format('j M Y') }}</td>
                             <td>{{ $subscription->coupon ? $subscription->coupon->code.' ('.$subscription->coupon->percent_off.'%)' : '—' }}</td>
-                            <td class="num" style="font-weight: 800; color: var(--navy)">₦{{ number_format($subscription->amount / 100) }}</td>
+                            <td class="num" style="font-weight: 800; color: var(--navy)">{{ $subscription->tokens_paid ? '🪙 '.number_format($subscription->tokens_paid).' tokens' : '₦'.number_format($subscription->amount / 100) }}</td>
                         </tr>
                     @empty
                         <tr><td colspan="4"><p class="empty-state">No subscriptions yet.</p></td></tr>

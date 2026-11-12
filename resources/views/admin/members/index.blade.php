@@ -46,7 +46,6 @@
                 <thead><tr><th>NAME</th><th>UNIT</th><th>TOKENS</th><th>LAST ATTENDED</th><th class="num"><span class="sr-only">Actions</span></th></tr></thead>
                 <tbody>
                     @forelse ($members as $m)
-                        @php($owed = $m->tokenMonthsOwed())
                         <tr>
                             <td>
                                 <span style="display: flex; align-items: center; gap: 12px">
@@ -58,7 +57,7 @@
                                 </span>
                             </td>
                             <td>{{ $m->unit?->name ?? '—' }}</td>
-                            <td><span class="pill {{ $owed ? 'pill--warn' : 'pill--ok' }}">{{ $m->tokenStatus() }}</span></td>
+                            <td style="font-weight: 700">{{ $m->user ? '🪙 '.number_format($m->user->token_balance) : '—' }}</td>
                             <td style="color: var(--slate)">{{ $m->last_attended_on?->format('j M') ?? '—' }}</td>
                             <td class="num">
                                 @if ($m->status === 'pending')

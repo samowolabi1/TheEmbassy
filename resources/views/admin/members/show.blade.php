@@ -51,11 +51,17 @@
             </ul>
             <h2>Tokens</h2>
             <p class="box__note" style="margin: 0">
-                {{ $member->tokenPlan ? $member->tokenPlan->name.' · '.$member->tokenPlan->amountLabel().' a month' : 'No plan' }}<br>
-                <strong>{{ $member->tokenStatus() }}</strong>@if ($member->tokenAmountOwed()) · ₦{{ number_format($member->tokenAmountOwed() / 100) }} owed @endif
+                @if ($member->user)
+                    <strong>🪙 {{ number_format($member->user->token_balance) }}</strong> in their wallet
+                @else
+                    No login yet, so no token wallet.
+                @endif
             </p>
-            @if (auth()->user()->canManage('finance') && $member->status === 'active' && $member->tokenPlan && ! $member->tokenPlan->isExempt())
-                <a href="{{ route('admin.finance.index') }}#record-tokens" class="btn btn--ghost btn--xs" style="align-self: flex-start">Record a token payment</a>
+            @foreach ($tokenHistory as $t)
+                <span class="box__note" style="margin: 0">{{ $t->created_at->format('j M') }} · {{ $t->description }} · <strong>{{ $t->amount > 0 ? '+' : '−' }}{{ abs($t->amount) }}</strong></span>
+            @endforeach
+            @if ($member->user && auth()->user()->canManage('tokens'))
+                <a href="{{ route('admin.tokens.index', ['member' => $member->id]) }}#award" class="btn btn--ghost btn--xs" style="align-self: flex-start">Give or take tokens</a>
             @endif
             <h2>Attendance</h2>
             @php($sundays = $member->recentSundays())

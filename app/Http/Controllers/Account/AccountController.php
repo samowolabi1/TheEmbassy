@@ -3,32 +3,32 @@
 namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
+use App\Models\Declaration;
 use App\Models\Fellowship;
 use App\Models\Member;
+use App\Models\Product;
 use App\Models\Service;
-use App\Models\TokenPayment;
+use App\Models\TokenOrder;
+use App\Models\TokenTransaction;
 use App\Models\Unit;
 use App\Models\UnitMeeting;
 use App\Models\UnitMessage;
 use App\Models\WelfarePackage;
 use App\Services\Messaging\Inbox;
-use App\Services\Payments\Payments;
+use App\Services\Tokens\Rewards;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-use RuntimeException;
 
 /**
- * A member's own page: their details, giving and tokens.
+ * A member's own page: their details, quick links, and their token wallet.
  */
 class AccountController extends Controller
 {
     public function show(Request $request, Inbox $inbox): View
     {
-        $member = $request->user()->member?->load('unit', 'fellowship', 'tokenPlan', 'tokenPayments');
+        $member = $request->user()->member?->load('unit', 'fellowship');
         $active = $member?->status === Member::ACTIVE;
 
         return view('account.show', [
@@ -60,52 +60,42 @@ class AccountController extends Controller
         ]);
 
         $member->update([...$data, 'notify_sms' => $request->boolean('notify_sms')]);
+        $tokens = app(Rewards::class)->profile($member->fresh('user'));
 
-        return back()->with('status', 'Your details are saved.');
+        return back()->with('status', 'Your details are saved.'.($tokens ? " Your profile is complete: +{$tokens} tokens!" : ''));
     }
 
-    public function tokens(Request $request, Payments $payments): View
+    /**
+     * The token wallet: balance, how to earn, where to spend, history and market orders.
+     */
+    public function tokens(Request $request, Rewards $rewards): View
     {
-        $member = $this->member($request)->load('tokenPlan', 'tokenPayments');
-        $returned = $request->filled('paid') ? $member->tokenPayments->firstWhere('id', $request->integer('paid')) : null;
+        $user = $request->user();
 
         return view('account.tokens', [
-            'member' => $member,
-            'history' => $member->tokenPayments->where('status', TokenPayment::PAID)->sortByDesc('from_month'),
-            'returned' => $returned,
-            'paymentsEnabled' => $payments->enabled(),
+            'user' => $user,
+            'balance' => (int) $user->token_balance,
+            'history' => TokenTransaction::where('user_id', $user->id)->latest('id')->paginate(20),
+            'orders' => TokenOrder::with('shop')->where('user_id', $user->id)->latest()->take(20)->get(),
+            'rules' => collect(Rewards::RULES)->map(fn ($r, $key) => ['label' => $r[0], 'text' => $r[1], 'amount' => $rewards->amount($key)])->filter(fn ($r) => $r['amount'] > 0),
+            'earnedThisMonth' => (int) TokenTransaction::where('user_id', $user->id)->where('amount', '>', 0)->where('rule', '!=', 'refund')->where('created_at', '>=', now()->startOfMonth())->sum('amount'),
+            'forTokens' => Product::listed()->whereNotNull('token_price')->with('shop')->latest()->take(4)->get(),
+            'declaration' => Declaration::current(),
+            'declared' => ($d = Declaration::current()) ? TokenTransaction::where('key', 'declaration:week:'.$d->week_of->toDateString().':'.$user->id)->exists() : false,
         ]);
     }
 
     /**
-     * Pay tokens for the next one or more months.
+     * "I declare it": saying this week's declaration earns a few tokens once a week.
      */
-    public function payTokens(Request $request, Payments $payments): RedirectResponse
+    public function declare(Request $request, Rewards $rewards): RedirectResponse
     {
-        $member = $this->member($request)->load('tokenPlan', 'tokenPayments');
-        $data = $request->validate(['months' => ['required', 'integer', 'min:1', 'max:12']]);
+        $member = $this->member($request);
+        abort_unless($member->status === Member::ACTIVE, 403);
+        $declaration = Declaration::current() ?? abort(404);
+        $tokens = $rewards->declared($request->user(), $declaration->week_of);
 
-        if ($member->status !== Member::ACTIVE || ! $member->tokenPlan || $member->tokenPlan->isExempt()) {
-            throw ValidationException::withMessages(['months' => 'There are no tokens to pay on your plan.']);
-        }
-        if (! $payments->enabled()) {
-            throw ValidationException::withMessages(['months' => 'Online payments aren\'t switched on yet. Please pay at the church office.']);
-        }
-
-        $payment = $member->tokenPayments()->create([
-            'from_month' => $member->nextTokenMonth(),
-            'months' => $data['months'],
-            'amount' => $member->tokenPlan->amount * $data['months'],
-            'method' => 'online',
-        ]);
-
-        try {
-            return redirect()->away($payments->checkout($payment, $payment->amount, $request->user()->email));
-        } catch (RuntimeException $e) {
-            Log::error('Could not start token checkout', ['token_payment' => $payment->id, 'error' => $e->getMessage()]);
-
-            return back()->withErrors(['months' => 'We couldn\'t reach the payment page. Please try again in a moment.']);
-        }
+        return back()->with('status', $tokens ? "Amen! +{$tokens} tokens." : 'You\'ve declared it this week. Amen!');
     }
 
     private function member(Request $request): Member

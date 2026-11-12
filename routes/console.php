@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Member;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Care\FollowUps;
@@ -8,6 +9,8 @@ use App\Services\Market\SubscriptionReminders;
 use App\Services\Messaging\Broadcaster;
 use App\Services\Messaging\Newsletter;
 use App\Services\Social\PostPublisher;
+use App\Services\Tokens\Rewards;
+use App\Services\Tokens\TokenShop;
 use App\Services\Units\DutyReminders;
 use App\Services\YouTube\YouTubeBroadcasts;
 use Illuminate\Support\Facades\Crypt;
@@ -114,6 +117,19 @@ Artisan::command('blog:prune-images', function (InlineImages $images) {
     $this->info('Removed '.$images->prune().' unused article pictures.');
 })->purpose('Delete pictures uploaded into articles that no article uses any more');
 
+Artisan::command('tokens:daily', function (Rewards $rewards, TokenShop $shop) {
+    // Birthday tokens for members whose birthday is today (29 February birthdays get theirs on the 28th in other years).
+    $given = 0;
+    $isLeapDay = today()->format('m-d') === '02-29' || (! today()->isLeapYear() && today()->format('m-d') === '02-28');
+    Member::active()->whereNotNull('user_id')->whereNotNull('birthday')->with('user')->get()
+        ->filter(fn (Member $m) => $m->birthday->format('m-d') === today()->format('m-d') || ($isLeapDay && $m->birthday->format('m-d') === '02-29'))
+        ->each(function (Member $m) use ($rewards, &$given) {
+            $given += $rewards->birthday($m->user) ? 1 : 0;
+        });
+    $expired = $shop->expireOld();
+    $this->info("Birthday tokens for {$given} members; {$expired} token orders expired and refunded.");
+})->purpose('Give birthday tokens and return tokens for market orders sellers never handed over');
+
 // Run `php artisan schedule:run` every minute from cron (see the README).
 Schedule::command('youtube:sync')->everyMinute()->withoutOverlapping();
 Schedule::command('social:publish')->everyMinute()->withoutOverlapping();
@@ -123,4 +139,5 @@ Schedule::command('market:remind')->dailyAt('08:00')->timezone('Africa/Lagos');
 Schedule::command('messages:send')->everyMinute()->withoutOverlapping(30);
 Schedule::command('newsletter:queue')->weeklyOn(1, (string) config('church.newsletter.send_at', '07:00'))->timezone('Africa/Lagos')
     ->when(fn () => (bool) config('church.newsletter.enabled'));
+Schedule::command('tokens:daily')->dailyAt('06:30')->timezone('Africa/Lagos');
 Schedule::command('blog:prune-images')->weeklyOn(0, '03:00')->timezone('Africa/Lagos');

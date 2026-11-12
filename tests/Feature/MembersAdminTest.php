@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Fellowship;
 use App\Models\Member;
-use App\Models\TokenPlan;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -32,20 +31,6 @@ class MembersAdminTest extends TestCase
         $this->get(route('admin.members.index', ['tab' => 'pending']))->assertSee('Funmi Nwosu')->assertSee('Approve');
         $this->get(route('admin.members.index', ['q' => 'tolu']))->assertSee('Tolu Adeyemi')->assertDontSee('Jide Kolawole');
         $this->get(route('admin.members.index', ['unit' => $choir->id]))->assertSee('Tolu Adeyemi')->assertDontSee('Jide Kolawole');
-    }
-
-    public function test_approving_starts_tokens_on_the_default_plan(): void
-    {
-        $standard = TokenPlan::create(['name' => 'Standard', 'amount' => 200_000, 'is_default' => true]);
-        $member = Member::factory()->create();
-
-        $this->actingAs($this->office())->post(route('admin.members.approve', $member))->assertRedirect();
-
-        $member->refresh();
-        $this->assertSame(Member::ACTIVE, $member->status);
-        $this->assertSame($standard->id, $member->token_plan_id);
-        $this->assertTrue($member->tokens_from->isSameDay(today()->startOfMonth()));
-        $this->assertSame(1, $member->tokenMonthsOwed());
     }
 
     public function test_staff_add_and_edit_members_with_milestones(): void

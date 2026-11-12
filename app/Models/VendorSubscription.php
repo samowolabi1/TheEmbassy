@@ -40,6 +40,7 @@ class VendorSubscription extends Model implements Payable
             'months' => 'integer',
             'list_price' => 'integer',
             'discount' => 'integer',
+            'tokens_paid' => 'integer',
             'amount' => 'integer',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',

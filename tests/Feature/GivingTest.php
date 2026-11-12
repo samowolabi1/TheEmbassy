@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Mail\GiftReceipt;
-use App\Mail\TokenReminder;
 use App\Models\BankAccount;
 use App\Models\Budget;
 use App\Models\Expense;
@@ -11,8 +10,6 @@ use App\Models\Fund;
 use App\Models\Gift;
 use App\Models\Member;
 use App\Models\Payment;
-use App\Models\TokenPayment;
-use App\Models\TokenPlan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -248,86 +245,6 @@ class GivingTest extends TestCase
     public function test_media_staff_cannot_see_finances(): void
     {
         $this->actingAs(User::factory()->staff('media')->create())->get(route('admin.finance.index'))->assertForbidden();
-    }
-
-    // ---- Tokens ----
-
-    public function test_tokens_owed_build_up_monthly_and_payments_clear_them(): void
-    {
-        $plan = TokenPlan::create(['name' => 'Standard', 'amount' => 200_000]);
-        $member = Member::factory()->active($plan->id)->create(['tokens_from' => now()->subMonthsNoOverflow(2)->startOfMonth()]);
-
-        $this->assertSame(3, $member->tokenMonthsOwed());
-        $this->assertSame(600_000, $member->tokenAmountOwed());
-
-        $this->actingAs($this->finance())->post(route('admin.tokens.store'), ['member_id' => $member->id, 'months' => 2, 'method' => 'cash'])->assertRedirect();
-        $member->refresh()->load('tokenPayments');
-        $this->assertSame(1, $member->tokenMonthsOwed());
-        $this->assertSame('1 month behind', $member->tokenStatus());
-        $this->assertTrue($member->nextTokenMonth()->isSameMonth(now()));
-    }
-
-    public function test_exempt_members_owe_nothing(): void
-    {
-        $exempt = TokenPlan::create(['name' => 'Exempt', 'amount' => 0]);
-        $member = Member::factory()->active($exempt->id)->create(['tokens_from' => now()->subYear()]);
-
-        $this->assertSame(0, $member->tokenMonthsOwed());
-        $this->assertSame('Exempt', $member->tokenStatus());
-        $this->actingAs($this->finance())->post(route('admin.tokens.store'), ['member_id' => $member->id, 'months' => 1, 'method' => 'cash'])->assertSessionHasErrors('member_id', null, 'tokens');
-    }
-
-    public function test_members_pay_tokens_online(): void
-    {
-        $plan = TokenPlan::create(['name' => 'Student', 'amount' => 100_000]);
-        $member = Member::factory()->active($plan->id)->create();
-
-        $this->actingAs($member->user)->get(route('account.tokens'))->assertSee('1 month behind');
-        $this->post(route('account.tokens.pay'), ['months' => 3])->assertRedirect('https://checkout.paystack.com/g');
-
-        $tokens = TokenPayment::sole();
-        $this->assertSame(300_000, $tokens->amount);
-        $this->assertTrue($tokens->from_month->isSameMonth(now()));
-        $this->confirm(Payment::sole())->assertRedirect(route('account.tokens', ['paid' => $tokens->id]));
-
-        $this->assertSame(TokenPayment::PAID, $tokens->fresh()->status);
-        $this->assertSame('Up to date', $member->fresh()->tokenStatus());
-        $this->get(route('account.tokens', ['paid' => $tokens->id]))->assertSee('Thank you!');
-    }
-
-    public function test_pending_members_cannot_pay_tokens_yet(): void
-    {
-        $member = Member::factory()->create(['token_plan_id' => TokenPlan::create(['name' => 'S', 'amount' => 100])->id]);
-
-        $this->actingAs($member->user)->post(route('account.tokens.pay'), ['months' => 1])->assertSessionHasErrors('months');
-    }
-
-    public function test_arrears_list_and_reminders(): void
-    {
-        $plan = TokenPlan::create(['name' => 'Standard', 'amount' => 200_000]);
-        $behind = Member::factory()->active($plan->id)->create(['name' => 'Ada Behind', 'tokens_from' => now()->subMonthsNoOverflow(3)->startOfMonth()]);
-        Member::factory()->active($plan->id)->withoutLogin()->create(['name' => 'No Email', 'email' => null, 'phone' => '08030000000']);
-        $this->actingAs($this->finance());
-
-        $this->get(route('admin.finance.index'))->assertSee('Ada Behind')->assertSee('4 months')->assertSee('wa.me/2348030000000', false);
-
-        $this->post(route('admin.tokens.remind'))->assertSessionHas('status', 'Sent 1 reminder by email.');
-        Mail::assertSent(TokenReminder::class, fn ($mail) => $mail->hasTo($behind->email));
-        $this->assertNotNull($behind->fresh()->token_reminded_at);
-
-        // Not again within the week.
-        $this->post(route('admin.tokens.remind'))->assertSessionHas('status', 'No reminders sent: nobody due a reminder has an email address.');
-    }
-
-    public function test_finance_manages_token_plans_with_one_default(): void
-    {
-        $this->actingAs($this->finance())->get(route('admin.finance.index'));
-        $student = TokenPlan::firstWhere('name', 'Student');
-
-        $this->put(route('admin.token-plans.update', $student), ['name' => 'Student', 'amount' => '1500', 'is_default' => '1'])->assertRedirect();
-
-        $this->assertSame(150_000, $student->fresh()->amount);
-        $this->assertSame(['Student'], TokenPlan::where('is_default', true)->pluck('name')->all());
     }
 
     // ---- Expenses ----

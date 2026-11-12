@@ -7,6 +7,7 @@ use App\Mail\MeetingScheduled;
 use App\Models\Member;
 use App\Models\Unit;
 use App\Models\UnitMeeting;
+use App\Services\Tokens\Rewards;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -80,7 +81,10 @@ class MeetingController extends Controller
         // Keep how people checked in; only add or remove.
         $meeting->attendees()->detach($ids->diff($present)->all());
         $already = $meeting->attendees()->pluck('members.id');
-        $meeting->attendees()->attach($present->diff($already)->mapWithKeys(fn ($id) => [$id => ['mode' => 'marked']])->all());
+        $new = $present->diff($already);
+        $meeting->attendees()->attach($new->mapWithKeys(fn ($id) => [$id => ['mode' => 'marked']])->all());
+        $rewards = app(Rewards::class);
+        Member::with('user')->whereKey($new->all())->get()->each(fn (Member $m) => $rewards->meeting($m, $meeting));
 
         return back()->with('status', $present->count().' marked present.');
     }
@@ -118,8 +122,9 @@ class MeetingController extends Controller
             return back()->withErrors(['meeting' => 'That code doesn\'t match. Ask your HOD for the one showing now.']);
         }
         $meeting->attendees()->syncWithoutDetaching([$member->id => ['mode' => 'code', 'checked_in_at' => now()]]);
+        $tokens = app(Rewards::class)->meeting($member, $meeting);
 
-        return back()->with('status', 'You\'re checked in to '.$meeting->title.'.');
+        return back()->with('status', 'You\'re checked in to '.$meeting->title.'.'.($tokens ? " +{$tokens} tokens." : ''));
     }
 
     /**

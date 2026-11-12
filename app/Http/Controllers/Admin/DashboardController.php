@@ -17,7 +17,7 @@ use App\Models\PrayerRequest;
 use App\Models\Service;
 use App\Models\Shop;
 use App\Models\TicketOrder;
-use App\Models\TokenPayment;
+use App\Models\TokenTransaction;
 use App\Models\VendorSubscription;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -72,11 +72,7 @@ class DashboardController extends Controller
         }
         if ($can('finance')) {
 
-            $payers = Member::active()->with('tokenPlan', 'tokenPayments')->whereHas('tokenPlan', fn ($q) => $q->where('amount', '>', 0))->get();
-            $behind = $payers->filter(fn (Member $m) => $m->tokenMonthsOwed() > 0)->count();
-            $data['tiles'][] = ['label' => 'Tokens up to date', 'num' => $payers->isEmpty() ? '—' : round(($payers->count() - $behind) * 100 / $payers->count()).'%', 'foot' => $behind.' in arrears', 'route' => route('admin.finance.index').'#record-tokens'];
-
-            $data['tokensThisMonth'] = (int) TokenPayment::where('status', TokenPayment::PAID)->where('paid_at', '>=', $monthStart)->sum('amount');
+            $data['tokensThisMonth'] = (int) TokenTransaction::where('amount', '>', 0)->where('created_at', '>=', $monthStart)->sum('amount');
         }
         if ($can('market')) {
             $data['tiles'][] = ['label' => 'Market ('.now()->format('M').')', 'num' => $this->naira((int) VendorSubscription::where('status', VendorSubscription::ACTIVE)->where('created_at', '>=', $monthStart)->sum('amount')), 'foot' => ($listed = Shop::listed()->count()).' '.str('shop')->plural($listed).' listed', 'route' => route('admin.market.index')];

@@ -50,7 +50,7 @@ class CheckInTest extends TestCase
 
         $this->actingAs($member->user)->get(route('check-in'))->assertOk()->assertSee("I'm at church", false)->assertSee("I'm watching elsewhere", false)->assertSee('Join online');
         $this->checkIn($service, ['latitude' => self::NEARBY[0], 'longitude' => self::NEARBY[1], 'accuracy' => 20, 'code' => $service->code()])
-            ->assertRedirect(route('check-in'))->assertSessionHas('status', "You're checked in. Welcome to church!");
+            ->assertRedirect(route('check-in'))->assertSessionHas('status', "You're checked in. Welcome to church! +10 tokens.");
 
         $pivot = $service->members()->first()->pivot;
         $this->assertSame('in_person', $pivot->mode);

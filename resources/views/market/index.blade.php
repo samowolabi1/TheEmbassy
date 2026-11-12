@@ -16,18 +16,25 @@
         </div>
     </section>
 
-    <section class="container section--tight stack" style="gap: 24px" data-filter-scope>
+    <section class="container section--tight stack" style="gap: 24px" data-filter-scope data-filter-param="show">
         @if ($products->isEmpty())
             <div class="card notices-empty">
                 <p class="lede" style="margin: 0">The market is just getting started. Check back soon.</p>
                 <a href="{{ route('market.apply') }}" class="btn btn--navy btn--md">Sell something</a>
             </div>
         @else
-            @if ($products->pluck('type')->unique()->count() > 1)
-                <div role="tablist" aria-label="Products or services" class="filters">
+            @php($bothKinds = $products->pluck('type')->unique()->count() > 1)
+            @php($forTokens = $products->contains(fn ($p) => $p->acceptsTokens()))
+            @if ($bothKinds || $forTokens)
+                <div role="tablist" aria-label="Filter listings" class="filters">
                     <button type="button" role="tab" class="filter" aria-selected="true" data-filter="all">All</button>
-                    <button type="button" role="tab" class="filter" aria-selected="false" data-filter="product">Products</button>
-                    <button type="button" role="tab" class="filter" aria-selected="false" data-filter="service">Services</button>
+                    @if ($bothKinds)
+                        <button type="button" role="tab" class="filter" aria-selected="false" data-filter="product">Products</button>
+                        <button type="button" role="tab" class="filter" aria-selected="false" data-filter="service">Services</button>
+                    @endif
+                    @if ($forTokens)
+                        <button type="button" role="tab" class="filter" aria-selected="false" data-filter="tokens">🪙 For tokens</button>
+                    @endif
                 </div>
             @endif
             <div class="grid-auto" style="--min: 230px; --gap: 22px 18px">

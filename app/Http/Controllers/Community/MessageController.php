@@ -11,6 +11,7 @@ use App\Models\CommunityVote;
 use App\Models\PushSubscription;
 use App\Services\Content\Images;
 use App\Services\Messaging\WebPush;
+use App\Services\Tokens\Rewards;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -78,6 +79,7 @@ class MessageController extends Controller
         }
         $message->save();
         $room->touch();
+        app(Rewards::class)->communityPost($user);
 
         $this->notifyReply($message, $push);
 

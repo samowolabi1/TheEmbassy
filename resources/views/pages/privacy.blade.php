@@ -16,7 +16,8 @@
             <h2>What we collect, and why</h2>
             <ul>
                 <li><strong>Membership:</strong> your name, contact details, birthday, address, unit, fellowship and church milestones, so we can care for you and organise church life.</li>
-                <li><strong>Giving, tokens and tickets:</strong> your name, email and what you paid, to give you receipts and keep the church's accounts. Card details go to Paystack, never to us.</li>
+                <li><strong>Giving and tickets:</strong> your name, email and what you paid, to give you receipts and keep the church's accounts. Card details go to Paystack, never to us. Only the church administrator can see giving records.</li>
+                <li><strong>Tokens:</strong> what you earned tokens for (such as attendance and quizzes) and what you spent them on.</li>
                 <li><strong>Prayer requests and messages:</strong> what you send us, so the right people can pray and reply. Private prayer requests are only seen by the pastoral team.</li>
                 <li><strong>The market and notice board:</strong> sellers' and advertisers' business and contact details, shown publicly so buyers can reach them.</li>
                 <li><strong>The newsletter:</strong> your email address, to send the weekly declaration. Every email lets you unsubscribe.</li>

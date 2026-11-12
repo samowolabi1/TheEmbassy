@@ -17,6 +17,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrayerRequestController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TicketOrderController;
+use App\Http\Controllers\TokenOrderController;
 use App\Http\Controllers\Unit;
 use App\Http\Controllers\Vendor;
 use App\Http\Controllers\WelcomeController;
@@ -51,6 +52,10 @@ Route::post('/market/open-a-shop', [MarketController::class, 'storeApplication']
 Route::get('/market/shops/{shop}', [MarketController::class, 'shop'])->name('market.shop');
 Route::get('/market/products/{product}', [MarketController::class, 'product'])->name('market.product');
 Route::post('/market/products/{product}/enquire', [MarketController::class, 'enquire'])->middleware('throttle:5,1')->name('market.enquire');
+Route::middleware('auth')->group(function () {
+    Route::post('/market/products/{product}/tokens', [TokenOrderController::class, 'store'])->middleware('throttle:10,1')->name('market.tokens');
+    Route::post('/account/token-orders/{order}/cancel', [TokenOrderController::class, 'cancel'])->name('token-orders.cancel');
+});
 
 // Vendors manage their shop here.
 Route::prefix('vendor')->name('vendor.')->group(function () {
@@ -72,6 +77,9 @@ Route::prefix('vendor')->name('vendor.')->group(function () {
         Route::get('/shop', [Vendor\ShopController::class, 'edit'])->name('shop.edit');
         Route::put('/shop', [Vendor\ShopController::class, 'update'])->name('shop.update');
         Route::post('/subscription', [Vendor\SubscriptionController::class, 'store'])->middleware('throttle:10,1')->name('subscription.store');
+        Route::get('/token-orders', [Vendor\TokenOrderController::class, 'index'])->name('token-orders.index');
+        Route::post('/token-orders/complete', [Vendor\TokenOrderController::class, 'complete'])->name('token-orders.complete');
+        Route::post('/token-orders/{order}/decline', [Vendor\TokenOrderController::class, 'decline'])->name('token-orders.decline');
         Route::resource('products', Vendor\ProductController::class)->only(['index', 'create', 'store', 'edit', 'update']);
     });
 });
@@ -134,7 +142,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/services/{service}/join', [Account\JoinController::class, 'open'])->middleware('throttle:20,1')->name('services.open');
     Route::post('/services/{service}/watching', [Account\JoinController::class, 'watching'])->middleware('throttle:10,1')->name('services.watching');
     Route::post('/check-in', [Account\CheckInController::class, 'store'])->middleware('throttle:10,1')->name('check-in.store');
-    Route::post('/account/tokens', [Account\AccountController::class, 'payTokens'])->middleware('throttle:10,1')->name('account.tokens.pay');
+    Route::post('/account/declare', [Account\AccountController::class, 'declare'])->middleware('throttle:10,1')->name('account.declare');
 });
 
 // The members' community: chat rooms and the Bible quiz (approved members and staff).
@@ -316,10 +324,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/finance/accounts', [Admin\FinanceController::class, 'storeAccount'])->name('accounts.store');
             Route::put('/finance/accounts/{account}', [Admin\FinanceController::class, 'updateAccount'])->name('accounts.update');
             Route::delete('/finance/accounts/{account}', [Admin\FinanceController::class, 'destroyAccount'])->name('accounts.destroy');
-            Route::post('/finance/token-plans', [Admin\FinanceController::class, 'storePlan'])->name('token-plans.store');
-            Route::put('/finance/token-plans/{plan}', [Admin\FinanceController::class, 'updatePlan'])->name('token-plans.update');
-            Route::post('/finance/tokens', [Admin\FinanceController::class, 'storeTokenPayment'])->name('tokens.store');
-            Route::post('/finance/tokens/remind', [Admin\FinanceController::class, 'remind'])->name('tokens.remind');
         });
 
         Route::middleware('can:manage,"expenses"')->group(function () {
@@ -372,6 +376,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/quizzes/{quiz}', [Admin\CommunityController::class, 'editQuiz'])->name('quizzes.edit');
             Route::put('/quizzes/{quiz}', [Admin\CommunityController::class, 'updateQuiz'])->name('quizzes.update');
             Route::delete('/quizzes/{quiz}', [Admin\CommunityController::class, 'destroyQuiz'])->name('quizzes.destroy');
+        });
+
+        Route::middleware('can:manage,"tokens"')->group(function () {
+            Route::get('/tokens', [Admin\TokenController::class, 'index'])->name('tokens.index');
+            Route::post('/tokens/award', [Admin\TokenController::class, 'award'])->name('tokens.award');
         });
 
         Route::middleware('can:manage,"gallery"')->prefix('gallery')->name('gallery.')->group(function () {

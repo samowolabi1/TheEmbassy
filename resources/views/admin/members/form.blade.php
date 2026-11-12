@@ -85,18 +85,6 @@
                     @endforeach
                 </select>
             </label>
-            <label class="field">Token plan
-                <select name="token_plan_id">
-                    <option value="">{{ $plans->firstWhere('is_default', true) ? 'Default plan' : 'None' }}</option>
-                    @foreach ($plans as $plan)
-                        <option value="{{ $plan->id }}" @selected((int) old('token_plan_id', $member->token_plan_id) === $plan->id)>{{ $plan->name }} · {{ $plan->amountLabel() }}</option>
-                    @endforeach
-                </select>
-            </label>
-            <label class="field">Tokens due from
-                <input type="month" name="tokens_from" value="{{ old('tokens_from', $member->tokens_from?->format('Y-m')) }}">
-                <span class="field__hint">Leave empty to start from the month they're approved.</span>
-            </label>
             <fieldset class="field" style="border: 0; padding: 0; margin: 0">
                 <legend style="margin-bottom: 6px">Milestones</legend>
                 @foreach (\App\Models\Member::MILESTONES as $field => $label)

@@ -54,12 +54,12 @@ class MarketController extends Controller
     public function export(): StreamedResponse
     {
         return Csv::download('market-subscriptions-'.now()->format('Y-m-d').'.csv',
-            ['date', 'shop', 'plan', 'from', 'to', 'list_price_naira', 'coupon', 'discount_naira', 'paid_naira'],
+            ['date', 'shop', 'plan', 'from', 'to', 'list_price_naira', 'coupon', 'discount_naira', 'paid_naira', 'paid_tokens'],
             function ($write) {
                 VendorSubscription::with('shop', 'plan', 'coupon')->where('status', VendorSubscription::ACTIVE)->orderBy('created_at')
                     ->each(fn (VendorSubscription $s) => $write([
                         $s->created_at->toDateString(), $s->shop->name, $s->plan->name, $s->starts_at->toDateString(), $s->ends_at->toDateString(),
-                        number_format($s->list_price / 100, 2, '.', ''), $s->coupon?->code, number_format($s->discount / 100, 2, '.', ''), number_format($s->amount / 100, 2, '.', ''),
+                        number_format($s->list_price / 100, 2, '.', ''), $s->coupon?->code, number_format($s->discount / 100, 2, '.', ''), number_format($s->amount / 100, 2, '.', ''), $s->tokens_paid,
                     ]));
             });
     }

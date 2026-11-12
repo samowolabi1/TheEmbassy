@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\Care\FollowUps;
+use App\Services\Tokens\Rewards;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,12 +13,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 
 /**
  * Someone in the church family. They may have a login (user) or be on the register only.
  */
-#[Fillable(['name', 'phone', 'email', 'gender', 'birthday', 'anniversary', 'address', 'unit_id', 'fellowship_id', 'token_plan_id', 'tokens_from', 'joined_on', 'baptised', 'believers_class', 'workers_training', 'notes', 'notify_sms'])]
+#[Fillable(['name', 'phone', 'email', 'gender', 'birthday', 'anniversary', 'address', 'unit_id', 'fellowship_id', 'joined_on', 'baptised', 'believers_class', 'workers_training', 'notes', 'notify_sms'])]
 class Member extends Model
 {
     use HasFactory;
@@ -45,8 +45,6 @@ class Member extends Model
             'birthday' => 'date',
             'anniversary' => 'date',
             'joined_on' => 'date',
-            'tokens_from' => 'date',
-            'token_reminded_at' => 'datetime',
             'last_attended_on' => 'date',
             'baptised' => 'boolean',
             'believers_class' => 'boolean',
@@ -80,27 +78,11 @@ class Member extends Model
     }
 
     /**
-     * @return BelongsTo<TokenPlan, $this>
-     */
-    public function tokenPlan(): BelongsTo
-    {
-        return $this->belongsTo(TokenPlan::class);
-    }
-
-    /**
      * @return HasMany<Gift, $this>
      */
     public function gifts(): HasMany
     {
         return $this->hasMany(Gift::class);
-    }
-
-    /**
-     * @return HasMany<TokenPayment, $this>
-     */
-    public function tokenPayments(): HasMany
-    {
-        return $this->hasMany(TokenPayment::class);
     }
 
     /**
@@ -128,8 +110,8 @@ class Member extends Model
     }
 
     /**
-     * Approve a member: they start owing tokens from this month on their plan. People who joined
-     * themselves get a welcome follow-up; records the office adds or imports don't.
+     * Approve a member, with welcome tokens on their account. People who joined themselves
+     * get a welcome follow-up; records the office adds or imports don't.
      */
     public function approve(bool $welcome = false): void
     {
@@ -137,10 +119,11 @@ class Member extends Model
         $this->forceFill([
             'status' => self::ACTIVE,
             'joined_on' => $this->joined_on ?? today(),
-            'token_plan_id' => $this->token_plan_id ?? TokenPlan::default()?->id,
-            'tokens_from' => $this->tokens_from ?? today()->startOfMonth(),
         ])->save();
 
+        if ($this->user) {
+            app(Rewards::class)->welcome($this->user);
+        }
         if ($welcome && $wasPending) {
             app(FollowUps::class)->forNewMember($this);
         }
@@ -207,62 +190,6 @@ class Member extends Model
             self::PENDING => 'Waiting for approval',
             self::INACTIVE => 'Inactive',
             default => 'Member',
-        };
-    }
-
-    /**
-     * The last month their tokens cover, or null if they've never paid.
-     */
-    public function tokensPaidThrough(): ?Carbon
-    {
-        $last = $this->tokenPayments->where('status', TokenPayment::PAID)
-            ->map(fn (TokenPayment $p) => $p->lastMonth())
-            ->sort()->last();
-
-        return $last;
-    }
-
-    /**
-     * Months owed up to and including this month. Exempt plans and inactive members owe nothing.
-     */
-    public function tokenMonthsOwed(): int
-    {
-        if ($this->status !== self::ACTIVE || ! $this->tokenPlan || $this->tokenPlan->isExempt() || ! $this->tokens_from) {
-            return 0;
-        }
-
-        $from = $this->tokensPaidThrough()?->copy()->addMonthNoOverflow()->startOfMonth() ?? $this->tokens_from->copy()->startOfMonth();
-        $now = today()->startOfMonth();
-
-        return $from->gt($now) ? 0 : (int) $from->diffInMonths($now) + 1;
-    }
-
-    public function tokenAmountOwed(): int
-    {
-        return $this->tokenMonthsOwed() * (int) $this->tokenPlan?->amount;
-    }
-
-    /**
-     * The next month to pay for.
-     */
-    public function nextTokenMonth(): Carbon
-    {
-        $through = $this->tokensPaidThrough();
-        $start = $this->tokens_from?->copy()->startOfMonth() ?? today()->startOfMonth();
-
-        return $through ? $through->copy()->addMonthNoOverflow()->startOfMonth() : $start;
-    }
-
-    /**
-     * Up to date, behind, or exempt, for the members table.
-     */
-    public function tokenStatus(): string
-    {
-        return match (true) {
-            $this->status !== self::ACTIVE || ! $this->tokenPlan => '—',
-            $this->tokenPlan->isExempt() => 'Exempt',
-            $this->tokenMonthsOwed() === 0 => 'Up to date',
-            default => $this->tokenMonthsOwed().' '.str('month')->plural($this->tokenMonthsOwed()).' behind',
         };
     }
 

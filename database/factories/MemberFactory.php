@@ -27,15 +27,13 @@ class MemberFactory extends Factory
     }
 
     /**
-     * Approved, owing tokens from this month on the given plan.
+     * Approved.
      */
-    public function active(?int $tokenPlanId = null): static
+    public function active(): static
     {
         return $this->state(fn () => [
             'status' => Member::ACTIVE,
             'joined_on' => today()->subYear(),
-            'token_plan_id' => $tokenPlanId,
-            'tokens_from' => today()->startOfMonth(),
         ]);
     }
 

@@ -92,7 +92,7 @@
         @csrf
         @method('PUT')
         @foreach ($groups as $groupKey => $group)
-            <section class="box form">
+            <section class="box form" id="{{ $groupKey }}">
                 <h2>{{ $group['title'] }}</h2>
                 <div class="grid-auto" style="--min: 260px; --gap: 14px 18px">
                     @foreach ($group['fields'] as $key => $field)

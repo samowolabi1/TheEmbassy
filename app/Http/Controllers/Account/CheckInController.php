@@ -52,6 +52,10 @@ class CheckInController extends Controller
             $message = 'You\'re checked in. Welcome to church!';
         }
 
+        if ($checkIn->tokensGiven) {
+            $message .= " +{$checkIn->tokensGiven} tokens.";
+        }
+
         return redirect()->route('check-in')->with('status', $message);
     }
 

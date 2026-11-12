@@ -22,7 +22,7 @@
             ['id' => 'subscribers', 'area' => 'subscribers', 'label' => 'Weekly email', 'route' => 'admin.subscribers.index'],
         ],
         'MONEY' => [
-            ['id' => 'finance', 'area' => 'finance', 'label' => 'Giving & tokens', 'route' => 'admin.finance.index'],
+            ['id' => 'finance', 'area' => 'finance', 'label' => 'Giving', 'route' => 'admin.finance.index'],
             ['id' => 'expenses', 'area' => 'expenses', 'label' => 'Expenses & budgets', 'route' => 'admin.expenses.index',
                 'badge' => $count('expenses', fn () => \App\Models\Expense::where('status', \App\Models\Expense::PENDING)->count())],
         ],
@@ -35,6 +35,7 @@
             ['id' => 'blog', 'area' => 'content', 'label' => 'Blog', 'route' => 'admin.posts.index'],
             ['id' => 'pages', 'area' => 'content', 'label' => 'Pages (About, home)', 'route' => 'admin.pages.edit', 'params' => ['about']],
             ['id' => 'gallery', 'area' => 'gallery', 'label' => 'Gallery', 'route' => 'admin.gallery.index'],
+            ['id' => 'tokens', 'area' => 'tokens', 'label' => 'Tokens', 'route' => 'admin.tokens.index'],
             ['id' => 'community', 'area' => 'community', 'label' => 'Community', 'route' => 'admin.community.index',
                 'badge' => $count('community', fn () => \App\Models\CommunityReport::whereNull('resolved_at')->distinct()->count('community_message_id'))],
             ['id' => 'notices', 'area' => 'notices', 'label' => 'Notice board', 'route' => 'admin.notices.index',

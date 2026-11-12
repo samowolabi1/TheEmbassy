@@ -77,7 +77,7 @@
                         <div class="meter"><span style="width: {{ round($fund['total'] * 100 / $fundMax) }}%"></span></div>
                     </div>
                 @endforeach
-                <span class="box__note">Tokens collected: <strong>{{ $naira($tokensThisMonth) }}</strong></span>
+                <span class="box__note">Tokens earned by members this month: <strong>{{ number_format($tokensThisMonth) }}</strong></span>
             </section>
 
             <section class="box box--flush grow">

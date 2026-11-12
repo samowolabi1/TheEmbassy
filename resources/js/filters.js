@@ -30,7 +30,8 @@ for (const scope of document.querySelectorAll('[data-filter-scope]')) {
         const query = search?.value.trim().toLowerCase() ?? '';
         let shown = 0;
         for (const item of items) {
-            const matchesTag = current === 'all' || item.dataset.tag === current;
+            // An item can carry several tags, separated by spaces.
+            const matchesTag = current === 'all' || (item.dataset.tag ?? '').split(' ').includes(current);
             const matchesQuery = !query || (item.dataset.search ?? item.textContent).toLowerCase().includes(query);
             item.hidden = !(matchesTag && matchesQuery);
             if (!item.hidden) shown++;

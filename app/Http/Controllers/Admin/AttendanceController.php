@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Member;
 use App\Models\Service;
 use App\Models\Unit;
+use App\Services\Tokens\Rewards;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -97,6 +98,7 @@ class AttendanceController extends Controller
         $shown = Member::active()->whereKey($data['shown'] ?? [])->pluck('id');
         $present = $shown->intersect($data['present'] ?? []);
 
+        $already = $service->members()->pluck('members.id');
         DB::transaction(function () use ($service, $shown, $present) {
             $service->members()->detach($shown->diff($present)->all());
             $service->members()->syncWithoutDetaching($present->all());
@@ -108,6 +110,11 @@ class AttendanceController extends Controller
                 Member::whereKey($id)->update(['last_attended_on' => $last ? substr($last, 0, 10) : null]);
             }
         });
+
+        // People an usher marks present earn their attendance tokens too (once per service).
+        $rewards = app(Rewards::class);
+        Member::with('user')->whereKey($present->diff($already)->all())->get()
+            ->each(fn (Member $m) => $rewards->attended($m, $service, 'in_person'));
 
         return back()->with('status', $present->count().' marked present.');
     }

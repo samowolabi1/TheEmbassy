@@ -141,7 +141,7 @@
                             <td>{{ $s->plan->name }}</td>
                             <td style="white-space: nowrap">{{ $s->starts_at->format('j M') }} – {{ $s->ends_at->format('j M Y') }}</td>
                             <td>{{ $s->coupon ? $s->coupon->code.' ('.$s->coupon->percent_off.'%)' : '—' }}</td>
-                            <td class="num" style="font-weight: 800; color: var(--navy)">₦{{ number_format($s->amount / 100) }}</td>
+                            <td class="num" style="font-weight: 800; color: var(--navy)">{{ $s->tokens_paid ? '🪙 '.number_format($s->tokens_paid).' tokens' : '₦'.number_format($s->amount / 100) }}</td>
                         </tr>
                     @empty
                         <tr><td colspan="6"><p class="empty-state">No subscriptions yet.</p></td></tr>

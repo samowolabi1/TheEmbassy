@@ -7,7 +7,6 @@ use App\Models\Declaration;
 use App\Models\Event;
 use App\Models\Fellowship;
 use App\Models\Fund;
-use App\Models\TokenPlan;
 use App\Models\Unit;
 use App\Models\VendorPlan;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -45,7 +44,6 @@ class DatabaseSeeder extends Seeder
             Fellowship::firstOrCreate(['name' => $fellowship]);
         }
         Fund::ensureDefaults();
-        TokenPlan::ensureDefaults();
         VendorPlan::catalogue();
 
         if (Announcement::exists()) {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Community;
 use App\Http\Controllers\Controller;
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
+use App\Services\Tokens\Rewards;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -68,8 +69,11 @@ class QuizController extends Controller
             'finished_at' => now(),
         ]);
 
-        return redirect()->route('community.quiz', $quiz)->with('status', $late
-            ? 'Time ran out before your answers arrived, so this one doesn\'t count. Try the next quiz!'
-            : "You scored {$score} out of {$quiz->questions->count()}.");
+        if ($late) {
+            return redirect()->route('community.quiz', $quiz)->with('status', 'Time ran out before your answers arrived, so this one doesn\'t count. Try the next quiz!');
+        }
+        $tokens = app(Rewards::class)->quiz($request->user(), $quiz, $score);
+
+        return redirect()->route('community.quiz', $quiz)->with('status', "You scored {$score} out of {$quiz->questions->count()}.".($tokens ? " +{$tokens} tokens." : ''));
     }
 }

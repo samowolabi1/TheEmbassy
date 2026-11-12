@@ -25,6 +25,9 @@
                     @if ($openPackages) <span class="app-tile__badge app-tile__badge--soft">{{ $openPackages }} open</span> @endif
                 </a>
                 <a href="{{ route('community.index') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">💬</span>Community</a>
+                <a href="{{ route('account.tokens') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🪙</span>Tokens
+                    <span class="app-tile__badge app-tile__badge--soft">{{ number_format($user->token_balance) }}</span>
+                </a>
                 <a href="{{ route('give') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🎁</span>Give</a>
             </nav>
         @endif
@@ -80,16 +83,11 @@
                 <div class="card">
                     <h2>Tokens</h2>
                     @if ($member->status !== 'active')
-                        <p class="lede" style="margin: 0">Tokens start once your membership is confirmed.</p>
-                    @elseif (! $member->tokenPlan || $member->tokenPlan->isExempt())
-                        <p class="lede" style="margin: 0">You don't pay tokens on your plan.</p>
+                        <p class="lede" style="margin: 0">Once your membership is confirmed you'll get welcome tokens, and earn more by coming to church, joining online, the Bible quiz and more.</p>
                     @else
-                        <dl class="facts">
-                            <dt>Plan</dt><dd>{{ $member->tokenPlan->name }} · {{ $member->tokenPlan->amountLabel() }} a month</dd>
-                            <dt>Status</dt><dd>{{ $member->tokenStatus() }}</dd>
-                            @if ($member->tokenAmountOwed())<dt>Owed</dt><dd>₦{{ number_format($member->tokenAmountOwed() / 100) }}</dd>@endif
-                        </dl>
-                        <a href="{{ route('account.tokens') }}" class="btn btn--gold" style="align-self: flex-start">Pay tokens</a>
+                        <span class="token-balance"><span class="token-balance__coin" aria-hidden="true">🪙</span>{{ number_format($user->token_balance) }} <span>{{ \Illuminate\Support\Str::plural('token', $user->token_balance) }}</span></span>
+                        <p class="lede" style="margin: 0">Free rewards for taking part. Spend them in the {{ config('church.brand.market_name') }} with sellers who accept them.</p>
+                        <a href="{{ route('account.tokens') }}" class="btn btn--gold" style="align-self: flex-start">My tokens</a>
                     @endif
                 </div>
 

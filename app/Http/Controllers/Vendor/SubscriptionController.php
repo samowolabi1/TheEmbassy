@@ -7,6 +7,7 @@ use App\Models\Coupon;
 use App\Models\VendorPlan;
 use App\Models\VendorSubscription;
 use App\Services\Payments\Payments;
+use App\Services\Tokens\Wallet;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +34,8 @@ class SubscriptionController extends Controller
             'history' => $shop->subscriptions()->with('plan', 'coupon')->where('status', VendorSubscription::ACTIVE)->latest('starts_at')->get(),
             'returned' => $returned,
             'paymentsEnabled' => $payments->enabled(),
+            'tokenBalance' => (int) $request->user()->token_balance,
+            'nairaPerToken' => max(1, (int) config('tokens.naira_per_token', 10)),
         ]);
     }
 
@@ -42,6 +45,7 @@ class SubscriptionController extends Controller
         $data = $request->validate([
             'plan' => ['required', 'integer'],
             'coupon' => ['nullable', 'string', 'max:40'],
+            'pay_with' => ['nullable', 'in:money,tokens'],
         ]);
 
         $plan = VendorPlan::available()->find($data['plan']);
@@ -60,6 +64,29 @@ class SubscriptionController extends Controller
 
         $discount = $coupon ? min($plan->price, $coupon->discountOn($plan->price)) : 0;
         $amount = $plan->price - $discount;
+
+        // Paying with tokens: the tokens are taken and the subscription starts straight away.
+        if ($amount > 0 && ($data['pay_with'] ?? 'money') === 'tokens') {
+            $tokens = (int) ceil($amount / (100 * max(1, (int) config('tokens.naira_per_token', 10))));
+            $subscription = DB::transaction(function () use ($coupon, $shop, $plan, $discount, $tokens, $request) {
+                if ($coupon && ($problem = Coupon::whereKey($coupon->id)->lockForUpdate()->first()->problem())) {
+                    throw ValidationException::withMessages(['coupon' => $problem]);
+                }
+                $subscription = $shop->subscriptions()->create([
+                    'vendor_plan_id' => $plan->id, 'coupon_id' => $coupon?->id, 'months' => $plan->months,
+                    'list_price' => $plan->price, 'discount' => $discount,
+                    'amount' => 0, // no money changed hands
+                ]);
+                $subscription->forceFill(['tokens_paid' => $tokens])->save();
+                app(Wallet::class)->debit($request->user(), $tokens, 'subscription', "{$plan->name} subscription for {$shop->name}", "subscription:{$subscription->id}", null, 'pay_with');
+                $subscription->activate();
+
+                return $subscription;
+            });
+
+            return redirect()->route('vendor.subscription.index')
+                ->with('status', "Paid with {$tokens} tokens. Subscribed until {$subscription->ends_at->format('j F Y')}.");
+        }
 
         if ($amount > 0 && ! $payments->enabled()) {
             throw ValidationException::withMessages(['plan' => 'Online payments aren\'t switched on yet. Please contact the church office.']);

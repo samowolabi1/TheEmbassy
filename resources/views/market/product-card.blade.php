@@ -1,5 +1,5 @@
 {{-- One product in a grid. --}}
-<a href="{{ route('market.product', $product) }}" class="product" data-filter-item data-tag="{{ $product->type }}">
+<a href="{{ route('market.product', $product) }}" class="product" data-filter-item data-tag="{{ $product->type }}{{ $product->acceptsTokens() ? ' tokens' : '' }}">
     @if ($product->imageUrl())
         <img class="product__photo" src="{{ $product->imageUrl() }}" alt="" loading="lazy">
     @else
@@ -12,6 +12,9 @@
         </span>
         <span class="product__price">{{ $product->priceLabel() }}</span>
     </span>
+    @if ($product->acceptsTokens())
+        <span class="token-chip">🪙 {{ number_format($product->token_price) }} tokens</span>
+    @endif
     @if ($product->isService() && $product->imageUrl())
         <span class="field-hint">Service</span>
     @elseif (! $product->inStock())

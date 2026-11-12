@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 /**
  * Something sold on the market: a product (goods, optionally with stock) or a service (booked, no stock).
  */
-#[Fillable(['type', 'slug', 'name', 'description', 'price', 'price_unit', 'stock', 'image_path', 'is_active'])]
+#[Fillable(['type', 'slug', 'name', 'description', 'price', 'price_unit', 'stock', 'image_path', 'is_active', 'token_price'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -83,6 +83,14 @@ class Product extends Model
     public function inStock(): bool
     {
         return $this->stock === null || $this->stock > 0;
+    }
+
+    /**
+     * The seller lets members get this with tokens.
+     */
+    public function acceptsTokens(): bool
+    {
+        return $this->token_price !== null && $this->token_price > 0;
     }
 
     public function imageUrl(): ?string

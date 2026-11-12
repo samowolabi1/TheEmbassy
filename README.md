@@ -15,7 +15,8 @@ The public website, built with [Laravel](https://laravel.com) 13 from the "RCCG 
 | `/give` | Tithes and offerings by bank transfer (the church's accounts in each currency), donations by transfer or online through Paystack, appeal progress |
 | `/market` | The member marketplace for products and services; `/market/open-a-shop` to apply |
 | `/notices` | Paid notice board for other churches and businesses; `/notices/advertise` to place one |
-| `/join`, `/login`, `/account` | Membership sign-up, sign-in, and the member's own page: quick links to mark attendance, join online, messages, welfare, community and give; details, giving and tokens |
+| `/join`, `/login`, `/account` | Membership sign-up, sign-in, and the member's own page: quick links to mark attendance, join online, messages, welfare, community, tokens and give; details |
+| `/account/tokens` | The member's token wallet: balance, ways to earn, what they can get with tokens, their token orders and history |
 | `/account/messages` | The member's messages: what the church sent out, announcements, and their unit's messages |
 | `/services/{id}/join` | Join a service online: the stream plays (or Zoom/Meet opens) and the member is marked present |
 | `/welcome` | First-timer card for visitors; print it as a QR code at the door |
@@ -32,7 +33,7 @@ The public website, built with [Laravel](https://laravel.com) 13 from the "RCCG 
 
 There are three kinds of account, all in the `users` table:
 
-- **Members** join at `/join` and wait for the church office to approve them. They update their details, see their giving and pay tokens at `/account`.
+- **Members** join at `/join` and wait for the church office to approve them. They update their details and use the member features at `/account`. Members never pay to use the site.
 - **Sellers** apply at `/market/open-a-shop`; approving the shop emails them a link to set a password.
 - **Staff** have a role from `config/roles.php`, and each role opens only its own admin areas:
 
@@ -40,7 +41,7 @@ There are three kinds of account, all in the `users` table:
 | --- | --- |
 | Administrator | Everything, including Settings & roles |
 | Pastor | Everything except Settings & roles, including welfare cases and approvals above the HOD's limit |
-| Finance | Giving & tokens, expenses & budgets, the market |
+| Finance | Giving (funds and bank accounts), expenses & budgets, the market |
 | Church office | Members, attendance & first-timers, follow-up & care, units, the weekly email, the market, content (announcements, blog, pages), gallery, community moderation, notices, events, prayer, messages |
 | Media | Content (announcements, blog, pages), gallery, community moderation, notices, sermons & live, events |
 | Ushering | Attendance & first-timers, events (door check-in) |
@@ -58,14 +59,14 @@ Sign-in is limited to five wrong attempts a minute per email. The site uses Lago
 
 Staff sign in at `/admin`. Every area in the design's sidebar is built:
 
-- **Dashboard**: members, first-timers, giving, tokens and market income this month, the last eight Sundays' attendance, what needs attention, giving by fund, latest gifts, upcoming events, prayer requests and new members. Each person only sees the panels their role covers.
-- **Members**: the register by status (members, waiting for approval, inactive), search and filters, profiles with milestones (baptised, believers' class, workers' training) and token plan, approval, and CSV import and export.
+- **Dashboard**: members, first-timers, giving (administrator only), tokens earned and market income this month, the last eight Sundays' attendance, what needs attention, giving by fund, latest gifts, upcoming events, prayer requests and new members. Each person only sees the panels their role covers.
+- **Members**: the register by status (members, waiting for approval, inactive), search and filters, profiles with milestones (baptised, believers' class, workers' training), their token wallet and recent tokens, approval, and CSV import and export.
 - **First-timers & follow-up**: cards from `/welcome` or typed in by staff; mark each person as called with a note, and add them to the register.
 - **Attendance**: schedule services with self check-in at church and online, show the code screen, see who checked in, tick people present by hand, and record headcounts.
 - **Follow-up & care**: follow-ups for first-timers, new members and members not seen lately, assigned to the care team with outcomes recorded.
 - **Units & fellowships**: the service units and house fellowships members choose from.
 - **Weekly email**: goes out every Monday morning (time set in Settings & roles) with the week's declaration, recent announcements, upcoming events, last week's messages and new articles. Preview it, send it early with "Send now", and see past sends. Sign-ups confirm by email before they get anything; every email has a one-click unsubscribe link. Emails go out about 120 a minute so mail services don't block them, and a restart carries on where it stopped without emailing anyone twice.
-- **Giving & tokens**: the church's bank accounts in each currency (naira, dollar, pound, euro and more, with sort code, routing number, SWIFT and IBAN where they apply), marked for tithes and offerings, donations, or both; funds, each set as bank transfer only (tithes and offerings) or also payable through Paystack (donations); cash and transfers received recorded by finance staff; token plans; tokens paid at the office; members in arrears with email and WhatsApp reminders.
+- **Giving**: the church's bank accounts in each currency (naira, dollar, pound, euro and more, with sort code, routing number, SWIFT and IBAN where they apply), marked for tithes and offerings, donations, or both; funds, each set as bank transfer only (tithes and offerings) or also payable through Paystack (donations); cash and transfers received recorded by finance staff.
 - **Giving is private to the administrator.** Only the Administrator role sees giving records and totals: transactions, fund totals and balances, the giving report export, the dashboard's giving panels and a member's giving on their profile. Finance staff and pastors record what comes in but don't see it afterwards, and members don't see a giving history on their account. Givers still get an email receipt for an online donation, and an appeal's public progress bar on the Give page shows the total raised.
 - **Expenses & budgets**: spending logged with a receipt, approved by someone other than the person who logged it, against monthly budgets per category; CSV export.
 - **Tribe Market**: shop applications, shops and subscription status, plan prices, coupons, and subscription payments with CSV export.
@@ -85,6 +86,34 @@ Members do all of this from their account (or the installed app):
 - **Join online services**: staff can add a Zoom, Google Meet or YouTube link to each service (Attendance › the service). Joining from the account plays the YouTube stream inside the app, or opens Zoom/Meet. Keeping the stream playing for a few minutes (5 by default, set in Settings › Attendance check-in) or opening the meeting through the app marks the member present online. Without a link it uses the stream from Sermons & live; the code on the stream still works for people watching elsewhere.
 - **Welfare packages**: the welfare unit sets up packages (what's in them, how many, when applications open and close, where to collect) under Welfare packages. Members apply from Welfare in their account with their household size; the HOD approves, waitlists or declines (never past the number of places), and the member is emailed and notified. Approved members get a reference (PK-XXXXXX) to show at collection, where the unit marks it collected. Applications are private to the welfare team and pastors; CSV export for the list. One-off requests for help work as before.
 - **Messages**: announcements, broadcasts sent from admin and their unit's messages in one inbox with an unread count. Notifications for broadcasts and unit messages open the inbox.
+
+## Tokens
+
+Tokens are free rewards. Members earn them by taking part in church life and spend them in the market with sellers who accept them; sellers can use tokens they receive to pay their shop subscription. Nobody can buy tokens, and they have no cash value.
+
+**Earning** (amounts are set in Settings & roles › Tokens, and each is given once per occasion, so tapping twice or refreshing never adds more):
+
+| Activity | Tokens to start |
+| --- | --- |
+| Marking attendance at church (or an usher marking them present) | 10 per service |
+| Joining a service online (from their account, or with the stream code) | 5 per service |
+| Serving on the rota at a service they attend | 5 |
+| Four Sundays in a row | 20 bonus, every four |
+| Checking in to a unit meeting | 5 |
+| Playing the Bible quiz | 5, plus 1 per right answer |
+| First message in the community each day | 1 |
+| Saying the weekly declaration ("I declare it" on their tokens page) | 2 a week |
+| Completing their profile (birthday, address, unit, fellowship) | 10 once |
+| Membership confirmed | 20 once |
+| Birthday | 10 a year |
+
+Staff with the Tokens area (administrators, pastors, church office) can also give or take tokens with a reason the member sees, e.g. for volunteering or a competition, and see totals, top earners and every change under admin › Tokens.
+
+**Spending**:
+- **In the market**: sellers tick "Members can get this with tokens" on a listing and set a token price. A member taps "Use N tokens"; the tokens are taken from their wallet and held, the seller is emailed, and the member gets a code (TK-XXXXXX). When the seller hands it over they mark the code as handed over and the tokens become the seller's. If the seller declines, the member cancels first, or nobody hands it over within 14 days, the tokens go back to the member. Stock counts go down and back up with orders.
+- **Shop subscriptions**: sellers can pay a plan with tokens at the rate set in Settings (1 token = ₦10 to start), e.g. a ₦5,000 month is 500 tokens. These show as tokens, not money, in the market reports.
+
+A balance can never go below zero, even with two purchases at once, and every change is recorded. A daily job gives birthday tokens and returns tokens for orders that were never handed over.
 
 ## The members' community
 
@@ -150,7 +179,7 @@ The media unit's team (its members, the HOD and assistant, and staff with the Me
 - **YouTube broadcasts**: connect the church's channel once with "Sign in with Google" (on the Service setup page). The app then creates a YouTube broadcast for every service with online check-in, 7 days ahead (adjustable in Settings), titled and scheduled for the service and bound to one reusable stream, so the server and key in OBS never change. Broadcasts start when the encoder starts and stop when it stops; within a minute the Watch page goes live and afterwards shows the replay (`youtube:sync`, every minute). Leaders can also create a broadcast by hand, send an edited title and description to YouTube, or remove one. A broadcast that fails to create (e.g. live streaming not yet enabled on the channel) shows the reason and waits for "Try again", so it doesn't use up YouTube's daily limit.
 - **Social media**: team members draft posts (caption, photo or video, platforms, optional time) and send them to the HOD, who approves, schedules or publishes. **Facebook Page and Instagram** are posted by the app through Meta's Graph API; Instagram videos are published once Instagram has processed them (`social:publish` runs every minute). **YouTube, X, TikTok and WhatsApp** get a share kit: copy the caption, download the file, open the platform. To connect Facebook and Instagram, an administrator adds the Page ID, a Page access token (with `pages_manage_posts` and `instagram_content_publish`) and the Instagram business account ID in Settings & roles; the token is stored encrypted. Meta fetches photos and videos from the site, so posting only works once the site is on a public HTTPS address.
 
-## Money: giving, tokens, tickets, the market and the notice board
+## Money: giving, tickets, the market and the notice board
 
 All online payments go through Paystack and are recorded in one `payments` table (amounts in kobo). A payment only counts once Paystack confirms the amount and currency, either when the buyer returns or through the signed webhook at `/webhooks/paystack`; the same confirmation arriving twice changes nothing.
 
@@ -159,7 +188,6 @@ All online payments go through Paystack and are recorded in one `payments` table
 | Payment | Church | Donaitech |
 | --- | --- | --- |
 | Gift (tithe, offering, appeals) | the gift | `PLATFORM_FEE_GIVING`% |
-| Member tokens | the tokens | `PLATFORM_FEE_TOKENS`% |
 | Event ticket | the ticket price | `PLATFORM_FEE_TICKETS`% |
 | Notice board listing | the package price | `PLATFORM_FEE_NOTICES`% |
 | Seller subscription | the plan price, after any coupon | `PLATFORM_FEE_MARKET`% |
@@ -174,9 +202,9 @@ Paystack divides each payment at the moment it's made, so nothing is paid out by
 
 **Notice board** (admin › Notice board): other churches and businesses pay to list a notice; nothing appears until an admin approves it, and it runs for the days paid for. Rejected notices are refunded from the Paystack dashboard.
 
-**Giving** (admin › Giving & tokens): the Give page takes one-off gifts to any active fund (tithe, offering, building fund, missions and welfare to start with, from `config/finance.php`). A fund with a target shows its progress on the Give page. Cash, cheques and transfers are recorded by finance staff. Recurring monthly giving isn't offered yet; it would need Paystack's subscription plans.
+**Giving** (admin › Giving): the Give page takes one-off gifts to any active fund (tithe, offering, building fund, missions and welfare to start with, from `config/finance.php`). A fund with a target shows its progress on the Give page. Cash, cheques and transfers are recorded by finance staff. Recurring monthly giving isn't offered yet; it would need Paystack's subscription plans.
 
-**Tokens**: monthly member dues on a plan (standard, student, exempt to start with). Members owe from the month they're approved; payments cover the next unpaid months. Members pay online at `/account/tokens`, or finance records payments made at the office.
+**Tokens are not money.** Members never pay for tokens or to use the platform; the only things paid for with money are the market subscriptions, tickets, notice board listings and donations. Tokens are free rewards (see "Tokens" below).
 
 Emails (receipts, tickets, reminders, welcome links) use Laravel's mailer: set `MAIL_*` in `.env`. Uploaded images live on the `public` disk, so run `php artisan storage:link` once per server. Expense receipts are private and stay on the `local` disk.
 
@@ -195,7 +223,7 @@ npm ci && npm run build
 cp .env.example .env && php artisan key:generate
 # edit .env: APP_URL, APP_ENV=production, APP_DEBUG=false, DB_*, MAIL_*, PAYSTACK_*, CHURCH_*, PLATFORM_FEE_*
 php artisan migrate --force
-php artisan db:seed --force          # starting units, funds, token plans and market periods
+php artisan db:seed --force          # starting units, funds and market periods
 php artisan storage:link
 php artisan admin:create you@church.org --name="Your name"
 php artisan config:cache && php artisan route:cache && php artisan view:cache
@@ -215,11 +243,11 @@ The web server's document root is `public/`, and `storage/` and `bootstrap/cache
 
 **6. In admin.** Sign in at `/admin`, then:
 - **Settings & roles**: fill in the address, service times, social links and church email, and add the other staff.
-- **Giving & tokens › Bank accounts**: add the church's accounts in each currency people give in.
+- **Giving › Bank accounts**: add the church's accounts in each currency people give in.
 - **Pages**: write the church's story, add the leaders' names and photos, and check the beliefs and first-timer questions.
 - **Blog**: replace the starter articles (their author and body are `[placeholders]`) or delete them.
 - **Tribe Market**: price the subscription periods and switch them on.
-- **Giving & tokens**: check the funds and token plan amounts.
+- **Giving**: check the funds. **Tokens** (in Settings & roles): check how many tokens each activity earns.
 - **Sermons & live**: add the first messages and the current series.
 - **Members**: import the existing register from a spreadsheet.
 
@@ -265,15 +293,15 @@ Most content is edited in admin: announcements, the declaration, blog articles, 
 - `config/content/posts.php`: blog topics, and the starter articles copied into the database the first time migrations run
 - `config/content/about.php`, `config/content/home.php`: the About page and testimony text used until someone saves the page in admin
 - `config/content/sermons.php`: example messages, shown until the church adds its own
-- `config/finance.php`, `config/market.php`, `config/notices.php`, `config/roles.php`: funds and token plans to start with, expense categories, market periods and coupons, notice prices, staff roles
+- `config/finance.php`, `config/market.php`, `config/notices.php`, `config/roles.php`: funds to start with, expense categories, market periods and coupons, notice prices, staff roles
 
 Anything still in `[brackets]` is a placeholder waiting for real details; most disappear once Settings & roles is filled in. Photo areas are coloured placeholders until real photography is added. If you run `php artisan config:cache`, run it again after editing config files (admin settings don't need it).
 
 ## Where things are
 
-- `routes/web.php`: all routes; `routes/console.php`: `admin:create`, `admin:revoke`, `care:scan`, `units:remind`, `social:publish`, `youtube:sync`, `market:remind`, `newsletter:queue`, `messages:send`, `push:keys`, `blog:prune-images` and the schedule
+- `routes/web.php`: all routes; `routes/console.php`: `admin:create`, `admin:revoke`, `care:scan`, `units:remind`, `social:publish`, `youtube:sync`, `market:remind`, `newsletter:queue`, `messages:send`, `push:keys`, `blog:prune-images`, `tokens:daily` and the schedule
 - `app/Http/Controllers/`: public pages and forms, `Account/` (members), `Vendor/` (sellers), `Admin/` (dashboard)
-- `app/Models/`: people (`User`, `Member`, `Unit`, `Fellowship`, `FirstTimer`, `Service`), money (`Payment`, `Fund`, `Gift`, `TokenPlan`, `TokenPayment`, `Expense`, `Budget`), events and notices (`Event`, `TicketType`, `TicketOrder`, `Ticket`, `Notice`), the market (`Shop`, `Product`, `Enquiry`, `VendorPlan`, `VendorSubscription`, `Coupon`), messaging (`NewsletterSubscriber`, `NewsletterIssue`, `Broadcast`, `PushSubscription`), community (`CommunityRoom`, `CommunityMessage`, `CommunityReaction`, `CommunityVote`, `CommunityRead`, `CommunityReport`, `Quiz`, `QuizQuestion`, `QuizAttempt`), content (`Announcement`, `Declaration`, `Post`, `PageContent`, `GalleryAlbum`, `GalleryItem`, `Sermon`, `SermonSeries`, `PrayerRequest`, `ContactMessage`, `Setting`)
+- `app/Models/`: people (`User`, `Member`, `Unit`, `Fellowship`, `FirstTimer`, `Service`), money (`Payment`, `Fund`, `Gift`, `BankAccount`, `Expense`, `Budget`), tokens (`TokenTransaction`, `TokenOrder`), events and notices (`Event`, `TicketType`, `TicketOrder`, `Ticket`, `Notice`), the market (`Shop`, `Product`, `Enquiry`, `VendorPlan`, `VendorSubscription`, `Coupon`), messaging (`NewsletterSubscriber`, `NewsletterIssue`, `Broadcast`, `PushSubscription`), community (`CommunityRoom`, `CommunityMessage`, `CommunityReaction`, `CommunityVote`, `CommunityRead`, `CommunityReport`, `Quiz`, `QuizQuestion`, `QuizAttempt`), content (`Announcement`, `Declaration`, `Post`, `PageContent`, `GalleryAlbum`, `GalleryItem`, `Sermon`, `SermonSeries`, `PrayerRequest`, `ContactMessage`, `Setting`)
 - `app/Services/`: Paystack and payment settlement, shop approval and seller reminders, the sermon library, `Messaging/` (weekly email, Termii texts, web push, the broadcaster), `Content/Markdown` (safe article rendering) and `Content/Images` (photo resizing)
 - `resources/views/`: `layouts/` (site, admin, seller), `partials/`, `components/`, `pages/`, `account/`, `blog/`, `market/`, `vendor/`, `admin/`, `mail/`
 - `resources/css/`: `base.css` holds the design tokens; `partials/` and `pages/` hold the rest; `admin.css` is the dashboard's own stylesheet

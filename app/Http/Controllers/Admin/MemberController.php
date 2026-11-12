@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Fellowship;
 use App\Models\Member;
-use App\Models\TokenPlan;
+use App\Models\TokenTransaction;
 use App\Models\Unit;
 use App\Services\Care\FollowUps;
 use App\Support\Csv;
@@ -30,7 +30,7 @@ class MemberController extends Controller
         $tab = array_key_exists($request->query('tab'), self::TABS) ? $request->query('tab') : 'active';
 
         return view('admin.members.index', [
-            'members' => $this->filtered($request, $tab)->with('unit', 'fellowship', 'tokenPlan', 'tokenPayments')->orderBy('name')->paginate(25)->withQueryString(),
+            'members' => $this->filtered($request, $tab)->with('unit', 'fellowship', 'user')->orderBy('name')->paginate(25)->withQueryString(),
             'tab' => $tab,
             'tabs' => collect(self::TABS)->map(fn ($label, $key) => ['label' => $label, 'count' => Member::where('status', $key)->count()]),
             'units' => Unit::orderBy('name')->get(),
@@ -47,7 +47,8 @@ class MemberController extends Controller
     public function show(Member $member): View
     {
         return view('admin.members.show', [
-            'member' => $member->load('unit', 'fellowship', 'tokenPlan', 'tokenPayments', 'user.shop'),
+            'member' => $member->load('unit', 'fellowship', 'user.shop'),
+            'tokenHistory' => $member->user_id ? TokenTransaction::where('user_id', $member->user_id)->latest('id')->take(8)->get() : collect(),
             'givingThisYear' => request()->user()->can('see-giving') ? (int) $member->gifts()->paid()->whereYear('given_on', now()->year)->sum('amount') : null,
             'recentServices' => $member->services()->orderByDesc('held_on')->take(5)->get(),
         ]);
@@ -82,7 +83,7 @@ class MemberController extends Controller
         $member->save();
 
         if ($member->status === Member::ACTIVE) {
-            $member->approve(); // fills in plan and token start if they're missing
+            $member->approve(); // and their welcome tokens
             if ($wasPending) {
                 app(FollowUps::class)->forNewMember($member);
             }
@@ -108,14 +109,14 @@ class MemberController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $tab = array_key_exists($request->query('tab'), self::TABS) ? $request->query('tab') : 'active';
-        $query = $this->filtered($request, $tab)->with('unit', 'fellowship', 'tokenPlan', 'tokenPayments')->orderBy('name');
+        $query = $this->filtered($request, $tab)->with('unit', 'fellowship', 'user')->orderBy('name');
 
         return Csv::download('members-'.now()->format('Y-m-d').'.csv',
-            ['name', 'phone', 'email', 'gender', 'birthday', 'address', 'unit', 'fellowship', 'status', 'joined_on', 'token_plan', 'tokens', 'baptised', 'believers_class', 'workers_training', 'last_attended_on'],
+            ['name', 'phone', 'email', 'gender', 'birthday', 'address', 'unit', 'fellowship', 'status', 'joined_on', 'tokens', 'baptised', 'believers_class', 'workers_training', 'last_attended_on'],
             function ($write) use ($query) {
                 $query->each(fn (Member $m) => $write([
                     $m->name, $m->phone, $m->email, $m->gender, $m->birthday?->toDateString(), $m->address, $m->unit?->name, $m->fellowship?->name,
-                    $m->status, $m->joined_on?->toDateString(), $m->tokenPlan?->name, $m->tokenStatus(),
+                    $m->status, $m->joined_on?->toDateString(), (int) $m->user?->token_balance,
                     $m->baptised ? 'yes' : 'no', $m->believers_class ? 'yes' : 'no', $m->workers_training ? 'yes' : 'no', $m->last_attended_on?->toDateString(),
                 ]));
             });
@@ -200,17 +201,12 @@ class MemberController extends Controller
             'address' => ['nullable', 'string', 'max:255'],
             'unit_id' => ['nullable', Rule::exists('units', 'id')],
             'fellowship_id' => ['nullable', Rule::exists('fellowships', 'id')],
-            'token_plan_id' => ['nullable', Rule::exists('token_plans', 'id')],
-            'tokens_from' => ['nullable', 'date'],
             'joined_on' => ['nullable', 'date', 'before_or_equal:today'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ], ['email.unique' => 'Someone on the register already has that email.']);
 
         foreach (array_keys(Member::MILESTONES) as $milestone) {
             $data[$milestone] = $request->boolean($milestone);
-        }
-        if (! empty($data['tokens_from'])) {
-            $data['tokens_from'] = Carbon::parse($data['tokens_from'])->startOfMonth();
         }
 
         return $data;
@@ -225,7 +221,6 @@ class MemberController extends Controller
             'member' => $member,
             'units' => Unit::orderBy('name')->get(),
             'fellowships' => Fellowship::orderBy('name')->get(),
-            'plans' => TokenPlan::orderByDesc('amount')->get(),
             'statuses' => self::TABS,
         ];
     }

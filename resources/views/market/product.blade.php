@@ -24,6 +24,9 @@
                     <span class="tag tag--wash">{{ $product->isService() ? 'Service' : $shop->category }}</span>
                     <h1 class="h2">{{ $product->name }}</h1>
                     <span class="product-hero-price">{{ $product->priceLabel() }}</span>
+                    @if ($product->acceptsTokens())
+                        <span class="token-chip" style="align-self: flex-start">🪙 Or {{ number_format($product->token_price) }} tokens</span>
+                    @endif
                     <p class="lede" style="margin: 0; white-space: pre-line">{{ $product->description }}</p>
                     <span class="product__seller">Sold by <a href="{{ route('market.shop', $shop) }}" style="font-weight: 800">{{ $shop->name }}</a></span>
                 </div>
@@ -41,6 +44,31 @@
                     @endif
                     <a href="mailto:{{ $shop->email }}?subject={{ rawurlencode($product->name) }}" class="btn btn--outline">Email the seller</a>
                 </div>
+
+                @if ($product->acceptsTokens() && $product->inStock())
+                    <div class="token-buy" id="tokens">
+                        <h3 style="margin: 0; font-size: 16px; color: var(--navy)">🪙 Get it with tokens</h3>
+                        @auth
+                            @if ($errors->has('tokens'))
+                                <p class="field-error" role="alert" style="margin: 0">{{ $errors->first('tokens') }}</p>
+                            @endif
+                            @if (auth()->user()->token_balance >= $product->token_price)
+                                <form method="POST" action="{{ route('market.tokens', $product) }}" class="notice-form__group" onsubmit="return confirm('Use {{ $product->token_price }} of your tokens for this?')">
+                                    @csrf
+                                    <label class="field">Anything the seller should know? (optional)
+                                        <input type="text" name="note" maxlength="300" placeholder="{{ $product->isService() ? 'e.g. the date you need it' : 'e.g. size, colour, when to collect' }}">
+                                    </label>
+                                    <button type="submit" class="btn btn--gold" style="align-self: flex-start">Use {{ number_format($product->token_price) }} tokens</button>
+                                    <span class="field-hint">You have {{ number_format(auth()->user()->token_balance) }}. Your tokens are held until the seller hands it over; you get them back if it's cancelled.</span>
+                                </form>
+                            @else
+                                <p class="field-hint" style="margin: 0">You have {{ number_format(auth()->user()->token_balance) }} tokens; this needs {{ number_format($product->token_price) }}. <a href="{{ route('account.tokens') }}" class="accent-bronze">See how to earn more</a>.</p>
+                            @endif
+                        @else
+                            <p class="field-hint" style="margin: 0">Members earn tokens for taking part in church life. <a href="{{ route('login') }}" class="accent-bronze">Log in</a> to use yours.</p>
+                        @endauth
+                    </div>
+                @endif
 
                 @if (session('enquired'))
                     <p class="notice-alert" role="status" style="margin: 0; background: var(--wash); color: var(--navy)">Message sent. {{ session('enquired') }} will get back to you.</p>

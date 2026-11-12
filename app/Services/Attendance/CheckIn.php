@@ -4,6 +4,7 @@ namespace App\Services\Attendance;
 
 use App\Models\Member;
 use App\Models\Service;
+use App\Services\Tokens\Rewards;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -110,6 +111,9 @@ class CheckIn
         }
     }
 
+    /** Tokens given for the last check-in, for the confirmation message. */
+    public int $tokensGiven = 0;
+
     private function record(Member $member, Service $service, string $mode, ?int $distance): void
     {
         DB::transaction(function () use ($member, $service, $mode, $distance) {
@@ -122,6 +126,8 @@ class CheckIn
                 $member->forceFill(['last_attended_on' => $service->held_on])->save();
             }
         });
+
+        $this->tokensGiven = app(Rewards::class)->attended($member, $service, $mode);
     }
 
     private function friendly(int $metres): string

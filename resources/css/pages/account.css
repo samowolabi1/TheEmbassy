@@ -373,3 +373,130 @@
   background: #e5484d;
   box-shadow: 0 0 0 4px rgba(229, 72, 77, 0.3);
 }
+
+/* Tokens */
+.token-balance {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 40px;
+  line-height: 1;
+  color: var(--navy);
+}
+.token-balance span:last-child {
+  font-size: 18px;
+  color: var(--slate);
+}
+.token-balance__coin {
+  font-size: 32px;
+}
+.tokens-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 980px;
+}
+.tokens-hero {
+  border-radius: 28px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tokens-hero__balance {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(48px, 8vw, 72px);
+  line-height: 1;
+  color: var(--white);
+}
+.tokens-hero__text {
+  max-width: 560px;
+  color: var(--mist);
+  line-height: 1.55;
+}
+.declare-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-color: var(--gold);
+}
+.declare-card__line {
+  margin: 0;
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--navy);
+}
+.earn-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
+  gap: 10px;
+}
+.earn-card {
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.earn-card__amount {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--bronze);
+}
+.earn-card__label {
+  font-weight: 800;
+  color: var(--navy);
+}
+.earn-card__text {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--slate);
+}
+.token-product {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--ink);
+}
+.token-product__name {
+  font-weight: 800;
+  color: var(--navy);
+}
+.token-product__shop {
+  font-size: 13px;
+  color: var(--slate);
+}
+.token-product__price {
+  margin-top: 6px;
+  font-weight: 800;
+  color: var(--bronze);
+}
+.token-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.token-row__text {
+  font-weight: 700;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.token-row__amount {
+  font-size: 17px;
+  color: #1d7a46;
+  white-space: nowrap;
+}
+.token-row__amount--out {
+  color: var(--slate);
+}

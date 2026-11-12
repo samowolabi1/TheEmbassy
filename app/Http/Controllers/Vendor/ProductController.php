@@ -82,7 +82,9 @@ class ProductController extends Controller
             'stock' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'is_active' => ['nullable', 'boolean'],
-        ], ['price.min' => 'The lowest price is ₦100.']);
+            'accepts_tokens' => ['nullable', 'boolean'],
+            'token_price' => ['nullable', 'required_if_accepted:accepts_tokens', 'integer', 'min:1', 'max:10000000'],
+        ], ['price.min' => 'The lowest price is ₦100.', 'token_price.required_if_accepted' => 'Set how many tokens it costs.']);
 
         $service = $data['type'] === Product::SERVICE;
 
@@ -95,6 +97,7 @@ class ProductController extends Controller
             'price_unit' => $service ? (trim((string) ($data['price_unit'] ?? '')) ?: null) : null,
             'stock' => ! $service && isset($data['stock']) && $data['stock'] !== '' ? (int) $data['stock'] : null,
             'is_active' => $request->boolean('is_active'),
+            'token_price' => $request->boolean('accepts_tokens') ? (int) $data['token_price'] : null,
         ];
     }
 

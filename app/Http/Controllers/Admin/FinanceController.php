@@ -3,29 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\TokenReminder;
 use App\Models\BankAccount;
 use App\Models\Expense;
 use App\Models\Fund;
 use App\Models\Gift;
-use App\Models\Member;
-use App\Models\TokenPayment;
-use App\Models\TokenPlan;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Throwable;
 
 /**
- * Giving into the church's funds, cash counted at services, and members' monthly tokens.
+ * Giving into the church's funds, the bank accounts people give to, and cash counted at services.
  */
 class FinanceController extends Controller
 {
@@ -34,20 +25,15 @@ class FinanceController extends Controller
     public function index(Request $request): View
     {
         Fund::ensureDefaults();
-        TokenPlan::ensureDefaults();
         [$period, $from, $to] = $this->period($request);
         $days = [$from->copy()->startOfDay(), $to->copy()->endOfDay()];
         $method = in_array($request->query('method'), ['online', 'cash'], true) ? $request->query('method') : 'all';
-        // Only the administrator sees giving; other finance staff see tokens, expenses and fund settings.
+        // Only the administrator sees giving; other finance staff see expenses, funds and bank accounts.
         $seeGiving = $request->user()->can('see-giving');
 
         $gifts = Gift::paid()->whereBetween('given_on', $days)->when(! $seeGiving, fn ($q) => $q->whereRaw('1 = 0'));
-        $tokens = TokenPayment::where('status', TokenPayment::PAID)->whereBetween('paid_at', [$from, $to->copy()->endOfDay()]); // a timestamp
         $giving = (int) (clone $gifts)->sum('amount');
-        $tokenTotal = (int) (clone $tokens)->sum('amount');
-        $online = (int) (clone $gifts)->where('method', 'online')->sum('amount') + (int) (clone $tokens)->where('method', 'online')->sum('amount');
-
-        $arrears = $this->arrears();
+        $online = (int) (clone $gifts)->where('method', 'online')->sum('amount');
 
         return view('admin.finance', [
             'period' => $period,
@@ -57,11 +43,10 @@ class FinanceController extends Controller
             'seeGiving' => $seeGiving,
             'bankAccounts' => BankAccount::orderByRaw("case currency when 'NGN' then 0 else 1 end")->orderBy('currency')->orderBy('sort')->get(),
             'stats' => [
-                'total' => $giving + $tokenTotal,
+                'total' => $giving,
                 'giving' => $giving,
-                'tokens' => $tokenTotal,
                 'online' => $online,
-                'offline' => $giving + $tokenTotal - $online,
+                'offline' => $giving - $online,
                 'services' => (clone $gifts)->where('method', '!=', 'online')->distinct()->count('given_on'),
                 'expenses' => (int) Expense::where('status', Expense::APPROVED)->whereBetween('spent_on', $days)->sum('amount'),
                 'pendingExpenses' => Expense::where('status', Expense::PENDING)->count(),
@@ -74,11 +59,6 @@ class FinanceController extends Controller
                 ->when($method === 'online', fn ($q) => $q->where('method', 'online'))
                 ->when($method === 'cash', fn ($q) => $q->where('method', '!=', 'online'))
                 ->latest('given_on')->latest('id')->paginate(15, ['*'], 'tx')->withQueryString(),
-            'plans' => TokenPlan::withCount(['members' => fn ($q) => $q->active()])->orderByDesc('amount')->get(),
-            'arrears' => $arrears->take(10),
-            'arrearsCount' => $arrears->count(),
-            'arrearsTotal' => $arrears->sum(fn (Member $m) => $m->tokenAmountOwed()),
-            'members' => Member::active()->whereHas('tokenPlan', fn ($q) => $q->where('amount', '>', 0))->orderBy('name')->get(['id', 'name', 'phone']),
             'methods' => collect(Gift::METHODS)->except('online'),
         ]);
     }
@@ -195,113 +175,6 @@ class FinanceController extends Controller
         ], ['swift.regex' => 'A SWIFT/BIC code is 8 or 11 letters and numbers.']);
 
         return [...$data, 'swift' => isset($data['swift']) ? strtoupper($data['swift']) : null, 'is_active' => $request->boolean('is_active')];
-    }
-
-    public function storePlan(Request $request): RedirectResponse
-    {
-        $data = $this->planData($request);
-        $plan = TokenPlan::create($data);
-        $this->onlyOneDefault($plan);
-
-        return back()->with('status', "{$plan->name} plan added.");
-    }
-
-    public function updatePlan(Request $request, TokenPlan $plan): RedirectResponse
-    {
-        $plan->update($this->planData($request, $plan));
-        $this->onlyOneDefault($plan);
-
-        return back()->with('status', "{$plan->name} plan saved.");
-    }
-
-    /**
-     * Record tokens paid at the office.
-     */
-    public function storeTokenPayment(Request $request): RedirectResponse
-    {
-        $data = $request->validateWithBag('tokens', [
-            'member_id' => ['required', Rule::exists('members', 'id')->where('status', Member::ACTIVE)],
-            'months' => ['required', 'integer', 'min:1', 'max:36'],
-            'method' => ['required', Rule::in(['cash', 'transfer', 'cheque'])],
-        ]);
-
-        $member = Member::with('tokenPlan', 'tokenPayments')->findOrFail($data['member_id']);
-        if (! $member->tokenPlan || $member->tokenPlan->isExempt()) {
-            return back()->withErrors(['member_id' => "{$member->name} doesn't pay tokens on their plan."], 'tokens');
-        }
-
-        $payment = $member->tokenPayments()->create([
-            'from_month' => $member->nextTokenMonth(),
-            'months' => $data['months'],
-            'amount' => $member->tokenPlan->amount * $data['months'],
-            'method' => $data['method'],
-        ]);
-        $payment->forceFill(['recorded_by' => $request->user()->id])->markPaid();
-
-        return back()->with('status', "Tokens for {$member->name} recorded: {$payment->periodLabel()}.");
-    }
-
-    /**
-     * Email a reminder to one member, or to everyone behind who hasn't had one this week.
-     */
-    public function remind(Request $request): RedirectResponse
-    {
-        $members = $request->filled('member')
-            ? $this->arrears()->where('id', $request->integer('member'))
-            : $this->arrears()->filter(fn (Member $m) => ! $m->token_reminded_at || $m->token_reminded_at->lt(now()->subWeek()));
-
-        $sent = 0;
-        foreach ($members as $member) {
-            $email = $member->email ?? $member->user?->email;
-            if (! $email) {
-                continue;
-            }
-            try {
-                Mail::to($email)->send(new TokenReminder($member));
-                $member->forceFill(['token_reminded_at' => now()])->save();
-                $sent++;
-            } catch (Throwable $e) {
-                Log::error('Could not send token reminder', ['member' => $member->id, 'error' => $e->getMessage()]);
-            }
-        }
-
-        return back()->with('status', $sent ? "Sent {$sent} ".Str::plural('reminder', $sent).' by email.' : 'No reminders sent: nobody due a reminder has an email address.');
-    }
-
-    /**
-     * Active members behind on tokens, most owed first.
-     *
-     * @return Collection<int, Member>
-     */
-    private function arrears(): Collection
-    {
-        return Member::active()->with('tokenPlan', 'tokenPayments', 'unit', 'user')
-            ->whereHas('tokenPlan', fn ($q) => $q->where('amount', '>', 0))
-            ->get()
-            ->filter(fn (Member $m) => $m->tokenMonthsOwed() > 0)
-            ->sortByDesc(fn (Member $m) => $m->tokenAmountOwed())
-            ->values();
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function planData(Request $request, ?TokenPlan $plan = null): array
-    {
-        $data = $request->validateWithBag('plan', [
-            'name' => ['required', 'string', 'max:60', Rule::unique('token_plans')->ignore($plan?->id)],
-            'amount' => ['required', 'numeric', 'min:0', 'max:10000000'],
-            'description' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        return [...$data, 'amount' => (int) round($data['amount'] * 100), 'is_default' => $request->boolean('is_default')];
-    }
-
-    private function onlyOneDefault(TokenPlan $plan): void
-    {
-        if ($plan->is_default) {
-            TokenPlan::whereKeyNot($plan->id)->update(['is_default' => false]);
-        }
     }
 
     /**
