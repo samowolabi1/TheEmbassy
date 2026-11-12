@@ -89,7 +89,7 @@ class AccountController extends Controller
             'orders' => TokenOrder::with('shop')->where('user_id', $user->id)->latest()->take(20)->get(),
             'rules' => collect(Rewards::RULES)->map(fn ($r, $key) => ['label' => $r[0], 'text' => $r[1], 'amount' => $rewards->amount($key)])->filter(fn ($r) => $r['amount'] > 0),
             'earnedThisMonth' => (int) TokenTransfer::where('to_account_id', $account->id)->whereIn('kind', ['reward', 'grant'])->where('created_at', '>=', now()->startOfMonth())->sum('amount'),
-            'forTokens' => Product::listed()->whereNotNull('token_price')->with('shop')->latest()->take(4)->get(),
+            'forTokens' => Product::listed()->whereNotNull('token_price')->with('shop.user.member')->latest()->take(12)->get()->filter->acceptsTokens()->take(4),
             'declaration' => $declaration,
             'declared' => $declaration ? TokenTransfer::where('key', 'declaration:week:'.$declaration->week_of->toDateString().':'.$user->id)->exists() : false,
             'canSend' => (bool) config('tokens.transfers.enabled') && $user->member?->status === Member::ACTIVE,

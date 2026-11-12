@@ -23,7 +23,7 @@ class MarketController extends Controller
     public function index(): View
     {
         return view('market.index', [
-            'products' => Product::listed()->with('shop')->get(),
+            'products' => Product::listed()->with('shop.user.member')->get(),
             'shops' => Shop::listed()->withCount(['products' => fn ($q) => $q->where('is_active', true)])->orderBy('name')->get(),
         ]);
     }
@@ -47,7 +47,7 @@ class MarketController extends Controller
         abort_unless($product->is_active, 404);
 
         return view('market.product', [
-            'product' => $product->load('shop'),
+            'product' => $product->load('shop.user.member'),
             'more' => $product->shop->products()->where('is_active', true)->whereKeyNot($product->id)->latest()->take(3)->get(),
         ]);
     }

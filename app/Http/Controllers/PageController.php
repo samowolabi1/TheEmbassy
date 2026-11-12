@@ -28,7 +28,7 @@ class PageController extends Controller
             'declaration' => Declaration::current(),
             'announcements' => Announcement::live()->take(3)->get(),
             'notices' => Notice::live()->where('featured', true)->take(3)->get(),
-            'products' => Product::listed()->with('shop')->take(4)->get(),
+            'products' => Product::listed()->with('shop.user.member')->take(4)->get(),
             'headline' => $headline,
             // The latest messages after the headline one, with a podcast if there is one.
             'sideMessages' => $messages->reject(fn ($m) => $m['title'] === $headline['title'])->take(2)

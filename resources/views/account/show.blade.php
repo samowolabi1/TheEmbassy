@@ -25,9 +25,11 @@
                     @if ($openPackages) <span class="app-tile__badge app-tile__badge--soft">{{ $openPackages }} open</span> @endif
                 </a>
                 <a href="{{ route('community.index') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">💬</span>Community</a>
+                @if ($user->canUseTokens())
                 <a href="{{ route('account.tokens') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🪙</span>Tokens
                     <span class="app-tile__badge app-tile__badge--soft">{{ number_format($user->tokenBalance()) }}</span>
                 </a>
+                @endif
                 <a href="{{ route('give') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🎁</span>Give</a>
             </nav>
         @endif
