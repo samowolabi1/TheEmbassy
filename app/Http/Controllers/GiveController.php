@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BankAccount;
 use App\Models\Fund;
 use App\Models\Gift;
 use App\Services\Payments\Payments;
@@ -14,7 +15,8 @@ use Illuminate\View\View;
 use RuntimeException;
 
 /**
- * Online giving on the Give page.
+ * The Give page: tithes and offerings by bank transfer only (in any of the church's currencies),
+ * and donations by transfer or online through Paystack.
  */
 class GiveController extends Controller
 {
@@ -22,12 +24,18 @@ class GiveController extends Controller
     {
         Fund::ensureDefaults();
         $funds = Fund::active()->get();
-        $appeal = $funds->first(fn (Fund $f) => $f->target);
+        $donationFunds = $funds->where('online', true)->values();
+        $appeal = $donationFunds->first(fn (Fund $f) => $f->target);
+        $accounts = BankAccount::active()->get();
 
         return view('pages.give', [
             'presets' => [5000, 10000, 20000, 50000],
             'defaultAmount' => 10000,
-            'funds' => $funds,
+            'funds' => $donationFunds,
+            'transferFunds' => $funds->where('online', false)->values(),
+            'titheAccounts' => $accounts->whereIn('use_for', ['all', 'tithe'])->values(),
+            'donationAccounts' => $accounts->where('use_for', 'donations')->values(),
+            'allAccounts' => $accounts,
             'appeal' => $appeal,
             'appealRaised' => $appeal?->raised() ?? 0,
             'appealGivers' => $appeal ? $appeal->gifts()->paid()->distinct()->count('email') : 0,
@@ -41,12 +49,13 @@ class GiveController extends Controller
         $request->merge(['amount' => preg_replace('/[^\d]/', '', (string) $request->input('amount'))]);
         $data = $request->validate([
             'amount' => ['required', 'integer', 'min:'.config('finance.min_gift'), 'max:'.config('finance.max_gift')],
-            'fund' => ['required', Rule::exists('funds', 'id')->where('is_active', true)],
+            // Only donation funds: tithes and offerings are never taken through a payment company.
+            'fund' => ['required', Rule::exists('funds', 'id')->where('is_active', true)->where('online', true)],
             'email' => ['required', 'email', 'max:255'],
             'name' => ['nullable', 'string', 'max:100'],
         ], [
             'amount.min' => 'Please enter an amount of at least ₦'.number_format(config('finance.min_gift')).'.',
-            'fund.*' => 'Choose what you\'re giving towards.',
+            'fund.*' => 'Choose a donation to give towards. Tithes and offerings are by bank transfer.',
         ]);
 
         if (! $payments->enabled()) {

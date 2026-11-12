@@ -1,11 +1,11 @@
 @extends('layouts.app', [
     'title' => 'Give',
-    'description' => 'Give tithes, offerings and to the building fund by card, bank transfer or USSD.',
+    'description' => 'Give tithes and offerings by bank transfer, in naira or other currencies, and donate by transfer or card.',
 ])
 
 @php
-    $bank = config('church.bank');
     $naira = fn (int $n) => number_format($n);
+    $currencies = $allAccounts->pluck('currency')->unique()->values();
 @endphp
 
 @section('content')
@@ -15,15 +15,21 @@
             <div class="stack give-hero__copy">
                 <span class="eyebrow">GIVE</span>
                 <h1 class="display give-hero__title">Honour God<br><span class="accent">with your increase.</span></h1>
-                <p class="give-hero__text">Your giving funds worship, outreach, welfare and the new youth sanctuary. Every gift gets an instant receipt.</p>
-                <div class="assurances">
-                    <span><x-icon name="lock" :size="18" />Secured by Paystack</span>
-                    <span><x-icon name="check" :size="18" />Email receipt</span>
+                <p class="give-hero__text">Tithes and offerings are received by bank transfer, in naira or other currencies. Donations can be made by transfer or online.</p>
+                <div class="give-hero__links">
+                    <a href="#tithes" class="btn btn--gold">Tithes &amp; offerings</a>
+                    <a href="#donate" class="btn btn--outline-light">Make a donation</a>
                 </div>
             </div>
 
-            <form method="POST" action="{{ route('give.store') }}#amount" class="give-form" data-give-form @if ($paymentsEnabled) data-payments-on @endif novalidate>
+            @if ($funds->isNotEmpty())
+
+            <form method="POST" action="{{ route('give.store') }}#amount" class="give-form" id="donate" data-give-form @if ($paymentsEnabled) data-payments-on @endif novalidate>
                 @csrf
+                <div class="stack" style="gap: 4px">
+                    <span class="give-form__title">Donate online</span>
+                    <span class="give-note" style="text-align: left">For donations only. Tithes and offerings are by <a href="#tithes" style="color: inherit; text-decoration: underline">bank transfer</a>.</span>
+                </div>
 
                 <div class="stack" style="gap: 10px">
                     <label class="give-label" for="amount">AMOUNT</label>
@@ -40,7 +46,7 @@
                 </div>
 
                 <fieldset class="stack funds-wrap">
-                    <legend class="give-label">GIVE TOWARDS</legend>
+                    <legend class="give-label">DONATE TOWARDS</legend>
                     <div class="funds">
                         @foreach ($funds as $fund)
                             <label class="fund"><input type="radio" name="fund" value="{{ $fund->id }}" @checked((int) old('fund', $funds->first()->id) === $fund->id) @if ($appeal?->is($fund)) data-appeal-fund @endif><span>{{ $fund->name }}</span></label>
@@ -57,37 +63,66 @@
 
                 @php($giveError = $errors->first('amount') ?: $errors->first('fund') ?: $errors->first('email'))
                 <p class="give-error" role="alert" @unless ($giveError) hidden @endunless data-give-error>{{ $giveError }}</p>
-                <button type="submit" class="btn btn--gold give-submit">Give ₦<span data-amount-label>{{ $naira($defaultAmount) }}</span></button>
-                <span class="give-note">Card, bank transfer or USSD on the next step</span>
+                <button type="submit" class="btn btn--gold give-submit">Donate ₦<span data-amount-label>{{ $naira($defaultAmount) }}</span></button>
+                <span class="give-note"><x-icon name="lock" :size="14" /> Card, bank transfer or USSD on the next step, secured by Paystack. Email receipt.</span>
             </form>
+            @endif
         </div>
     </section>
 
-    <section class="container section--tight stack" style="gap: 24px">
-        <h2 class="h2">Other ways to give</h2>
-        <div class="grid-auto" style="--min: 300px; --gap: 16px">
-            <div class="card way">
-                <span class="icon-tile" style="background: var(--wash); color: var(--bronze)"><x-icon name="bank" :size="24" /></span>
-                <span class="way__title">Bank transfer</span>
-                <span class="stack way__bank">
-                    <span>{{ $bank['name'] }}</span>
-                    <span class="way__account">{{ $bank['account_number'] }}</span>
-                    <span>{{ $bank['account_name'] }}</span>
-                </span>
-                <button type="button" class="btn btn--outline btn--sm" style="align-self: flex-start" data-copy="{{ $bank['account_number'] }}" data-copy-label="Copy number">Copy number</button>
-            </div>
-            <div class="card way">
-                <span class="icon-tile" style="background: var(--ice); color: var(--navy)"><x-icon name="phone" :size="24" /></span>
-                <span class="way__title">USSD</span>
-                <span class="way__text">No data? Dial your bank's USSD code and pay with the church's account number above. Use your name as the description.</span>
-            </div>
-            <div class="way bg-navy">
-                <span class="icon-tile" style="background: var(--gold); color: var(--midnight)"><x-icon name="heart" :size="24" /></span>
-                <span class="way__title">In the app</span>
-                <span class="way__text" style="color: var(--mist)">Members get a personal account number, giving history and yearly statements in the {{ config('church.brand.app_name') }}.</span>
-                <a href="{{ route('home') }}#app" class="btn btn--white btn--sm" style="align-self: flex-start">Get the app</a>
-            </div>
+    <section id="tithes" class="container section--tight stack" style="gap: 20px" data-filter-scope>
+        <div class="stack" style="gap: 10px; max-width: 720px">
+            <span class="eyebrow">TITHES &amp; OFFERINGS</span>
+            <h2 class="h2">Give by bank transfer.</h2>
+            <p class="lede" style="margin: 0">We receive tithes and offerings by bank transfer only. Put <strong>"Tithe"</strong> or <strong>"Offering"</strong> and your name as the transfer description. No data? Use your bank's USSD code with the naira account.</p>
         </div>
+
+        @if ($titheAccounts->pluck('currency')->unique()->count() > 1)
+            <div role="tablist" aria-label="Currency" class="filters">
+                @foreach ($titheAccounts->pluck('currency')->unique() as $currency)
+                    <button type="button" role="tab" class="filter" aria-selected="{{ $loop->first ? 'true' : 'false' }}" data-filter="{{ $currency }}">{{ $currency }} · {{ \App\Models\BankAccount::CURRENCIES[$currency][0] ?? $currency }}</button>
+                @endforeach
+            </div>
+        @endif
+
+        <div class="bank-grid">
+            @forelse ($titheAccounts as $account)
+                @include('pages.partials.bank-account', ['account' => $account, 'hidden' => $titheAccounts->pluck('currency')->unique()->count() > 1 && $account->currency !== $titheAccounts->first()->currency])
+            @empty
+                <div class="card way">
+                    <span class="icon-tile" style="background: var(--wash); color: var(--bronze)"><x-icon name="bank" :size="24" /></span>
+                    <span class="way__title">Bank transfer</span>
+                    <span class="stack way__bank">
+                        <span>{{ config('church.bank.name') }}</span>
+                        <span class="way__account">{{ config('church.bank.account_number') }}</span>
+                        <span>{{ config('church.bank.account_name') }}</span>
+                    </span>
+                </div>
+            @endforelse
+        </div>
+    </section>
+
+    <section class="container section--tight stack" style="gap: 20px">
+        <div class="stack" style="gap: 10px; max-width: 720px">
+            <span class="eyebrow">DONATIONS</span>
+            <h2 class="h2">Donate by transfer or online.</h2>
+            <p class="lede" style="margin: 0">
+                @if ($funds->isNotEmpty())
+                    Give to {{ $funds->pluck('name')->join(', ', ' or ') }}
+                    {{ $donationAccounts->isEmpty() ? 'by transfer to any account above' : 'by transfer to any account above or below' }}@if ($paymentsEnabled), or <a href="#donate" class="accent-bronze">online by card, bank transfer or USSD</a>@endif.
+                @else
+                    Donate by transfer to {{ $donationAccounts->isEmpty() ? 'any account above' : 'any account above or below' }}.
+                @endif
+                Put the project's name as the transfer description.
+            </p>
+        </div>
+        @if ($donationAccounts->isNotEmpty())
+            <div class="bank-grid">
+                @foreach ($donationAccounts as $account)
+                    @include('pages.partials.bank-account', ['account' => $account, 'hidden' => false])
+                @endforeach
+            </div>
+        @endif
     </section>
 
     @if ($appeal)

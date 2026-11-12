@@ -12,7 +12,7 @@ The public website, built with [Laravel](https://laravel.com) 13 from the "RCCG 
 | `/blog` | Featured article, then articles by topic and search (`/blog?topic=Faith`, `/blog?q=money`), nine to a page; `/blog/{slug}` for each article and `/blog/feed` for RSS |
 | `/gallery` | Photo and video albums by year; `/gallery/{album}` opens a full-screen viewer with swipe, download and a shareable link to each photo |
 | `/events` | Featured event with countdown, monthly calendar, regular gatherings; `/events/{slug}` for RSVPs and tickets |
-| `/give` | Online giving to the church's funds, bank transfer details, appeal progress |
+| `/give` | Tithes and offerings by bank transfer (the church's accounts in each currency), donations by transfer or online through Paystack, appeal progress |
 | `/market` | The member marketplace for products and services; `/market/open-a-shop` to apply |
 | `/notices` | Paid notice board for other churches and businesses; `/notices/advertise` to place one |
 | `/join`, `/login`, `/account` | Membership sign-up, sign-in, and the member's own page: quick links to mark attendance, join online, messages, welfare, community and give; details, giving and tokens |
@@ -65,7 +65,8 @@ Staff sign in at `/admin`. Every area in the design's sidebar is built:
 - **Follow-up & care**: follow-ups for first-timers, new members and members not seen lately, assigned to the care team with outcomes recorded.
 - **Units & fellowships**: the service units and house fellowships members choose from.
 - **Weekly email**: goes out every Monday morning (time set in Settings & roles) with the week's declaration, recent announcements, upcoming events, last week's messages and new articles. Preview it, send it early with "Send now", and see past sends. Sign-ups confirm by email before they get anything; every email has a one-click unsubscribe link. Emails go out about 120 a minute so mail services don't block them, and a restart carries on where it stopped without emailing anyone twice.
-- **Giving & tokens**: totals for this month, last month or this year; fund balances and appeal targets; every transaction with CSV export; cash offerings counted at services; token plans; tokens paid at the office; members in arrears with email and WhatsApp reminders.
+- **Giving & tokens**: the church's bank accounts in each currency (naira, dollar, pound, euro and more, with sort code, routing number, SWIFT and IBAN where they apply), marked for tithes and offerings, donations, or both; funds, each set as bank transfer only (tithes and offerings) or also payable through Paystack (donations); cash and transfers received recorded by finance staff; token plans; tokens paid at the office; members in arrears with email and WhatsApp reminders.
+- **Giving is private to the administrator.** Only the Administrator role sees giving records and totals: transactions, fund totals and balances, the giving report export, the dashboard's giving panels and a member's giving on their profile. Finance staff and pastors record what comes in but don't see it afterwards, and members don't see a giving history on their account. Givers still get an email receipt for an online donation, and an appeal's public progress bar on the Give page shows the total raised.
 - **Expenses & budgets**: spending logged with a receipt, approved by someone other than the person who logged it, against monthly budgets per category; CSV export.
 - **Tribe Market**: shop applications, shops and subscription status, plan prices, coupons, and subscription payments with CSV export.
 - **Content & announcements**, **Notice board**, **Events & tickets**, **Prayer requests**, **Contact messages**.
@@ -210,10 +211,11 @@ The web server's document root is `public/`, and `storage/` and `bootstrap/cache
 
 **4. Email.** Set `MAIL_MAILER`, `MAIL_HOST`, `MAIL_USERNAME`, `MAIL_PASSWORD` and `MAIL_FROM_ADDRESS` for a sending service (Mailgun, Postmark, Amazon SES, Zoho or the church's own mailbox). Until then nothing is emailed: receipts, password links and reminders.
 
-**5. Paystack.** In the Paystack dashboard: create the church's subaccount and put its code in `PAYSTACK_SUBACCOUNT`; copy the live secret and public keys into `PAYSTACK_SECRET_KEY` and `PAYSTACK_PUBLIC_KEY`; set the webhook URL to `https://<site>/webhooks/paystack`. Until the keys are set, the site shows bank transfer details instead of taking payments.
+**5. Paystack.** In the Paystack dashboard: create the church's subaccount and put its code in `PAYSTACK_SUBACCOUNT`; copy the live secret and public keys into `PAYSTACK_SECRET_KEY` and `PAYSTACK_PUBLIC_KEY`; set the webhook URL to `https://<site>/webhooks/paystack`. Until the keys are set, the site shows bank transfer details instead of taking payments. Paystack is only used for donations, tokens, tickets, the market and the notice board; tithes and offerings are never taken through it.
 
 **6. In admin.** Sign in at `/admin`, then:
-- **Settings & roles**: fill in the address, service times, bank details, social links and church email, and add the other staff.
+- **Settings & roles**: fill in the address, service times, social links and church email, and add the other staff.
+- **Giving & tokens › Bank accounts**: add the church's accounts in each currency people give in.
 - **Pages**: write the church's story, add the leaders' names and photos, and check the beliefs and first-timer questions.
 - **Blog**: replace the starter articles (their author and body are `[placeholders]`) or delete them.
 - **Tribe Market**: price the subscription periods and switch them on.
@@ -235,7 +237,7 @@ The web server's document root is `public/`, and `storage/` and `bootstrap/cache
 
 ### Deploying for another church
 
-Repeat the steps above on a new server, with the new church's `CHURCH_*` and `BRAND_*` values in `.env` and its logo in `public/images/`. Everything else (address, bank details, leaders, links, staff) is set in admin, so the code doesn't change between churches.
+Repeat the steps above on a new server, with the new church's `CHURCH_*` and `BRAND_*` values in `.env` and its logo in `public/images/`. Everything else (address, bank accounts, leaders, links, staff) is set in admin, so the code doesn't change between churches.
 
 ## Running it
 

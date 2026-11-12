@@ -6,7 +6,7 @@
     <header class="page-head">
         <div class="stack" style="gap: 4px">
             <h1>Giving &amp; tokens</h1>
-            <span class="page-head__sub">{{ $label }} · online gifts settle to the church's Paystack account</span>
+            <span class="page-head__sub">{{ $label }} · tithes and offerings come in by bank transfer; donations can also come through Paystack @unless ($seeGiving) · giving records are private to the administrator @endunless</span>
         </div>
         <div class="actions">
             <form method="GET" action="{{ route('admin.finance.index') }}">
@@ -18,12 +18,15 @@
                 </select>
                 <noscript><button type="submit" class="btn btn--ghost btn--xs">Show</button></noscript>
             </form>
-            <a href="{{ route('admin.finance.export', ['period' => $period]) }}" class="btn btn--outline">Export report</a>
+            @if ($seeGiving)
+                <a href="{{ route('admin.finance.export', ['period' => $period]) }}" class="btn btn--outline">Export report</a>
+            @endif
             <a href="#record-gift" class="btn btn--gold">Record cash offering</a>
         </div>
     </header>
 
     <div class="stats">
+        @if ($seeGiving)
         <div class="stat-tile stat-tile--navy">
             <span class="stat-tile__label">Total in</span>
             <span class="stat-tile__num">{{ $naira($stats['total']) }}</span>
@@ -39,6 +42,13 @@
             <span class="stat-tile__num">{{ $naira($stats['offline']) }}</span>
             <span class="stat-tile__foot">{{ $stats['services'] }} {{ \Illuminate\Support\Str::plural('day', $stats['services']) }} recorded</span>
         </div>
+        @else
+        <div class="stat-tile stat-tile--navy">
+            <span class="stat-tile__label">Tokens</span>
+            <span class="stat-tile__num">{{ $naira($stats['tokens']) }}</span>
+            <span class="stat-tile__foot">Members' monthly tokens</span>
+        </div>
+        @endif
         <div class="stat-tile">
             <span class="stat-tile__label">Expenses</span>
             <span class="stat-tile__num">{{ $naira($stats['expenses']) }}</span>
@@ -47,18 +57,19 @@
     </div>
 
     <section class="box box--flush">
-        <div class="box__head"><h2>Funds</h2><span class="box__note">In {{ strtolower($periods[$period]) }} · balance is everything received since the fund was set up</span></div>
+        <div class="box__head"><h2>Funds</h2><span class="box__note">@if ($seeGiving) In {{ strtolower($periods[$period]) }} · balance is everything received since the fund was set up @else What people can give towards @endif</span></div>
         <div class="fund-tiles">
             @foreach ($funds as $fund)
                 <details class="fund-tile">
                     <summary>
                         <span class="fund-tile__name">{{ $fund->name }}@unless ($fund->is_active) <span class="pill pill--draft">Hidden</span>@endunless</span>
-                        <span class="fund-tile__num">{{ $naira($fund->period_total) }}</span>
+                        @if ($seeGiving)
+                            <span class="fund-tile__num">{{ $naira($fund->period_total) }}</span>
+                        @endif
                         <span class="fund-tile__foot">
-                            @if ($fund->target)
-                                {{ min(100, (int) floor($fund->balance * 100 / $fund->target)) }}% of {{ $naira($fund->target) }}
-                            @else
-                                Balance {{ $naira($fund->balance) }}
+                            {{ $fund->online ? 'Bank transfer or Paystack' : 'Bank transfer only' }}
+                            @if ($seeGiving)
+                                · @if ($fund->target) {{ min(100, (int) floor($fund->balance * 100 / $fund->target)) }}% of {{ $naira($fund->target) }} @else Balance {{ $naira($fund->balance) }} @endif
                             @endif
                         </span>
                     </summary>
@@ -69,6 +80,7 @@
                         <label class="field">Target in ₦ (optional) <input type="number" name="target" value="{{ $fund->target ? $fund->target / 100 : '' }}" min="1" step="1"></label>
                         <label class="field">Description <input type="text" name="description" value="{{ $fund->description }}" maxlength="255"></label>
                         <label class="login__remember"><input type="checkbox" name="is_active" value="1" @checked($fund->is_active)>Offer on the Give page</label>
+                        <label class="login__remember"><input type="checkbox" name="online" value="1" @checked($fund->online)>Can also be given through Paystack (donations; leave off for tithes and offerings)</label>
                         <button type="submit" class="btn btn--navy btn--xs">Save</button>
                     </form>
                 </details>
@@ -80,12 +92,16 @@
                     <label class="field">Name <input type="text" name="name" required maxlength="60"></label>
                     @error('name', 'fund') <span class="field-error">{{ $message }}</span> @enderror
                     <label class="field">Target in ₦ (optional) <input type="number" name="target" min="1" step="1"></label>
+                    <label class="login__remember"><input type="checkbox" name="online" value="1" checked>Can also be given through Paystack</label>
                     <button type="submit" class="btn btn--navy btn--xs">Add fund</button>
                 </form>
             </details>
         </div>
     </section>
 
+    @include('admin.partials.bank-accounts')
+
+    @if ($seeGiving)
     <section class="box box--flush">
         <div class="box__head">
             <h2>Transactions</h2>
@@ -125,6 +141,7 @@
         </div>
         @include('admin.partials.pager', ['paginator' => $transactions])
     </section>
+    @endif
 
     <div class="row">
         <section class="box grow" id="record-gift">

@@ -80,8 +80,6 @@ class SettingsAndRolesTest extends TestCase
         $this->put(route('admin.settings.update'), [
             'church__address' => '12 Crown Avenue, Lekki',
             'church__sunday_time' => '9:00 AM',
-            'church__bank__name' => 'Zenith Bank',
-            'church__bank__account_number' => '1012345678',
             'church__links__instagram' => 'https://instagram.com/royaltribe',
             'church__live__video_id' => 'dQw4w9WgXcQ',
             'church__live__is_live' => '1',
@@ -91,7 +89,6 @@ class SettingsAndRolesTest extends TestCase
         $this->assertSame('12 Crown Avenue, Lekki', Setting::firstWhere('key', 'church.address')->value);
         Setting::applyToConfig(); // what every request does at boot
         $this->get('/')->assertSee('12 Crown Avenue, Lekki')->assertSee('9:00 AM')->assertSee('https://instagram.com/royaltribe', false)->assertDontSee('[Venue address]');
-        $this->get('/give')->assertSee('Zenith Bank')->assertSee('1012345678');
         $this->get('/watch')->assertSee('youtube-nocookie.com/embed/dQw4w9WgXcQ', false)->assertSee('LIVE ON YOUTUBE');
         $this->get('/about')->assertSee('Free parking in the school compound');
     }

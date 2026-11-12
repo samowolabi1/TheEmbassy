@@ -313,6 +313,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('/finance/gifts/{gift}', [Admin\FinanceController::class, 'destroyGift'])->name('gifts.destroy');
             Route::post('/finance/funds', [Admin\FinanceController::class, 'storeFund'])->name('funds.store');
             Route::put('/finance/funds/{fund}', [Admin\FinanceController::class, 'updateFund'])->name('funds.update');
+            Route::post('/finance/accounts', [Admin\FinanceController::class, 'storeAccount'])->name('accounts.store');
+            Route::put('/finance/accounts/{account}', [Admin\FinanceController::class, 'updateAccount'])->name('accounts.update');
+            Route::delete('/finance/accounts/{account}', [Admin\FinanceController::class, 'destroyAccount'])->name('accounts.destroy');
             Route::post('/finance/token-plans', [Admin\FinanceController::class, 'storePlan'])->name('token-plans.store');
             Route::put('/finance/token-plans/{plan}', [Admin\FinanceController::class, 'updatePlan'])->name('token-plans.update');
             Route::post('/finance/tokens', [Admin\FinanceController::class, 'storeTokenPayment'])->name('tokens.store');

@@ -34,7 +34,6 @@ class AccountController extends Controller
         return view('account.show', [
             'user' => $request->user(),
             'member' => $member,
-            'gifts' => $member ? $member->gifts()->with('fund')->where('status', 'paid')->latest('given_on')->take(10)->get() : collect(),
             'units' => Unit::orderBy('name')->get(),
             'fellowships' => Fellowship::orderBy('name')->get(),
             'ledUnits' => $member?->ledUnits() ?? collect(),

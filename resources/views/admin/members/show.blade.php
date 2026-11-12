@@ -32,7 +32,9 @@
                 <dt>Member since</dt><dd>{{ $member->joined_on?->format('F Y') ?? '—' }}</dd>
                 <dt>Birthday</dt><dd>{{ $member->birthday?->format('j F') ?? '—' }}</dd>
                 <dt>Address</dt><dd>{{ $member->address ?? '—' }}</dd>
-                <dt>Giving ({{ now()->year }})</dt><dd>₦{{ number_format($givingThisYear / 100) }}</dd>
+                @if ($givingThisYear !== null)
+                    <dt>Giving ({{ now()->year }})</dt><dd>₦{{ number_format($givingThisYear / 100) }}</dd>
+                @endif
                 <dt>Shop</dt><dd>@if ($member->user?->shop)<a href="{{ route('market.shop', $member->user->shop) }}">{{ $member->user->shop->name }}</a>@else — @endif</dd>
             </dl>
             @if ($member->notes)

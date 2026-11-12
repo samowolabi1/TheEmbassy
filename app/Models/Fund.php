@@ -11,8 +11,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * What a gift is for: tithe, offering, building fund and so on.
+ * Funds with `online` off (tithes and offerings) are given by bank transfer only, never through Paystack.
  */
-#[Fillable(['name', 'description', 'target', 'is_active', 'sort'])]
+#[Fillable(['name', 'description', 'target', 'is_active', 'sort', 'online'])]
 class Fund extends Model
 {
     use HasFactory;
@@ -28,6 +29,7 @@ class Fund extends Model
             'target' => 'integer',
             'is_active' => 'boolean',
             'sort' => 'integer',
+            'online' => 'boolean',
         ];
     }
 

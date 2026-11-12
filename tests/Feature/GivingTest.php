@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Mail\GiftReceipt;
 use App\Mail\TokenReminder;
+use App\Models\BankAccount;
 use App\Models\Budget;
 use App\Models\Expense;
 use App\Models\Fund;
@@ -47,6 +48,18 @@ class GivingTest extends TestCase
         return User::factory()->staff('finance')->create();
     }
 
+    private function admin(): User
+    {
+        return User::factory()->admin()->create();
+    }
+
+    private function donation(): Fund
+    {
+        Fund::ensureDefaults();
+
+        return Fund::firstWhere('name', 'Building fund');
+    }
+
     // ---- Online giving ----
 
     public function test_give_page_offers_the_church_funds(): void
@@ -55,12 +68,9 @@ class GivingTest extends TestCase
         $this->assertSame(4, Fund::count());
     }
 
-    public function test_a_guest_gives_online_and_gets_a_receipt(): void
+    public function test_a_guest_donates_online_and_gets_a_receipt(): void
     {
-        $this->get(route('give'));
-        $tithe = Fund::firstWhere('name', 'Tithe');
-
-        $this->post(route('give.store'), ['amount' => '25,000', 'fund' => $tithe->id, 'email' => 'tolu@example.com', 'name' => 'Tolu Adeyemi'])
+        $this->post(route('give.store'), ['amount' => '25,000', 'fund' => $this->donation()->id, 'email' => 'tolu@example.com', 'name' => 'Tolu Adeyemi'])
             ->assertRedirect('https://checkout.paystack.com/g');
 
         $gift = Gift::sole();
@@ -80,7 +90,7 @@ class GivingTest extends TestCase
         $this->get(route('give'));
         $member = Member::factory()->active()->create();
 
-        $this->actingAs($member->user)->post(route('give.store'), ['amount' => '5000', 'fund' => Fund::first()->id, 'email' => $member->user->email]);
+        $this->actingAs($member->user)->post(route('give.store'), ['amount' => '5000', 'fund' => $this->donation()->id, 'email' => $member->user->email]);
 
         $this->assertSame($member->id, Gift::sole()->member_id);
         $this->assertSame($member->name, Gift::sole()->name);
@@ -88,16 +98,90 @@ class GivingTest extends TestCase
 
     public function test_giving_is_validated_and_needs_payments_on(): void
     {
-        $this->get(route('give'));
-        $fund = Fund::first();
+        $fund = $this->donation();
 
         $this->post(route('give.store'), ['amount' => '50', 'fund' => $fund->id, 'email' => 'a@b.com'])->assertSessionHasErrors('amount');
         $fund->update(['is_active' => false]);
         $this->post(route('give.store'), ['amount' => '5000', 'fund' => $fund->id, 'email' => 'a@b.com'])->assertSessionHasErrors('fund');
 
         config(['services.paystack.secret_key' => null]);
-        $this->post(route('give.store'), ['amount' => '5000', 'fund' => Fund::where('is_active', true)->first()->id, 'email' => 'a@b.com'])->assertSessionHasErrors('amount');
+        $this->post(route('give.store'), ['amount' => '5000', 'fund' => Fund::firstWhere('name', 'Missions & welfare')->id, 'email' => 'a@b.com'])->assertSessionHasErrors('amount');
         $this->assertDatabaseCount('gifts', 0);
+    }
+
+    public function test_tithes_and_offerings_are_never_taken_through_paystack(): void
+    {
+        Fund::ensureDefaults();
+        BankAccount::create(['currency' => 'NGN', 'bank_name' => 'Zenith Bank', 'account_name' => 'RCCG Royal Tribe', 'account_number' => '1012345678', 'use_for' => 'all']);
+        BankAccount::create(['currency' => 'USD', 'bank_name' => 'GTBank Domiciliary', 'account_name' => 'RCCG Royal Tribe', 'account_number' => '0099887766', 'swift' => 'GTBINGLA', 'use_for' => 'tithe']);
+        BankAccount::create(['currency' => 'GBP', 'bank_name' => 'Barclays', 'account_name' => 'RCCG Royal Tribe UK', 'account_number' => '41234567', 'sort_code' => '20-00-00', 'use_for' => 'donations']);
+        BankAccount::create(['currency' => 'EUR', 'bank_name' => 'Hidden Bank', 'account_name' => 'X', 'account_number' => '1', 'is_active' => false]);
+
+        foreach (['Tithe', 'Offering'] as $name) {
+            $this->post(route('give.store'), ['amount' => '5000', 'fund' => Fund::firstWhere('name', $name)->id, 'email' => 'a@b.com'])->assertSessionHasErrors('fund');
+        }
+        $this->assertDatabaseCount('gifts', 0);
+
+        $page = $this->get(route('give'))->assertOk()
+            ->assertSee('We receive tithes and offerings by bank transfer only.')
+            ->assertSee('1012345678')->assertSee('GTBINGLA')->assertSee('USD · US dollar')
+            ->assertSee('20-00-00')
+            ->assertDontSee('Hidden Bank');
+        // The online form only offers donation funds.
+        $form = substr($page->getContent(), strpos($page->getContent(), 'id="donate"'), 4000);
+        $this->assertStringContainsString('Building fund', $form);
+        $this->assertStringNotContainsString('>Tithe<', $form);
+        $this->assertStringNotContainsString('>Offering<', $form);
+    }
+
+    public function test_staff_manage_bank_accounts_in_each_currency(): void
+    {
+        $this->actingAs($this->finance());
+
+        $this->post(route('admin.accounts.store'), ['currency' => 'USD', 'bank_name' => 'Access Bank', 'account_name' => 'RCCG', 'account_number' => '123', 'swift' => 'bad', 'use_for' => 'all', 'is_active' => '1'])
+            ->assertSessionHasErrors('swift', null, 'account');
+        $this->post(route('admin.accounts.store'), ['currency' => 'USD', 'bank_name' => 'Access Bank', 'account_name' => 'RCCG', 'account_number' => '123', 'swift' => 'abngngla', 'use_for' => 'tithe', 'is_active' => '1'])
+            ->assertSessionHasNoErrors();
+        $account = BankAccount::sole();
+        $this->assertSame('ABNGNGLA', $account->swift);
+
+        $this->put(route('admin.accounts.update', $account), [...$account->only(['currency', 'bank_name', 'account_name', 'account_number', 'use_for'])]);
+        $this->assertFalse($account->fresh()->is_active);
+        $this->get(route('give'))->assertDontSee('Access Bank');
+
+        $this->delete(route('admin.accounts.destroy', $account))->assertRedirect();
+        $this->assertModelMissing($account);
+
+        // A fund can be switched to transfer-only.
+        $fund = $this->donation();
+        $this->put(route('admin.funds.update', $fund), ['name' => $fund->name, 'is_active' => '1']);
+        $this->assertFalse($fund->fresh()->online);
+    }
+
+    public function test_giving_history_is_only_for_the_administrator(): void
+    {
+        $member = Member::factory()->active()->create(['name' => 'Ada Obi']);
+        $gift = new Gift(['fund_id' => $this->donation()->id, 'member_id' => $member->id, 'name' => 'Ada Obi', 'amount' => 777_700, 'method' => 'transfer', 'given_on' => today()]);
+        $gift->status = Gift::PAID;
+        $gift->save();
+
+        // Not the member themselves.
+        $this->actingAs($member->user)->get(route('account'))->assertOk()->assertDontSee('₦7,777');
+        // Not finance staff or pastors.
+        foreach (['finance', 'pastor'] as $role) {
+            $staff = User::factory()->staff($role)->create();
+            $this->actingAs($staff)->get(route('admin.finance.index'))->assertOk()->assertDontSee('₦7,777')->assertDontSee('Ada Obi');
+            $this->get(route('admin.dashboard'))->assertDontSee('₦7,777')->assertDontSee('Latest gifts');
+            $this->get(route('admin.finance.export'))->assertForbidden();
+            $this->delete(route('admin.gifts.destroy', $gift))->assertForbidden();
+        }
+        $this->actingAs(User::factory()->staff('pastor')->create())->get(route('admin.members.show', $member))->assertOk()->assertDontSee('₦7,777');
+
+        // The administrator sees it all.
+        $this->actingAs($this->admin())->get(route('admin.finance.index'))->assertSee('₦7,777')->assertSee('Ada Obi');
+        $this->get(route('admin.dashboard'))->assertSee('Latest gifts');
+        $this->get(route('admin.members.show', $member))->assertSee('₦7,777');
+        $this->assertStringContainsString('Ada Obi', $this->get(route('admin.finance.export'))->streamedContent());
     }
 
     public function test_the_thanks_page_needs_its_signed_link(): void
@@ -122,7 +206,7 @@ class GivingTest extends TestCase
 
     // ---- Admin: giving ----
 
-    public function test_finance_records_a_cash_offering_and_sees_the_totals(): void
+    public function test_finance_records_a_cash_offering_and_the_administrator_sees_the_totals(): void
     {
         $this->actingAs($this->finance())->get(route('admin.finance.index'))->assertOk();
         $offering = Fund::firstWhere('name', 'Offering');
@@ -136,6 +220,9 @@ class GivingTest extends TestCase
         $this->assertSame('Sunday offering', $gift->name);
         $this->assertStringStartsWith('CASH-', $gift->code);
 
+        $this->get(route('admin.finance.index'))->assertSee('recorded to Offering'); // their own confirmation, once
+        $this->get(route('admin.finance.index'))->assertDontSee('₦342,500')->assertDontSee($gift->code);
+        $this->actingAs($this->admin());
         $this->get(route('admin.finance.index'))->assertSee('₦342,500')->assertSee('Bro. Femi &amp; Sis. Ada', false);
         $csv = $this->get(route('admin.finance.export'))->streamedContent();
         $this->assertStringContainsString('342500.00', $csv);
@@ -144,7 +231,7 @@ class GivingTest extends TestCase
     public function test_gifts_on_the_first_of_the_month_count(): void
     {
         $this->travelTo(now()->startOfMonth()->setTime(10, 0));
-        $this->actingAs($this->finance())->get(route('admin.finance.index'));
+        $this->actingAs($this->admin())->get(route('admin.finance.index'));
         $this->post(route('admin.gifts.store'), ['fund_id' => Fund::first()->id, 'amount' => '1000', 'method' => 'cash', 'given_on' => today()->toDateString()]);
 
         $this->get(route('admin.finance.index'))->assertSee('₦1,000');
@@ -152,7 +239,7 @@ class GivingTest extends TestCase
 
     public function test_online_gifts_cannot_be_deleted(): void
     {
-        $this->actingAs($this->finance())->get(route('admin.finance.index'));
+        $this->actingAs($this->admin())->get(route('admin.finance.index'));
         $gift = Gift::create(['fund_id' => Fund::first()->id, 'name' => 'A', 'amount' => 100, 'method' => 'online', 'given_on' => today()]);
 
         $this->delete(route('admin.gifts.destroy', $gift))->assertStatus(422);

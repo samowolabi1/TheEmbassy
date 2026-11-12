@@ -357,8 +357,8 @@
         <div class="panel bg-gold stack" style="gap: 16px">
             <span class="eyebrow eyebrow--ink">GIVE</span>
             <h2 class="cta-title">Honour God with your increase.</h2>
-            <p class="cta-text cta-text--strong">Tithes, offerings, building fund and missions, by card, bank transfer or USSD.</p>
-            <a href="{{ route('give') }}" class="btn btn--navy" style="align-self: flex-start; height: 54px; font-size: 15px">Give online</a>
+            <p class="cta-text cta-text--strong">Tithes and offerings by bank transfer, in naira or other currencies. Donations by transfer or card.</p>
+            <a href="{{ route('give') }}" class="btn btn--navy" style="align-self: flex-start; height: 54px; font-size: 15px">How to give</a>
         </div>
         <div class="panel bg-ice stack" style="gap: 16px">
             <span class="eyebrow">{{ strtoupper(config('church.brand.app_name')) }}</span>

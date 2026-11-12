@@ -94,17 +94,9 @@
                 </div>
 
                 <div class="card">
-                    <h2>Recent giving</h2>
-                    @if ($gifts->isEmpty())
-                        <p class="lede" style="margin: 0">Nothing yet. Thank you for every seed you sow.</p>
-                    @else
-                        <ul class="mini-list">
-                            @foreach ($gifts as $gift)
-                                <li><span>{{ $gift->fund->name }} · {{ $gift->given_on->format('j M Y') }}</span><strong>₦{{ number_format($gift->amount / 100) }}</strong></li>
-                            @endforeach
-                        </ul>
-                    @endif
-                    <a href="{{ route('give') }}" class="btn btn--outline" style="align-self: flex-start">Give</a>
+                    <h2>Giving</h2>
+                    <p class="lede" style="margin: 0">Tithes and offerings are by bank transfer; donations can also be made online. Thank you for every seed you sow.</p>
+                    <a href="{{ route('give') }}" class="btn btn--outline" style="align-self: flex-start">How to give</a>
                 </div>
             </div>
 

@@ -48,7 +48,7 @@ class MemberController extends Controller
     {
         return view('admin.members.show', [
             'member' => $member->load('unit', 'fellowship', 'tokenPlan', 'tokenPayments', 'user.shop'),
-            'givingThisYear' => (int) $member->gifts()->paid()->whereYear('given_on', now()->year)->sum('amount'),
+            'givingThisYear' => request()->user()->can('see-giving') ? (int) $member->gifts()->paid()->whereYear('given_on', now()->year)->sum('amount') : null,
             'recentServices' => $member->services()->orderByDesc('held_on')->take(5)->get(),
         ]);
     }

@@ -61,19 +61,22 @@ class DashboardController extends Controller
             $data['todo'][] = ['count' => FollowUp::open()->whereNull('assigned_to')->count(), 'text' => 'Follow-ups nobody has picked up', 'route' => route('admin.care.index', ['tab' => 'unassigned'])];
             $data['todo'][] = ['count' => FollowUp::open()->where('reason', 'absent')->count(), 'text' => 'Members not seen lately', 'route' => route('admin.care.index', ['tab' => 'open'])];
         }
-        if ($can('finance')) {
+        // Giving is only for the administrator's eyes.
+        if ($can('finance') && $user->can('see-giving')) {
             $giving = (int) Gift::paid()->where('given_on', '>=', $monthStart)->sum('amount');
             $lastMonth = (int) Gift::paid()->whereBetween('given_on', [now()->subMonthNoOverflow()->startOfMonth(), now()->subMonthNoOverflow()->setDay(min(now()->day, now()->subMonthNoOverflow()->daysInMonth))->endOfDay()])->sum('amount');
             $data['tiles'][] = ['label' => 'Giving ('.now()->format('M').')', 'num' => $this->naira($giving), 'foot' => $lastMonth ? sprintf('%+d%% vs same point last month', round(($giving - $lastMonth) * 100 / $lastMonth)) : 'Online and cash', 'route' => route('admin.finance.index')];
+            Fund::ensureDefaults();
+            $data['funds'] = Fund::active()->get()->map(fn (Fund $f) => ['name' => $f->name, 'total' => (int) $f->gifts()->paid()->where('given_on', '>=', $monthStart)->sum('amount')]);
+            $data['latestGifts'] = Gift::with('fund')->paid()->latest('updated_at')->take(5)->get();
+        }
+        if ($can('finance')) {
 
             $payers = Member::active()->with('tokenPlan', 'tokenPayments')->whereHas('tokenPlan', fn ($q) => $q->where('amount', '>', 0))->get();
             $behind = $payers->filter(fn (Member $m) => $m->tokenMonthsOwed() > 0)->count();
             $data['tiles'][] = ['label' => 'Tokens up to date', 'num' => $payers->isEmpty() ? '—' : round(($payers->count() - $behind) * 100 / $payers->count()).'%', 'foot' => $behind.' in arrears', 'route' => route('admin.finance.index').'#record-tokens'];
 
-            Fund::ensureDefaults();
-            $data['funds'] = Fund::active()->get()->map(fn (Fund $f) => ['name' => $f->name, 'total' => (int) $f->gifts()->paid()->where('given_on', '>=', $monthStart)->sum('amount')]);
             $data['tokensThisMonth'] = (int) TokenPayment::where('status', TokenPayment::PAID)->where('paid_at', '>=', $monthStart)->sum('amount');
-            $data['latestGifts'] = Gift::with('fund')->paid()->latest('updated_at')->take(5)->get();
         }
         if ($can('market')) {
             $data['tiles'][] = ['label' => 'Market ('.now()->format('M').')', 'num' => $this->naira((int) VendorSubscription::where('status', VendorSubscription::ACTIVE)->where('created_at', '>=', $monthStart)->sum('amount')), 'foot' => ($listed = Shop::listed()->count()).' '.str('shop')->plural($listed).' listed', 'route' => route('admin.market.index')];

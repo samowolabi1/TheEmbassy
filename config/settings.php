@@ -22,15 +22,6 @@ return [
         ],
     ],
 
-    'bank' => [
-        'title' => 'Bank transfer details (Give page)',
-        'fields' => [
-            'church.bank.name' => ['label' => 'Bank', 'type' => 'text'],
-            'church.bank.account_number' => ['label' => 'Account number', 'type' => 'text'],
-            'church.bank.account_name' => ['label' => 'Account name', 'type' => 'text'],
-        ],
-    ],
-
     'checkin' => [
         'title' => 'Attendance check-in',
         'fields' => [

@@ -6,8 +6,9 @@
 return [
 
     'funds' => [
-        ['name' => 'Tithe'],
-        ['name' => 'Offering'],
+        // Tithes and offerings are received by bank transfer only.
+        ['name' => 'Tithe', 'online' => false],
+        ['name' => 'Offering', 'online' => false],
         ['name' => 'Building fund', 'description' => 'A youth sanctuary with space for worship, study and community.'],
         ['name' => 'Missions & welfare'],
     ],
