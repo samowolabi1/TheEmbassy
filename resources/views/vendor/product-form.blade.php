@@ -55,6 +55,7 @@
                 <span class="field__hint">JPG, PNG or WebP, up to 2 MB.{{ $product->imageUrl() ? ' Choosing a new one replaces it.' : '' }}</span>
                 @error('image') <span class="field-error">{{ $message }}</span> @enderror
             </label>
+            @if (auth()->user()->canUseTokens())
             <fieldset class="token-option">
                 <legend class="sr-only">Tokens</legend>
                 <label class="login__remember"><input type="checkbox" name="accepts_tokens" value="1" @checked(old('accepts_tokens', $product->acceptsTokens()))>Members can get this with tokens</label>
@@ -64,6 +65,7 @@
                     @error('token_price') <span class="field-error">{{ $message }}</span> @enderror
                 </label>
             </fieldset>
+            @endif
             <label class="login__remember"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $product->is_active))>Show it in the market</label>
             <button type="submit" class="btn btn--gold" style="align-self: flex-start">{{ $product->exists ? 'Save' : 'Add listing' }}</button>
         </form>

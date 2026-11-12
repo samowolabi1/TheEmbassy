@@ -57,7 +57,7 @@ class TokensTest extends TestCase
      */
     private function product(array $attributes = []): Product
     {
-        $shop = Shop::factory()->listed()->create(['user_id' => User::factory()->create()->id]);
+        $shop = Shop::factory()->listed()->create(['user_id' => $this->member()->user_id]); // the seller is a member, so can take tokens
 
         return Product::factory()->create(['shop_id' => $shop->id, ...$attributes]);
     }
@@ -242,7 +242,7 @@ class TokensTest extends TestCase
     {
         VendorPlan::catalogue();
         $plan = tap(VendorPlan::firstWhere('key', 'monthly'))->update(['price' => 500_000, 'is_active' => true]); // ₦5,000
-        $seller = User::factory()->create();
+        $seller = $this->member()->user;
         $shop = Shop::factory()->approved()->create(['user_id' => $seller->id]);
         $this->actingAs($seller);
 
@@ -402,5 +402,35 @@ class TokensTest extends TestCase
         $ledger->move($ledger->account($user), $ledger->treasury(), 10, 'reclaim', 'All of it');
         $this->expectException(ValidationException::class);
         $ledger->move($ledger->account($user), $ledger->treasury(), 1, 'reclaim', 'One more');
+    }
+
+    public function test_only_members_use_tokens(): void
+    {
+        VendorPlan::catalogue();
+        $plan = tap(VendorPlan::firstWhere('key', 'monthly'))->update(['price' => 500_000, 'is_active' => true]);
+        $outsider = User::factory()->create(); // a seller who isn't a church member
+        $shop = Shop::factory()->approved()->create(['user_id' => $outsider->id]);
+        $this->actingAs($outsider);
+
+        // No token option for their listings or subscription; money is offered as before.
+        $this->get(route('vendor.products.create'))->assertOk()->assertDontSee('accepts_tokens');
+        $this->get(route('vendor.subscription.index'))->assertOk()->assertDontSee('value="tokens"', false);
+        $this->post(route('vendor.products.store'), ['type' => 'product', 'name' => 'Mug', 'description' => 'Ceramic', 'price' => 3000, 'accepts_tokens' => '1', 'token_price' => 100, 'is_active' => '1']);
+        $this->assertNull(Product::firstWhere('name', 'Mug')->token_price);
+        $this->post(route('vendor.subscription.store'), ['plan' => $plan->id, 'pay_with' => 'tokens'])->assertSessionHasErrors('pay_with');
+        $this->get(route('vendor.token-orders.index'))->assertNotFound();
+
+        // They can't earn, hold, buy with or be sent tokens.
+        $this->assertSame(0, app(Rewards::class)->welcome($outsider));
+        $this->assertSame(0, $this->balance($outsider));
+        $this->post(route('market.tokens', $this->product(['token_price' => 10])))->assertSessionHasErrors('tokens');
+        $this->get(route('account.tokens'))->assertOk()->assertSee('Tokens are for church members.');
+        $this->assertThrows(fn () => app(Ledger::class)->payOut($outsider, 5, 'grant', 'Gift'), ValidationException::class);
+
+        // A member seller's listing stops taking tokens if they're no longer a member.
+        $product = $this->product(['token_price' => 10]);
+        $this->assertTrue($product->acceptsTokens());
+        $product->shop->user->member->forceFill(['status' => Member::INACTIVE])->save();
+        $this->assertFalse($product->fresh()->acceptsTokens());
     }
 }

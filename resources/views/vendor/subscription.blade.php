@@ -66,6 +66,7 @@
                     <input type="text" name="coupon" value="{{ old('coupon') }}" maxlength="40" autocomplete="off" style="text-transform: uppercase">
                     @error('coupon') <span class="field-error">{{ $message }}</span> @enderror
                 </label>
+@if ($canUseTokens)
                 <fieldset class="choice-group">
                     <legend>Pay with</legend>
                     <div class="choices">
@@ -75,6 +76,7 @@
                     <span class="field__hint">1 token = {{ $rate }}. @foreach ($plans as $plan){{ $plan->name }}: {{ number_format(\App\Services\Tokens\TokenValue::tokensFor($plan->price)) }} tokens{{ $loop->last ? '.' : ' · ' }}@endforeach You earn tokens when members buy from you with theirs, and by taking part in church life.</span>
                     @error('pay_with') <span class="field-error">{{ $message }}</span> @enderror
                 </fieldset>
+                @endif
                 <div>
                     <button type="submit" class="btn btn--gold">Continue</button>
                 </div>

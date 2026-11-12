@@ -17,6 +17,7 @@ class TokenOrderController extends Controller
 {
     public function index(Request $request): View
     {
+        abort_unless($request->user()->canUseTokens(), 404);
         $shop = $request->user()->shop;
         $show = $request->query('show') === 'done' ? 'done' : 'pending';
 

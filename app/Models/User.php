@@ -63,6 +63,15 @@ class User extends Authenticatable
     }
 
     /**
+     * Tokens are for church members only: approved members can earn, hold and spend them.
+     * Sellers and visitors who aren't members never use tokens.
+     */
+    public function canUseTokens(): bool
+    {
+        return $this->member?->status === Member::ACTIVE;
+    }
+
+    /**
      * Tokens in their wallet.
      */
     public function tokenBalance(): int

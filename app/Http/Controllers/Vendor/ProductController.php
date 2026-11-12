@@ -97,7 +97,8 @@ class ProductController extends Controller
             'price_unit' => $service ? (trim((string) ($data['price_unit'] ?? '')) ?: null) : null,
             'stock' => ! $service && isset($data['stock']) && $data['stock'] !== '' ? (int) $data['stock'] : null,
             'is_active' => $request->boolean('is_active'),
-            'token_price' => $request->boolean('accepts_tokens') ? (int) $data['token_price'] : null,
+            // Only sellers who are church members can take tokens.
+            'token_price' => $request->boolean('accepts_tokens') && $request->user()->canUseTokens() ? (int) $data['token_price'] : null,
         ];
     }
 

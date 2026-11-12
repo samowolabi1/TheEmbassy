@@ -26,6 +26,9 @@ class TokenShop
         if (! $product->acceptsTokens() || ! $product->is_active || ! $product->shop?->isApproved() || ! $product->shop->isSubscribed()) {
             throw ValidationException::withMessages(['tokens' => 'This listing can\'t be bought with tokens.']);
         }
+        if (! $buyer->canUseTokens()) {
+            throw ValidationException::withMessages(['tokens' => 'Tokens are for church members only.']);
+        }
         if ($product->shop->user_id === $buyer->id) {
             throw ValidationException::withMessages(['tokens' => 'That\'s your own listing.']);
         }
@@ -96,7 +99,7 @@ class TokenShop
             if ($order->product_id && ($product = Product::whereKey($order->product_id)->lockForUpdate()->first()) && $product->stock !== null) {
                 $product->increment('stock');
             }
-            $this->ledger->move($this->ledger->escrow(), $this->ledger->account($order->buyer), $order->tokens, 'refund', "Returned: {$order->product_name} ({$order->code})", "refund:{$order->id}");
+            $this->ledger->move($this->ledger->escrow(), $this->ledger->account($order->buyer, 'code', settling: true), $order->tokens, 'refund', "Returned: {$order->product_name} ({$order->code})", "refund:{$order->id}");
         });
         $order->refresh();
     }

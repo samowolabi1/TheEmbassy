@@ -36,6 +36,7 @@ class SubscriptionController extends Controller
             'returned' => $returned,
             'paymentsEnabled' => $payments->enabled(),
             'tokenBalance' => (int) $request->user()->tokenBalance(),
+            'canUseTokens' => $request->user()->canUseTokens(),
             'rate' => TokenValue::rateLabel(),
         ]);
     }
@@ -68,6 +69,9 @@ class SubscriptionController extends Controller
 
         // Paying with tokens: the tokens are taken and the subscription starts straight away.
         if ($amount > 0 && ($data['pay_with'] ?? 'money') === 'tokens') {
+            if (! $request->user()->canUseTokens()) {
+                throw ValidationException::withMessages(['pay_with' => 'Paying with tokens is for church members only.']);
+            }
             $tokens = TokenValue::tokensFor($amount);
             $subscription = DB::transaction(function () use ($coupon, $shop, $plan, $discount, $tokens, $request) {
                 if ($coupon && ($problem = Coupon::whereKey($coupon->id)->lockForUpdate()->first()->problem())) {

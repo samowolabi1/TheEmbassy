@@ -29,8 +29,17 @@ class Ledger
         return $this->fresh(TokenAccount::firstOrCreate(['kind' => TokenAccount::ESCROW, 'user_id' => null]));
     }
 
-    public function account(User $user): TokenAccount
+    /**
+     * A member's wallet. Only church members have one; anyone else is refused. With $settling, the
+     * wallet of someone who has stopped being a member can still be used to settle what's already
+     * under way (a refund owed to them, or the pastor taking tokens back).
+     */
+    public function account(User $user, string $field = 'tokens', bool $settling = false): TokenAccount
     {
+        if (! $user->canUseTokens() && ! ($settling && TokenAccount::where('user_id', $user->id)->exists())) {
+            throw ValidationException::withMessages([$field => 'Tokens are for church members only.']);
+        }
+
         return $this->fresh(TokenAccount::firstOrCreate(['user_id' => $user->id], ['kind' => TokenAccount::MEMBER]));
     }
 
@@ -115,6 +124,9 @@ class Ledger
      */
     public function payOut(User $to, int $amount, string $kind, string $description, ?string $key = null, ?User $by = null, bool $quiet = false): bool
     {
+        if ($quiet && ! $to->canUseTokens()) {
+            return false; // rewards are for members only
+        }
         try {
             return $this->move($this->treasury(), $this->account($to), $amount, $kind, $description, $key, $by, 'amount');
         } catch (ValidationException $e) {

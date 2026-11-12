@@ -103,7 +103,7 @@ class TokenController extends Controller
         try {
             $data['direction'] === 'give'
                 ? $ledger->payOut($member->user, $amount, 'grant', $data['reason'], null, $request->user())
-                : $ledger->move($ledger->account($member->user), $ledger->treasury(), $amount, 'reclaim', $data['reason'], null, $request->user(), 'amount');
+                : $ledger->move($ledger->account($member->user, 'amount', settling: true), $ledger->treasury(), $amount, 'reclaim', $data['reason'], null, $request->user(), 'amount');
         } catch (ValidationException $e) {
             throw $e->errorBag('award'); // shown beside the form
         }
@@ -118,7 +118,7 @@ class TokenController extends Controller
     {
         $data = $request->validate(['reason' => ['nullable', 'string', 'max:200']]);
         abort_unless($member->user, 404);
-        $account = app(Ledger::class)->account($member->user);
+        $account = app(Ledger::class)->account($member->user, 'reason', settling: true);
         $frozen = ! $account->isFrozen();
         $account->update(['frozen_at' => $frozen ? now() : null, 'frozen_reason' => $frozen ? ($data['reason'] ?? null) : null]);
 

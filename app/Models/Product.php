@@ -90,7 +90,7 @@ class Product extends Model
      */
     public function acceptsTokens(): bool
     {
-        return $this->token_price !== null && $this->token_price > 0;
+        return $this->token_price !== null && $this->token_price > 0 && (bool) $this->shop?->user?->canUseTokens();
     }
 
     public function imageUrl(): ?string

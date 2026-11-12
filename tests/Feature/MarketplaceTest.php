@@ -212,7 +212,7 @@ class MarketplaceTest extends TestCase
             ->assertSee('tel:08030000000')
             ->assertSee('https://wa.me/2348091112222', false)
             ->assertSee('mailto:'.$product->shop->email, false)
-            ->assertSee('You pay '.$product->shop->name.' directly', false)
+            ->assertSee('You pay '.$product->shop->name.' directly')
             ->assertDontSee('Paystack');
     }
 

@@ -73,6 +73,9 @@ class AccountController extends Controller
     public function tokens(Request $request, Rewards $rewards, Ledger $ledger): View
     {
         $user = $request->user();
+        if (! $user->canUseTokens()) {
+            return view('account.tokens-members-only');
+        }
         $account = $ledger->account($user);
         $declaration = Declaration::current();
 

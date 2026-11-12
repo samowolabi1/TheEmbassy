@@ -93,6 +93,8 @@ Members do all of this from their account (or the installed app):
 
 Tokens are a closed currency inside the app. **1 token = ₦2** (the pastor in charge can change this). Nobody buys tokens with money and nobody cashes them out; they're earned by taking part and spent inside the app.
 
+**Members only.** Only approved church members (an active member record) can earn, hold, send, receive or spend tokens. Visitors, staff accounts without a member record, and sellers who aren't members never see a token option: non-member sellers list items for money only and pay their shop subscription with money (Paystack) exactly as before. If someone stops being a member, their listings stop taking tokens and they can't spend or receive any more; refunds already owed to them still go back to their wallet, and the pastor in charge can still take tokens back or put the wallet on hold.
+
 **Who controls them.** Only the **pastor in charge (super admin)** — the `super` role, created with `php artisan admin:create pastor@church.org --super` — can create (mint) or destroy tokens, give or take tokens from a member, put a wallet on hold, set how many tokens each activity earns, set a token's naira value, and switch member-to-member sending on or off. All of it is on **admin › Token treasury**. Pastors and the church office can see the treasury and members' tokens but can't change anything; nobody else can make a pastor in charge.
 
 **How the money supply works.**
@@ -120,10 +122,10 @@ Tokens are a closed currency inside the app. **1 token = ₦2** (the pastor in c
 | Birthday | 10 a year |
 
 **Spending and moving.**
-- **Market:** sellers tick "Members can get this with tokens" on a listing and set a token price.
+- **Market:** sellers who are members tick "Members can get this with tokens" on a listing and set a token price.
   - The buyer's tokens go into escrow and they get a code (TK-XXXXXX). The seller marks the code handed over and the tokens become theirs.
   - If the seller declines, the buyer cancels, or the order is 14 days old, the tokens return to the buyer.
-- **Shop subscriptions:** sellers pay at the token rate. For example, a ₦5,000 month is 2,500 tokens. The tokens go back to the treasury.
+- **Shop subscriptions:** sellers who are members can pay at the token rate. For example, a ₦5,000 month is 2,500 tokens. The tokens go back to the treasury.
 - **Event tickets:** members can pay for a booking with tokens at the token rate. The tokens go back to the treasury, and event takings show money and tokens separately.
 - **Sending:** members can send tokens to another member, found by phone number or email, with a note. There's a daily limit, 1,000 to start.
 - **Wallet on hold:** the pastor in charge can put a wallet on hold. It can still receive tokens but can't spend or send them until it's released.

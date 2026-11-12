@@ -49,6 +49,9 @@
                     <div class="token-buy" id="tokens">
                         <h3 style="margin: 0; font-size: 16px; color: var(--navy)">🪙 Get it with tokens</h3>
                         @auth
+                            @if (! auth()->user()->canUseTokens())
+                                <p class="field-hint" style="margin: 0">Tokens are for church members.</p>
+                            @else
                             @if ($errors->has('tokens'))
                                 <p class="field-error" role="alert" style="margin: 0">{{ $errors->first('tokens') }}</p>
                             @endif
@@ -63,6 +66,7 @@
                                 </form>
                             @else
                                 <p class="field-hint" style="margin: 0">You have {{ number_format(auth()->user()->tokenBalance()) }} tokens; this needs {{ number_format($product->token_price) }}. <a href="{{ route('account.tokens') }}" class="accent-bronze">See how to earn more</a>.</p>
+                            @endif
                             @endif
                         @else
                             <p class="field-hint" style="margin: 0">Members earn tokens for taking part in church life. <a href="{{ route('login') }}" class="accent-bronze">Log in</a> to use yours.</p>
