@@ -42,12 +42,29 @@
                         We haven't received your payment yet. If you've just paid, give it a minute and refresh this page.
                     @endif
                 </p>
-                @if ($paymentsEnabled)
-                    <form method="POST" action="{{ \Illuminate\Support\Facades\URL::signedRoute('tickets.pay', $order) }}">
-                        @csrf
-                        <button type="submit" class="btn btn--gold btn--md">Pay ₦{{ number_format($order->total / 100) }}</button>
-                    </form>
-                @endif
+                <div class="slide__ctas" style="gap: 10px">
+                    @if ($paymentsEnabled)
+                        <form method="POST" action="{{ \Illuminate\Support\Facades\URL::signedRoute('tickets.pay', $order) }}">
+                            @csrf
+                            <button type="submit" class="btn btn--gold btn--md">Pay ₦{{ number_format($order->total / 100) }}</button>
+                        </form>
+                    @endif
+                    @php($tokensNeeded = \App\Services\Tokens\TokenValue::tokensFor($order->total))
+                    @auth
+                        @if (auth()->user()->member?->status === 'active')
+                            <form method="POST" action="{{ \Illuminate\Support\Facades\URL::signedRoute('tickets.tokens', $order) }}" onsubmit="return confirm('Pay with {{ $tokensNeeded }} tokens?')">
+                                @csrf
+                                <button type="submit" class="btn btn--outline btn--md" @disabled(auth()->user()->tokenBalance() < $tokensNeeded)>Pay 🪙 {{ number_format($tokensNeeded) }} tokens</button>
+                            </form>
+                        @endif
+                    @endauth
+                </div>
+                @auth
+                    @if (auth()->user()->member?->status === 'active')
+                        <p class="field-hint" style="margin: 0">You have {{ number_format(auth()->user()->tokenBalance()) }} tokens.</p>
+                    @endif
+                @endauth
+                @error('tokens') <p class="field-error" role="alert" style="margin: 0">{{ $message }}</p> @enderror
             @endif
             <p class="field-hint" style="margin: 0">Keep this page's link: it's your way back to your tickets.</p>
         </div>

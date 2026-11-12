@@ -27,6 +27,7 @@ class StaffController extends Controller
             'role' => ['required', Rule::in(array_keys(config('roles.roles')))],
         ]);
 
+        $this->guardSuper($request, $data['role']);
         $user = User::firstOrNew(['email' => Str::lower($data['email'])]);
         if ($user->isStaff()) {
             return back()->withErrors(['email' => "{$user->email} is already staff. Change their role below."])->withInput();
@@ -54,8 +55,13 @@ class StaffController extends Controller
     {
         abort_unless($user->isStaff(), 404);
         $data = $request->validate(['role' => ['required', Rule::in(array_keys(config('roles.roles')))]]);
+        // Making someone the pastor in charge, or changing one, is for the pastor in charge alone.
+        $this->guardSuper($request, $data['role'], $user);
 
-        if ($user->isAdmin() && $data['role'] !== 'admin' && $this->isLastAdmin($user)) {
+        if ($user->isSuperAdmin() && $data['role'] !== 'super' && $this->isLastSuper($user)) {
+            return back()->withErrors(['staff' => 'There must be at least one pastor in charge (super admin).']);
+        }
+        if ($user->isAdmin() && ! in_array($data['role'], ['admin', 'super'], true) && $this->isLastAdmin($user)) {
             return back()->withErrors(['staff' => 'There must be at least one administrator.']);
         }
 
@@ -70,6 +76,10 @@ class StaffController extends Controller
         if ($user->is($request->user())) {
             return back()->withErrors(['staff' => 'You can\'t remove your own access. Ask another administrator.']);
         }
+        $this->guardSuper($request, null, $user);
+        if ($user->isSuperAdmin() && $this->isLastSuper($user)) {
+            return back()->withErrors(['staff' => 'There must be at least one pastor in charge (super admin).']);
+        }
         if ($user->isAdmin() && $this->isLastAdmin($user)) {
             return back()->withErrors(['staff' => 'There must be at least one administrator.']);
         }
@@ -81,6 +91,18 @@ class StaffController extends Controller
 
     private function isLastAdmin(User $user): bool
     {
-        return User::where('role', 'admin')->whereKeyNot($user->id)->doesntExist();
+        return User::whereIn('role', ['admin', 'super'])->whereKeyNot($user->id)->doesntExist();
+    }
+
+    private function isLastSuper(User $user): bool
+    {
+        return User::where('role', 'super')->whereKeyNot($user->id)->doesntExist();
+    }
+
+    private function guardSuper(Request $request, ?string $role, ?User $user = null): void
+    {
+        if (($role === 'super' || $user?->isSuperAdmin()) && ! $request->user()->isSuperAdmin()) {
+            abort(403, 'Only the pastor in charge can make or change a pastor in charge.');
+        }
     }
 }

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\Member;
 use App\Models\TicketOrder;
 use App\Models\TicketType;
 use App\Services\Payments\Payments;
+use App\Services\Tokens\Ledger;
+use App\Services\Tokens\TokenValue;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -89,6 +92,30 @@ class TicketOrderController extends Controller
         }
 
         return $this->checkout($order, $payments);
+    }
+
+    /**
+     * Pay for tickets with tokens instead of money. The tokens go back to the church treasury.
+     */
+    public function payWithTokens(Request $request, TicketOrder $order, Ledger $ledger): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user?->member?->status === Member::ACTIVE, 403, 'Paying with tokens is for members.');
+        if ($order->isConfirmed()) {
+            return redirect()->to($order->url());
+        }
+        if ($order->created_at->lt(now()->subMinutes(TicketOrder::HOLD_MINUTES))) {
+            throw ValidationException::withMessages(['tokens' => 'This booking\'s places were released. Please book again.']);
+        }
+
+        $tokens = TokenValue::tokensFor($order->total);
+        DB::transaction(function () use ($ledger, $user, $order, $tokens) {
+            $ledger->move($ledger->account($user), $ledger->treasury(), $tokens, 'ticket', 'Tickets for '.$order->event->title." ({$order->code})", "ticket:{$order->id}");
+            $order->forceFill(['tokens_paid' => $tokens])->save();
+            $order->confirm();
+        });
+
+        return redirect()->to($order->url());
     }
 
     /**

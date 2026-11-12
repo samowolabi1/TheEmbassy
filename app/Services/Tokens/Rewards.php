@@ -11,8 +11,9 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 
 /**
- * The ways to earn tokens, and giving them out. Every reward has a key, so it's given once
- * per occasion however many times the thing that triggers it happens.
+ * The ways to earn tokens. Rewards are paid out of the church treasury (never created from nothing),
+ * and every reward has a key, so it's given once per occasion however many times its trigger happens.
+ * If the treasury runs short, rewards pause until the pastor in charge mints more.
  */
 class Rewards
 {
@@ -32,7 +33,7 @@ class Rewards
         'birthday' => ['Birthday gift', 'On your birthday each year'],
     ];
 
-    public function __construct(private Wallet $wallet) {}
+    public function __construct(private Ledger $ledger) {}
 
     public function enabled(): bool
     {
@@ -54,7 +55,7 @@ class Rewards
             return 0;
         }
 
-        return $this->wallet->credit($user, $amount, $rule, $description, "{$rule}:{$key}:{$user->id}") ? $amount : 0;
+        return $this->ledger->payOut($user, $amount, 'reward', $description, "{$rule}:{$key}:{$user->id}", null, quiet: true) ? $amount : 0;
     }
 
     /**

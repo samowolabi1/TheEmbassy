@@ -1,7 +1,9 @@
 <?php
 
-// Church staff roles and the admin areas each can open. Administrators can do everything,
-// including Settings & roles. Anyone without a role is a member or seller, not staff.
+// Church staff roles and the admin areas each can open. The pastor in charge (super admin) can do
+// everything, and is the only one who sees giving and controls the token currency (creating tokens,
+// giving them out, and what activities earn). Administrators can do everything else, including
+// Settings & roles. Anyone without a role is a member or seller, not staff.
 
 return [
 
@@ -17,7 +19,7 @@ return [
         'market' => 'Market',
         'content' => 'Content: announcements, blog and pages',
         'gallery' => 'Photo gallery',
-        'tokens' => 'Tokens: rewards members earn, give or take tokens',
+        'tokens' => 'Tokens: see the treasury and members\' tokens (only the pastor in charge creates or moves them)',
         'community' => 'Community: moderate chat, rooms and quizzes',
         'notices' => 'Notice board',
         'sermons' => 'Sermons & live',
@@ -28,6 +30,7 @@ return [
     ],
 
     'roles' => [
+        'super' => ['name' => 'Pastor in charge (super admin)', 'areas' => ['*']],
         'admin' => ['name' => 'Administrator', 'areas' => ['*']],
         'pastor' => ['name' => 'Pastor', 'areas' => ['members', 'attendance', 'care', 'welfare', 'units', 'subscribers', 'finance', 'expenses', 'market', 'content', 'gallery', 'community', 'tokens', 'notices', 'sermons', 'events', 'prayer', 'messages']],
         'finance' => ['name' => 'Finance', 'areas' => ['finance', 'expenses', 'market']],

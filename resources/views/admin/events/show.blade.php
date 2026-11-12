@@ -23,7 +23,7 @@
         <div class="stat-tile">
             <span class="stat-tile__label">Ticket takings</span>
             <span class="stat-tile__num">₦{{ number_format($takings / 100) }}</span>
-            <span class="stat-tile__foot">Confirmed bookings</span>
+            <span class="stat-tile__foot">Confirmed bookings paid with money@if ($tokenTakings) · plus 🪙 {{ number_format($tokenTakings) }} tokens @endif</span>
         </div>
         @foreach ($byType as $row)
             <div class="stat-tile">

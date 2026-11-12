@@ -28,7 +28,7 @@ class TokenOrderController extends Controller
                 ->when($show === 'done', fn ($q) => $q->where('status', '!=', TokenOrder::PENDING))
                 ->latest()->paginate(30)->withQueryString(),
             'pending' => TokenOrder::where('shop_id', $shop->id)->where('status', TokenOrder::PENDING)->count(),
-            'balance' => (int) $request->user()->token_balance,
+            'balance' => (int) $request->user()->tokenBalance(),
         ]);
     }
 

@@ -17,7 +17,7 @@ use App\Models\PrayerRequest;
 use App\Models\Service;
 use App\Models\Shop;
 use App\Models\TicketOrder;
-use App\Models\TokenTransaction;
+use App\Models\TokenTransfer;
 use App\Models\VendorSubscription;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -72,7 +72,7 @@ class DashboardController extends Controller
         }
         if ($can('finance')) {
 
-            $data['tokensThisMonth'] = (int) TokenTransaction::where('amount', '>', 0)->where('created_at', '>=', $monthStart)->sum('amount');
+            $data['tokensThisMonth'] = (int) TokenTransfer::where('kind', 'reward')->where('created_at', '>=', $monthStart)->sum('amount');
         }
         if ($can('market')) {
             $data['tiles'][] = ['label' => 'Market ('.now()->format('M').')', 'num' => $this->naira((int) VendorSubscription::where('status', VendorSubscription::ACTIVE)->where('created_at', '>=', $monthStart)->sum('amount')), 'foot' => ($listed = Shop::listed()->count()).' '.str('shop')->plural($listed).' listed', 'route' => route('admin.market.index')];

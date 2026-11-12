@@ -45,9 +45,12 @@ class GivingTest extends TestCase
         return User::factory()->staff('finance')->create();
     }
 
+    /**
+     * The pastor in charge: the only one who sees giving.
+     */
     private function admin(): User
     {
-        return User::factory()->admin()->create();
+        return User::factory()->superAdmin()->create();
     }
 
     private function donation(): Fund
@@ -164,8 +167,8 @@ class GivingTest extends TestCase
 
         // Not the member themselves.
         $this->actingAs($member->user)->get(route('account'))->assertOk()->assertDontSee('₦7,777');
-        // Not finance staff or pastors.
-        foreach (['finance', 'pastor'] as $role) {
+        // Not finance staff, pastors, or even the administrator.
+        foreach (['finance', 'pastor', 'admin'] as $role) {
             $staff = User::factory()->staff($role)->create();
             $this->actingAs($staff)->get(route('admin.finance.index'))->assertOk()->assertDontSee('₦7,777')->assertDontSee('Ada Obi');
             $this->get(route('admin.dashboard'))->assertDontSee('₦7,777')->assertDontSee('Latest gifts');

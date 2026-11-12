@@ -72,7 +72,7 @@
                         <label class="choice"><input type="radio" name="pay_with" value="money" @checked(old('pay_with', 'money') === 'money')><span>Money (Paystack)</span></label>
                         <label class="choice"><input type="radio" name="pay_with" value="tokens" @checked(old('pay_with') === 'tokens')><span>Tokens · you have {{ number_format($tokenBalance) }}</span></label>
                     </div>
-                    <span class="field__hint">1 token = ₦{{ $nairaPerToken }}. @foreach ($plans as $plan){{ $plan->name }}: {{ number_format((int) ceil($plan->price / (100 * $nairaPerToken))) }} tokens{{ $loop->last ? '.' : ' · ' }}@endforeach You earn tokens when members buy from you with theirs, and by taking part in church life.</span>
+                    <span class="field__hint">1 token = {{ $rate }}. @foreach ($plans as $plan){{ $plan->name }}: {{ number_format(\App\Services\Tokens\TokenValue::tokensFor($plan->price)) }} tokens{{ $loop->last ? '.' : ' · ' }}@endforeach You earn tokens when members buy from you with theirs, and by taking part in church life.</span>
                     @error('pay_with') <span class="field-error">{{ $message }}</span> @enderror
                 </fieldset>
                 <div>

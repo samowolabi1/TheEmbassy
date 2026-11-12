@@ -39,7 +39,8 @@ There are three kinds of account, all in the `users` table:
 
 | Role | Admin areas |
 | --- | --- |
-| Administrator | Everything, including Settings & roles |
+| Pastor in charge (super admin) | Everything, and the only role that sees giving and controls the token currency (creating tokens, giving them out, what activities earn, the token's value) |
+| Administrator | Everything else, including Settings & roles |
 | Pastor | Everything except Settings & roles, including welfare cases and approvals above the HOD's limit |
 | Finance | Giving (funds and bank accounts), expenses & budgets, the market |
 | Church office | Members, attendance & first-timers, follow-up & care, units, the weekly email, the market, content (announcements, blog, pages), gallery, community moderation, notices, events, prayer, messages |
@@ -49,7 +50,8 @@ There are three kinds of account, all in the `users` table:
 Create the first administrator from the command line; they add everyone else in **Settings & roles**, which emails each new person a link to set their password:
 
 ```sh
-php artisan admin:create pastor@example.com --name="Pastor Ade"   # asks for a password, or generates one
+php artisan admin:create pastor@example.com --name="Pastor Ade" --super   # the pastor in charge (super admin)
+php artisan admin:create office@example.com --name="Church office"      # an administrator; asks for a password, or generates one
 php artisan admin:revoke pastor@example.com                       # removes staff access
 ```
 
@@ -67,7 +69,7 @@ Staff sign in at `/admin`. Every area in the design's sidebar is built:
 - **Units & fellowships**: the service units and house fellowships members choose from.
 - **Weekly email**: goes out every Monday morning (time set in Settings & roles) with the week's declaration, recent announcements, upcoming events, last week's messages and new articles. Preview it, send it early with "Send now", and see past sends. Sign-ups confirm by email before they get anything; every email has a one-click unsubscribe link. Emails go out about 120 a minute so mail services don't block them, and a restart carries on where it stopped without emailing anyone twice.
 - **Giving**: the church's bank accounts in each currency (naira, dollar, pound, euro and more, with sort code, routing number, SWIFT and IBAN where they apply), marked for tithes and offerings, donations, or both; funds, each set as bank transfer only (tithes and offerings) or also payable through Paystack (donations); cash and transfers received recorded by finance staff.
-- **Giving is private to the administrator.** Only the Administrator role sees giving records and totals: transactions, fund totals and balances, the giving report export, the dashboard's giving panels and a member's giving on their profile. Finance staff and pastors record what comes in but don't see it afterwards, and members don't see a giving history on their account. Givers still get an email receipt for an online donation, and an appeal's public progress bar on the Give page shows the total raised.
+- **Giving is private to the pastor in charge.** Only the pastor in charge (super admin) sees giving records and totals: transactions, fund totals and balances, the giving report export, the dashboard's giving panels and a member's giving on their profile. Finance staff and pastors record what comes in but don't see it afterwards, and members don't see a giving history on their account. Givers still get an email receipt for an online donation, and an appeal's public progress bar on the Give page shows the total raised.
 - **Expenses & budgets**: spending logged with a receipt, approved by someone other than the person who logged it, against monthly budgets per category; CSV export.
 - **Tribe Market**: shop applications, shops and subscription status, plan prices, coupons, and subscription payments with CSV export.
 - **Content & announcements**, **Notice board**, **Events & tickets**, **Prayer requests**, **Contact messages**.
@@ -87,11 +89,21 @@ Members do all of this from their account (or the installed app):
 - **Welfare packages**: the welfare unit sets up packages (what's in them, how many, when applications open and close, where to collect) under Welfare packages. Members apply from Welfare in their account with their household size; the HOD approves, waitlists or declines (never past the number of places), and the member is emailed and notified. Approved members get a reference (PK-XXXXXX) to show at collection, where the unit marks it collected. Applications are private to the welfare team and pastors; CSV export for the list. One-off requests for help work as before.
 - **Messages**: announcements, broadcasts sent from admin and their unit's messages in one inbox with an unread count. Notifications for broadcasts and unit messages open the inbox.
 
-## Tokens
+## Tokens: the app's own currency
 
-Tokens are free rewards. Members earn them by taking part in church life and spend them in the market with sellers who accept them; sellers can use tokens they receive to pay their shop subscription. Nobody can buy tokens, and they have no cash value.
+Tokens are a closed currency inside the app. **1 token = ₦2** (the pastor in charge can change this). Nobody buys tokens with money and nobody cashes them out; they're earned by taking part and spent inside the app.
 
-**Earning** (amounts are set in Settings & roles › Tokens, and each is given once per occasion, so tapping twice or refreshing never adds more):
+**Who controls them.** Only the **pastor in charge (super admin)** — the `super` role, created with `php artisan admin:create pastor@church.org --super` — can create (mint) or destroy tokens, give or take tokens from a member, put a wallet on hold, set how many tokens each activity earns, set a token's naira value, and switch member-to-member sending on or off. All of it is on **admin › Token treasury**. Pastors and the church office can see the treasury and members' tokens but can't change anything; nobody else can make a pastor in charge.
+
+**How the money supply works.**
+- **Treasury.** New tokens only come into being when the pastor in charge mints them, and they go into the church treasury.
+- **Rewards.** Rewards are paid *out of* the treasury, never created from nothing. If the treasury runs low, rewards pause and the treasury page says so until more are minted.
+- **Recycling.** Tokens spent on **shop subscriptions** and **event tickets** go **back into the treasury**, to be earned again.
+- **Market sales.** Tokens spent in the **market** go to the seller, who can spend them on their subscription, which also returns them to the treasury.
+- **Destroying tokens.** The pastor in charge can destroy unused treasury tokens to shrink the supply.
+- **Books.** Every movement is a transfer from one account (the treasury, a member, or escrow for market orders) to another. All balances together always equal tokens created less tokens destroyed. The treasury page shows "books balance", and a daily job checks it and logs an error if not.
+
+**Earning** (each once per occasion; tapping twice or refreshing never adds more):
 
 | Activity | Tokens to start |
 | --- | --- |
@@ -107,13 +119,20 @@ Tokens are free rewards. Members earn them by taking part in church life and spe
 | Membership confirmed | 20 once |
 | Birthday | 10 a year |
 
-Staff with the Tokens area (administrators, pastors, church office) can also give or take tokens with a reason the member sees, e.g. for volunteering or a competition, and see totals, top earners and every change under admin › Tokens.
+**Spending and moving.**
+- **Market:** sellers tick "Members can get this with tokens" on a listing and set a token price.
+  - The buyer's tokens go into escrow and they get a code (TK-XXXXXX). The seller marks the code handed over and the tokens become theirs.
+  - If the seller declines, the buyer cancels, or the order is 14 days old, the tokens return to the buyer.
+- **Shop subscriptions:** sellers pay at the token rate. For example, a ₦5,000 month is 2,500 tokens. The tokens go back to the treasury.
+- **Event tickets:** members can pay for a booking with tokens at the token rate. The tokens go back to the treasury, and event takings show money and tokens separately.
+- **Sending:** members can send tokens to another member, found by phone number or email, with a note. There's a daily limit, 1,000 to start.
+- **Wallet on hold:** the pastor in charge can put a wallet on hold. It can still receive tokens but can't spend or send them until it's released.
 
-**Spending**:
-- **In the market**: sellers tick "Members can get this with tokens" on a listing and set a token price. A member taps "Use N tokens"; the tokens are taken from their wallet and held, the seller is emailed, and the member gets a code (TK-XXXXXX). When the seller hands it over they mark the code as handed over and the tokens become the seller's. If the seller declines, the member cancels first, or nobody hands it over within 14 days, the tokens go back to the member. Stock counts go down and back up with orders.
-- **Shop subscriptions**: sellers can pay a plan with tokens at the rate set in Settings (1 token = ₦10 to start), e.g. a ₦5,000 month is 500 tokens. These show as tokens, not money, in the market reports.
-
-A balance can never go below zero, even with two purchases at once, and every change is recorded. A daily job gives birthday tokens and returns tokens for orders that were never handed over.
+**What isn't possible, and why:**
+- **Buying tokens with money, or cashing them out to naira.** That would make tokens stored value or e-money, which in Nigeria needs a CBN licence. It would also go against "members never pay to use the platform". Tokens stay a closed loop.
+- **Tithes, offerings or donations in tokens.** Giving has to be real money; tokens aren't income to the church.
+- **Stopping people trading tokens privately for cash outside the app.** The app can't see that. The daily sending limit, wallets on hold and the full history of every movement make it easy to spot and stop.
+- **Paying sellers money for tokens they receive.** The app doesn't do this. If the church decides to buy tokens back from sellers, it does so outside the app and then takes the tokens back into the treasury, which keeps the books straight.
 
 ## The members' community
 
@@ -226,6 +245,7 @@ php artisan migrate --force
 php artisan db:seed --force          # starting units, funds and market periods
 php artisan storage:link
 php artisan admin:create you@church.org --name="Your name"
+php artisan admin:create pastor@church.org --name="Pastor's name" --super   # the pastor in charge
 php artisan config:cache && php artisan route:cache && php artisan view:cache
 ```
 
@@ -247,7 +267,8 @@ The web server's document root is `public/`, and `storage/` and `bootstrap/cache
 - **Pages**: write the church's story, add the leaders' names and photos, and check the beliefs and first-timer questions.
 - **Blog**: replace the starter articles (their author and body are `[placeholders]`) or delete them.
 - **Tribe Market**: price the subscription periods and switch them on.
-- **Giving**: check the funds. **Tokens** (in Settings & roles): check how many tokens each activity earns.
+- **Giving**: check the funds.
+- **Token treasury** (pastor in charge): create the first tokens into the treasury, and check how many each activity earns. Until tokens are created, nobody earns any.
 - **Sermons & live**: add the first messages and the current series.
 - **Members**: import the existing register from a spreadsheet.
 
@@ -301,7 +322,7 @@ Anything still in `[brackets]` is a placeholder waiting for real details; most d
 
 - `routes/web.php`: all routes; `routes/console.php`: `admin:create`, `admin:revoke`, `care:scan`, `units:remind`, `social:publish`, `youtube:sync`, `market:remind`, `newsletter:queue`, `messages:send`, `push:keys`, `blog:prune-images`, `tokens:daily` and the schedule
 - `app/Http/Controllers/`: public pages and forms, `Account/` (members), `Vendor/` (sellers), `Admin/` (dashboard)
-- `app/Models/`: people (`User`, `Member`, `Unit`, `Fellowship`, `FirstTimer`, `Service`), money (`Payment`, `Fund`, `Gift`, `BankAccount`, `Expense`, `Budget`), tokens (`TokenTransaction`, `TokenOrder`), events and notices (`Event`, `TicketType`, `TicketOrder`, `Ticket`, `Notice`), the market (`Shop`, `Product`, `Enquiry`, `VendorPlan`, `VendorSubscription`, `Coupon`), messaging (`NewsletterSubscriber`, `NewsletterIssue`, `Broadcast`, `PushSubscription`), community (`CommunityRoom`, `CommunityMessage`, `CommunityReaction`, `CommunityVote`, `CommunityRead`, `CommunityReport`, `Quiz`, `QuizQuestion`, `QuizAttempt`), content (`Announcement`, `Declaration`, `Post`, `PageContent`, `GalleryAlbum`, `GalleryItem`, `Sermon`, `SermonSeries`, `PrayerRequest`, `ContactMessage`, `Setting`)
+- `app/Models/`: people (`User`, `Member`, `Unit`, `Fellowship`, `FirstTimer`, `Service`), money (`Payment`, `Fund`, `Gift`, `BankAccount`, `Expense`, `Budget`), tokens (`TokenAccount`, `TokenTransfer`, `TokenOrder`), events and notices (`Event`, `TicketType`, `TicketOrder`, `Ticket`, `Notice`), the market (`Shop`, `Product`, `Enquiry`, `VendorPlan`, `VendorSubscription`, `Coupon`), messaging (`NewsletterSubscriber`, `NewsletterIssue`, `Broadcast`, `PushSubscription`), community (`CommunityRoom`, `CommunityMessage`, `CommunityReaction`, `CommunityVote`, `CommunityRead`, `CommunityReport`, `Quiz`, `QuizQuestion`, `QuizAttempt`), content (`Announcement`, `Declaration`, `Post`, `PageContent`, `GalleryAlbum`, `GalleryItem`, `Sermon`, `SermonSeries`, `PrayerRequest`, `ContactMessage`, `Setting`)
 - `app/Services/`: Paystack and payment settlement, shop approval and seller reminders, the sermon library, `Messaging/` (weekly email, Termii texts, web push, the broadcaster), `Content/Markdown` (safe article rendering) and `Content/Images` (photo resizing)
 - `resources/views/`: `layouts/` (site, admin, seller), `partials/`, `components/`, `pages/`, `account/`, `blog/`, `market/`, `vendor/`, `admin/`, `mail/`
 - `resources/css/`: `base.css` holds the design tokens; `partials/` and `pages/` hold the rest; `admin.css` is the dashboard's own stylesheet

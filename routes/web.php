@@ -33,6 +33,7 @@ Route::post('/events/{event}/book', [TicketOrderController::class, 'store'])->mi
 Route::middleware('signed')->group(function () {
     Route::get('/tickets/{order}', [TicketOrderController::class, 'show'])->name('tickets.show');
     Route::post('/tickets/{order}/pay', [TicketOrderController::class, 'pay'])->middleware('throttle:10,1')->name('tickets.pay');
+    Route::post('/tickets/{order}/tokens', [TicketOrderController::class, 'payWithTokens'])->middleware(['auth', 'throttle:10,1'])->name('tickets.tokens');
 });
 Route::get('/give', [GiveController::class, 'create'])->name('give');
 Route::post('/give', [GiveController::class, 'store'])->middleware('throttle:10,1')->name('give.store');
@@ -143,6 +144,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/services/{service}/watching', [Account\JoinController::class, 'watching'])->middleware('throttle:10,1')->name('services.watching');
     Route::post('/check-in', [Account\CheckInController::class, 'store'])->middleware('throttle:10,1')->name('check-in.store');
     Route::post('/account/declare', [Account\AccountController::class, 'declare'])->middleware('throttle:10,1')->name('account.declare');
+    Route::post('/account/tokens/send', [Account\AccountController::class, 'sendTokens'])->middleware('throttle:10,1')->name('account.tokens.send');
 });
 
 // The members' community: chat rooms and the Bible quiz (approved members and staff).
@@ -378,9 +380,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('/quizzes/{quiz}', [Admin\CommunityController::class, 'destroyQuiz'])->name('quizzes.destroy');
         });
 
-        Route::middleware('can:manage,"tokens"')->group(function () {
-            Route::get('/tokens', [Admin\TokenController::class, 'index'])->name('tokens.index');
-            Route::post('/tokens/award', [Admin\TokenController::class, 'award'])->name('tokens.award');
+        Route::get('/tokens', [Admin\TokenController::class, 'index'])->middleware('can:manage,"tokens"')->name('tokens.index');
+        // Only the pastor in charge (super admin) moves or creates tokens, or changes the rules.
+        Route::middleware('can:manage-treasury')->prefix('tokens')->name('tokens.')->group(function () {
+            Route::post('/mint', [Admin\TokenController::class, 'mint'])->name('mint');
+            Route::post('/burn', [Admin\TokenController::class, 'burn'])->name('burn');
+            Route::post('/award', [Admin\TokenController::class, 'award'])->name('award');
+            Route::post('/members/{member}/freeze', [Admin\TokenController::class, 'freeze'])->name('freeze');
+            Route::put('/settings', [Admin\TokenController::class, 'settings'])->name('settings');
         });
 
         Route::middleware('can:manage,"gallery"')->prefix('gallery')->name('gallery.')->group(function () {

@@ -1,15 +1,23 @@
 <?php
 
-// Tokens: free rewards members earn by taking part, and spend in the market (where the seller
-// accepts them) or on a shop subscription. Nobody pays money for tokens.
-// The amounts can be changed in admin › Settings & roles › Tokens.
+// Tokens: the app's own currency. The pastor in charge (super admin) creates them into the church
+// treasury; members earn them from the treasury by taking part, spend them in the market, on event
+// tickets and shop subscriptions (which return them to the treasury), and can send them to each other.
+// Nobody buys tokens with money, and tokens can't be cashed out.
+// Only the pastor in charge changes these, on admin › Treasury.
 
 return [
 
     'enabled' => true,
 
-    // What a token is worth when paying for a shop subscription (naira per token).
-    'naira_per_token' => 10,
+    // What a token is worth (naira per token), for subscriptions, tickets and showing values.
+    'naira_per_token' => 2,
+
+    // Members sending tokens to each other.
+    'transfers' => [
+        'enabled' => true,
+        'daily_limit' => 1000,
+    ],
 
     // How many tokens each activity earns. Each one is given once per occasion (per service,
     // meeting, quiz, day or week), so refreshing or tapping twice never adds more.

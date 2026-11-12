@@ -20,7 +20,7 @@ class SettingsController extends Controller
         $saved = Setting::values();
 
         return view('admin.settings', [
-            'groups' => config('settings'),
+            'groups' => self::groups(),
             // What the site shows now: the saved value, or the default if it's a real value (not a placeholder).
             // Secrets are never sent back to the page; the form just says whether one is saved.
             'values' => collect(Setting::keys())->mapWithKeys(fn ($key) => [$key => in_array($key, Setting::secretKeys(), true) ? null : ($saved[$key] ?? $this->defaultFor($key))])->all(),
@@ -34,7 +34,7 @@ class SettingsController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $rules = [];
-        foreach (config('settings') as $group) {
+        foreach (self::groups() as $group) {
             foreach ($group['fields'] as $key => $field) {
                 $rules[$this->inputName($key)] = [...match ($field['type']) {
                     'url' => ['nullable', 'url:http,https', 'max:500'],
@@ -56,7 +56,8 @@ class SettingsController extends Controller
         ]);
 
         $values = [];
-        foreach (Setting::secretKeys() as $key) {
+        $editable = collect(self::groups())->flatMap(fn ($g) => array_keys($g['fields']))->all();
+        foreach (array_intersect(Setting::secretKeys(), $editable) as $key) {
             // Leave a saved secret alone unless a new one is typed in, or it's being removed.
             $value = $data[$this->inputName($key)] ?? null;
             if ($request->boolean('clear__'.$this->inputName($key))) {
@@ -65,7 +66,7 @@ class SettingsController extends Controller
                 $values[$key] = Crypt::encryptString($value);
             }
         }
-        foreach (array_diff(Setting::keys(), Setting::secretKeys()) as $key) {
+        foreach (array_diff($editable, Setting::secretKeys()) as $key) {
             $value = $data[$this->inputName($key)] ?? null;
             $type = collect(config('settings'))->firstWhere(fn ($g) => isset($g['fields'][$key]))['fields'][$key]['type'];
             $values[$key] = $type === 'checkbox' ? ($value ? '1' : '0') : $value;
@@ -73,6 +74,17 @@ class SettingsController extends Controller
         Setting::putMany($values);
 
         return redirect()->route('admin.settings.edit')->with('status', 'Settings saved. The website shows the new details now.');
+    }
+
+    /**
+     * The settings this page edits. Groups marked `super` (the token currency) are changed only
+     * by the pastor in charge, on the Treasury page.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function groups(): array
+    {
+        return collect(config('settings'))->reject(fn ($group) => $group['super'] ?? false)->all();
     }
 
     /**

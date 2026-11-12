@@ -16,7 +16,7 @@
         <div class="stat-tile stat-tile--navy">
             <span class="stat-tile__label">Your tokens</span>
             <span class="stat-tile__num">🪙 {{ number_format($balance) }}</span>
-            <span class="stat-tile__foot">Use them for your <a href="{{ route('vendor.subscription.index') }}" style="color: inherit; text-decoration: underline">subscription</a> (1 token = ₦{{ (int) config('tokens.naira_per_token', 10) }})</span>
+            <span class="stat-tile__foot">Use them for your <a href="{{ route('vendor.subscription.index') }}" style="color: inherit; text-decoration: underline">subscription</a> (1 token = {{ \App\Services\Tokens\TokenValue::rateLabel() }})</span>
         </div>
         <div class="stat-tile">
             <span class="stat-tile__label">Waiting to hand over</span>

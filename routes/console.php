@@ -9,18 +9,20 @@ use App\Services\Market\SubscriptionReminders;
 use App\Services\Messaging\Broadcaster;
 use App\Services\Messaging\Newsletter;
 use App\Services\Social\PostPublisher;
+use App\Services\Tokens\Ledger;
 use App\Services\Tokens\Rewards;
 use App\Services\Tokens\TokenShop;
 use App\Services\Units\DutyReminders;
 use App\Services\YouTube\YouTubeBroadcasts;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Str;
 use Minishlink\WebPush\VAPID;
 
 use function Laravel\Prompts\password;
 
-Artisan::command('admin:create {email} {--name= : Display name, e.g. "Pastor Ade"}', function (string $email) {
+Artisan::command('admin:create {email} {--name= : Display name, e.g. "Pastor Ade"} {--super : Make them the pastor in charge (super admin): giving and the token currency}', function (string $email) {
     if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $this->error('That is not a valid email address.');
 
@@ -44,15 +46,15 @@ Artisan::command('admin:create {email} {--name= : Display name, e.g. "Pastor Ade
     if ($password !== '') {
         $user->password = $password;
     }
-    $user->role = 'admin';
+    $user->role = $this->option('super') ? 'super' : 'admin';
     $user->save();
 
-    $this->info("{$user->email} can now sign in at ".route('admin.login'));
+    $this->info("{$user->email} can now sign in at ".route('admin.login').' as '.$user->roleName().'.');
     if ($generated) {
         $this->line("Password: {$password}");
         $this->warn('Store it somewhere safe; it will not be shown again.');
     }
-})->purpose('Create a church admin, or give an existing account admin access');
+})->purpose('Create a church admin (or with --super, the pastor in charge), or give an existing account that access');
 
 Artisan::command('admin:revoke {email}', function (string $email) {
     $user = User::firstWhere('email', $email);
@@ -117,7 +119,7 @@ Artisan::command('blog:prune-images', function (InlineImages $images) {
     $this->info('Removed '.$images->prune().' unused article pictures.');
 })->purpose('Delete pictures uploaded into articles that no article uses any more');
 
-Artisan::command('tokens:daily', function (Rewards $rewards, TokenShop $shop) {
+Artisan::command('tokens:daily', function (Rewards $rewards, TokenShop $shop, Ledger $ledger) {
     // Birthday tokens for members whose birthday is today (29 February birthdays get theirs on the 28th in other years).
     $given = 0;
     $isLeapDay = today()->format('m-d') === '02-29' || (! today()->isLeapYear() && today()->format('m-d') === '02-28');
@@ -128,7 +130,14 @@ Artisan::command('tokens:daily', function (Rewards $rewards, TokenShop $shop) {
         });
     $expired = $shop->expireOld();
     $this->info("Birthday tokens for {$given} members; {$expired} token orders expired and refunded.");
-})->purpose('Give birthday tokens and return tokens for market orders sellers never handed over');
+
+    // The books must balance: every balance against its transfers, and the total against what was minted.
+    $audit = $ledger->audit();
+    if (! $audit['ok']) {
+        Log::error('Token books do not balance', $audit);
+        $this->error('Token books do not balance: '.implode(' ', $audit['problems']));
+    }
+})->purpose('Give birthday tokens, return tokens for orders never handed over, and check the token books balance');
 
 // Run `php artisan schedule:run` every minute from cron (see the README).
 Schedule::command('youtube:sync')->everyMinute()->withoutOverlapping();

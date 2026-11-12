@@ -57,7 +57,7 @@
                                 </span>
                             </td>
                             <td>{{ $m->unit?->name ?? '—' }}</td>
-                            <td style="font-weight: 700">{{ $m->user ? '🪙 '.number_format($m->user->token_balance) : '—' }}</td>
+                            <td style="font-weight: 700">{{ $m->user ? '🪙 '.number_format($m->user->tokenBalance()) : '—' }}</td>
                             <td style="color: var(--slate)">{{ $m->last_attended_on?->format('j M') ?? '—' }}</td>
                             <td class="num">
                                 @if ($m->status === 'pending')

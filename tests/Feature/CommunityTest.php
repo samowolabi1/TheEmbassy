@@ -199,6 +199,7 @@ class CommunityTest extends TestCase
 
     public function test_quiz_is_played_once_timed_and_scored_on_the_server(): void
     {
+        $this->fundTreasury();
         $quiz = Quiz::create(['title' => 'Heroes of faith', 'opens_at' => now()->subHour(), 'closes_at' => now()->addDay(), 'seconds_per_question' => 20, 'is_published' => true]);
         $q1 = $quiz->questions()->create(['question' => 'Who built the ark?', 'options' => ['Moses', 'Noah'], 'answer' => 1]);
         $q2 = $quiz->questions()->create(['question' => 'Who killed Goliath?', 'options' => ['David', 'Saul'], 'answer' => 0, 'reference' => '1 Samuel 17']);

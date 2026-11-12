@@ -52,17 +52,17 @@
                             @if ($errors->has('tokens'))
                                 <p class="field-error" role="alert" style="margin: 0">{{ $errors->first('tokens') }}</p>
                             @endif
-                            @if (auth()->user()->token_balance >= $product->token_price)
+                            @if (auth()->user()->tokenBalance() >= $product->token_price)
                                 <form method="POST" action="{{ route('market.tokens', $product) }}" class="notice-form__group" onsubmit="return confirm('Use {{ $product->token_price }} of your tokens for this?')">
                                     @csrf
                                     <label class="field">Anything the seller should know? (optional)
                                         <input type="text" name="note" maxlength="300" placeholder="{{ $product->isService() ? 'e.g. the date you need it' : 'e.g. size, colour, when to collect' }}">
                                     </label>
                                     <button type="submit" class="btn btn--gold" style="align-self: flex-start">Use {{ number_format($product->token_price) }} tokens</button>
-                                    <span class="field-hint">You have {{ number_format(auth()->user()->token_balance) }}. Your tokens are held until the seller hands it over; you get them back if it's cancelled.</span>
+                                    <span class="field-hint">You have {{ number_format(auth()->user()->tokenBalance()) }}. Your tokens are held until the seller hands it over; you get them back if it's cancelled.</span>
                                 </form>
                             @else
-                                <p class="field-hint" style="margin: 0">You have {{ number_format(auth()->user()->token_balance) }} tokens; this needs {{ number_format($product->token_price) }}. <a href="{{ route('account.tokens') }}" class="accent-bronze">See how to earn more</a>.</p>
+                                <p class="field-hint" style="margin: 0">You have {{ number_format(auth()->user()->tokenBalance()) }} tokens; this needs {{ number_format($product->token_price) }}. <a href="{{ route('account.tokens') }}" class="accent-bronze">See how to earn more</a>.</p>
                             @endif
                         @else
                             <p class="field-hint" style="margin: 0">Members earn tokens for taking part in church life. <a href="{{ route('login') }}" class="accent-bronze">Log in</a> to use yours.</p>

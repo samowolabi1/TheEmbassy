@@ -9,16 +9,18 @@ use App\Models\Member;
 use App\Models\Product;
 use App\Models\Service;
 use App\Models\TokenOrder;
-use App\Models\TokenTransaction;
+use App\Models\TokenTransfer;
 use App\Models\Unit;
 use App\Models\UnitMeeting;
 use App\Models\UnitMessage;
 use App\Models\WelfarePackage;
 use App\Services\Messaging\Inbox;
+use App\Services\Tokens\Ledger;
 use App\Services\Tokens\Rewards;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -66,23 +68,65 @@ class AccountController extends Controller
     }
 
     /**
-     * The token wallet: balance, how to earn, where to spend, history and market orders.
+     * The token wallet: balance, how to earn, where to spend, sending to others, history and orders.
      */
-    public function tokens(Request $request, Rewards $rewards): View
+    public function tokens(Request $request, Rewards $rewards, Ledger $ledger): View
     {
         $user = $request->user();
+        $account = $ledger->account($user);
+        $declaration = Declaration::current();
 
         return view('account.tokens', [
             'user' => $user,
-            'balance' => (int) $user->token_balance,
-            'history' => TokenTransaction::where('user_id', $user->id)->latest('id')->paginate(20),
+            'account' => $account,
+            'balance' => $account->balance,
+            'history' => TokenTransfer::with('from.user', 'to.user')
+                ->where(fn ($q) => $q->where('from_account_id', $account->id)->orWhere('to_account_id', $account->id))
+                ->latest('id')->paginate(20),
             'orders' => TokenOrder::with('shop')->where('user_id', $user->id)->latest()->take(20)->get(),
             'rules' => collect(Rewards::RULES)->map(fn ($r, $key) => ['label' => $r[0], 'text' => $r[1], 'amount' => $rewards->amount($key)])->filter(fn ($r) => $r['amount'] > 0),
-            'earnedThisMonth' => (int) TokenTransaction::where('user_id', $user->id)->where('amount', '>', 0)->where('rule', '!=', 'refund')->where('created_at', '>=', now()->startOfMonth())->sum('amount'),
+            'earnedThisMonth' => (int) TokenTransfer::where('to_account_id', $account->id)->whereIn('kind', ['reward', 'grant'])->where('created_at', '>=', now()->startOfMonth())->sum('amount'),
             'forTokens' => Product::listed()->whereNotNull('token_price')->with('shop')->latest()->take(4)->get(),
-            'declaration' => Declaration::current(),
-            'declared' => ($d = Declaration::current()) ? TokenTransaction::where('key', 'declaration:week:'.$d->week_of->toDateString().':'.$user->id)->exists() : false,
+            'declaration' => $declaration,
+            'declared' => $declaration ? TokenTransfer::where('key', 'declaration:week:'.$declaration->week_of->toDateString().':'.$user->id)->exists() : false,
+            'canSend' => (bool) config('tokens.transfers.enabled') && $user->member?->status === Member::ACTIVE,
+            'sentToday' => $this->sentToday($account->id),
+            'dailyLimit' => (int) config('tokens.transfers.daily_limit', 1000),
         ]);
+    }
+
+    /**
+     * Send tokens to another member, found by the phone number or email on their account.
+     */
+    public function sendTokens(Request $request, Ledger $ledger): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless(config('tokens.transfers.enabled') && $user->member?->status === Member::ACTIVE, 403, 'Sending tokens isn\'t switched on.');
+        $data = $request->validate([
+            'to' => ['required', 'string', 'max:255'],
+            'amount' => ['required', 'integer', 'min:1', 'max:10000000'],
+            'note' => ['nullable', 'string', 'max:100'],
+        ], ['to.required' => 'Enter their phone number or email.']);
+
+        $recipient = $this->findMember(trim($data['to']));
+        if (! $recipient || ! $recipient->user) {
+            throw ValidationException::withMessages(['to' => 'No member with that phone number or email has an account.']);
+        }
+        if ($recipient->user_id === $user->id) {
+            throw ValidationException::withMessages(['to' => 'That\'s you.']);
+        }
+
+        $account = $ledger->account($user);
+        $limit = (int) config('tokens.transfers.daily_limit', 1000);
+        if ($this->sentToday($account->id) + $data['amount'] > $limit) {
+            throw ValidationException::withMessages(['amount' => "You can send up to {$limit} tokens a day; you've sent ".$this->sentToday($account->id).' today.']);
+        }
+
+        $note = filled($data['note'] ?? null) ? ': '.$data['note'] : '';
+        $ledger->move($account, $ledger->account($recipient->user), (int) $data['amount'], 'send',
+            $user->communityName().' → '.$recipient->name.$note, null, $user, 'amount');
+
+        return back()->with('status', "Sent {$data['amount']} tokens to {$recipient->name}.");
     }
 
     /**
@@ -96,6 +140,26 @@ class AccountController extends Controller
         $tokens = $rewards->declared($request->user(), $declaration->week_of);
 
         return back()->with('status', $tokens ? "Amen! +{$tokens} tokens." : 'You\'ve declared it this week. Amen!');
+    }
+
+    private function sentToday(int $accountId): int
+    {
+        return (int) TokenTransfer::where('from_account_id', $accountId)->where('kind', 'send')->where('created_at', '>=', today())->sum('amount');
+    }
+
+    /**
+     * An active member by phone (any common format) or email.
+     */
+    private function findMember(string $to): ?Member
+    {
+        if (str_contains($to, '@')) {
+            $member = Member::active()->where('email', strtolower($to))->first();
+
+            return $member ?? Member::active()->whereHas('user', fn ($q) => $q->where('email', strtolower($to)))->first();
+        }
+        $wanted = Member::internationalPhone($to);
+
+        return $wanted ? Member::active()->whereNotNull('phone')->get()->first(fn (Member $m) => Member::internationalPhone($m->phone) === $wanted) : null;
     }
 
     private function member(Request $request): Member

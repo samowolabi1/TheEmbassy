@@ -7,7 +7,8 @@ use App\Models\Coupon;
 use App\Models\VendorPlan;
 use App\Models\VendorSubscription;
 use App\Services\Payments\Payments;
-use App\Services\Tokens\Wallet;
+use App\Services\Tokens\Ledger;
+use App\Services\Tokens\TokenValue;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,8 +35,8 @@ class SubscriptionController extends Controller
             'history' => $shop->subscriptions()->with('plan', 'coupon')->where('status', VendorSubscription::ACTIVE)->latest('starts_at')->get(),
             'returned' => $returned,
             'paymentsEnabled' => $payments->enabled(),
-            'tokenBalance' => (int) $request->user()->token_balance,
-            'nairaPerToken' => max(1, (int) config('tokens.naira_per_token', 10)),
+            'tokenBalance' => (int) $request->user()->tokenBalance(),
+            'rate' => TokenValue::rateLabel(),
         ]);
     }
 
@@ -67,7 +68,7 @@ class SubscriptionController extends Controller
 
         // Paying with tokens: the tokens are taken and the subscription starts straight away.
         if ($amount > 0 && ($data['pay_with'] ?? 'money') === 'tokens') {
-            $tokens = (int) ceil($amount / (100 * max(1, (int) config('tokens.naira_per_token', 10))));
+            $tokens = TokenValue::tokensFor($amount);
             $subscription = DB::transaction(function () use ($coupon, $shop, $plan, $discount, $tokens, $request) {
                 if ($coupon && ($problem = Coupon::whereKey($coupon->id)->lockForUpdate()->first()->problem())) {
                     throw ValidationException::withMessages(['coupon' => $problem]);
@@ -78,7 +79,9 @@ class SubscriptionController extends Controller
                     'amount' => 0, // no money changed hands
                 ]);
                 $subscription->forceFill(['tokens_paid' => $tokens])->save();
-                app(Wallet::class)->debit($request->user(), $tokens, 'subscription', "{$plan->name} subscription for {$shop->name}", "subscription:{$subscription->id}", null, 'pay_with');
+                // Paid tokens go back to the church treasury, to be given out again.
+                $ledger = app(Ledger::class);
+                $ledger->move($ledger->account($request->user()), $ledger->treasury(), $tokens, 'subscription', "{$plan->name} subscription for {$shop->name}", "subscription:{$subscription->id}", null, 'pay_with');
                 $subscription->activate();
 
                 return $subscription;

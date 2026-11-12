@@ -52,16 +52,17 @@
             <h2>Tokens</h2>
             <p class="box__note" style="margin: 0">
                 @if ($member->user)
-                    <strong>🪙 {{ number_format($member->user->token_balance) }}</strong> in their wallet
+                    <strong>🪙 {{ number_format($member->user->tokenBalance()) }}</strong> in their wallet
                 @else
                     No login yet, so no token wallet.
                 @endif
             </p>
             @foreach ($tokenHistory as $t)
-                <span class="box__note" style="margin: 0">{{ $t->created_at->format('j M') }} · {{ $t->description }} · <strong>{{ $t->amount > 0 ? '+' : '−' }}{{ abs($t->amount) }}</strong></span>
+                @php($n = $t->amountFor($tokenAccount))
+                <span class="box__note" style="margin: 0">{{ $t->created_at->format('j M') }} · {{ $t->description }} · <strong>{{ $n > 0 ? '+' : '−' }}{{ number_format(abs($n)) }}</strong></span>
             @endforeach
             @if ($member->user && auth()->user()->canManage('tokens'))
-                <a href="{{ route('admin.tokens.index', ['member' => $member->id]) }}#award" class="btn btn--ghost btn--xs" style="align-self: flex-start">Give or take tokens</a>
+                <a href="{{ route('admin.tokens.index', ['member' => $member->id]) }}" class="btn btn--ghost btn--xs" style="align-self: flex-start">{{ auth()->user()->isSuperAdmin() ? 'Give or take tokens' : 'Token history' }}</a>
             @endif
             <h2>Attendance</h2>
             @php($sundays = $member->recentSundays())

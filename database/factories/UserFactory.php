@@ -56,6 +56,14 @@ class UserFactory extends Factory
     /**
      * Staff with a narrower role, e.g. 'finance' or 'media'.
      */
+    /**
+     * The pastor in charge (super admin): giving and the token currency.
+     */
+    public function superAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => ['role' => 'super']);
+    }
+
     public function staff(string $role): static
     {
         return $this->state(fn (array $attributes) => ['role' => $role]);

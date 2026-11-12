@@ -115,8 +115,9 @@ class SettingsAndRolesTest extends TestCase
 
     public function test_the_dashboard_shows_each_role_its_own_panels(): void
     {
-        $this->actingAs(User::factory()->admin()->create())->get('/admin')->assertOk()
+        $this->actingAs(User::factory()->superAdmin()->create())->get('/admin')->assertOk()
             ->assertSee('Members waiting for approval')->assertSee('Sunday attendance')->assertSee('Giving by fund');
+        $this->actingAs(User::factory()->admin()->create())->get('/admin')->assertOk()->assertDontSee('Giving by fund');
 
         $this->actingAs(User::factory()->staff('usher')->create())->get('/admin')->assertOk()
             ->assertSee('Sunday attendance')->assertSee('First-timers not yet called')

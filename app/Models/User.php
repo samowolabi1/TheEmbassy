@@ -43,7 +43,31 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === 'admin' || $this->isSuperAdmin();
+    }
+
+    /**
+     * The pastor in charge: sees giving and controls the token currency.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super';
+    }
+
+    /**
+     * @return HasOne<TokenAccount, $this>
+     */
+    public function tokenAccount(): HasOne
+    {
+        return $this->hasOne(TokenAccount::class);
+    }
+
+    /**
+     * Tokens in their wallet.
+     */
+    public function tokenBalance(): int
+    {
+        return (int) ($this->relationLoaded('tokenAccount') ? $this->tokenAccount?->balance : $this->tokenAccount()->value('balance'));
     }
 
     /**

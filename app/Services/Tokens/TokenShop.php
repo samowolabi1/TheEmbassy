@@ -13,12 +13,12 @@ use Illuminate\Validation\ValidationException;
 use Throwable;
 
 /**
- * Buying from the market with tokens. The buyer's tokens are held when they order; the seller
+ * Buying from the market with tokens. The buyer's tokens go into escrow when they order; the seller
  * gets them when they hand it over, or the buyer gets them back if it's cancelled.
  */
 class TokenShop
 {
-    public function __construct(private Wallet $wallet) {}
+    public function __construct(private Ledger $ledger) {}
 
     public function buy(User $buyer, Product $product, ?string $note = null): TokenOrder
     {
@@ -49,7 +49,8 @@ class TokenShop
                 'note' => $note ? mb_substr(trim($note), 0, 300) : null,
                 'status' => TokenOrder::PENDING,
             ]);
-            $this->wallet->debit($buyer, $product->token_price, 'market_purchase', 'Bought '.$product->name.' from '.$product->shop->name.' ('.$order->code.')', "order:{$order->id}");
+            // Held in escrow until the seller hands it over.
+            $this->ledger->move($this->ledger->account($buyer), $this->ledger->escrow(), $product->token_price, 'purchase', 'Bought '.$product->name.' from '.$product->shop->name.' ('.$order->code.')', "order:{$order->id}");
 
             return $order;
         });
@@ -76,8 +77,7 @@ class TokenShop
                 throw ValidationException::withMessages(['code' => "Order {$order->code} is already ".($locked->status === TokenOrder::COMPLETED ? 'handed over' : 'cancelled').'.']);
             }
             $locked->update(['status' => TokenOrder::COMPLETED, 'completed_at' => now()]);
-            $seller = $order->shop->user;
-            $this->wallet->credit($seller, $order->tokens, 'market_sale', "Sold {$order->product_name} ({$order->code})", "sale:{$order->id}");
+            $this->ledger->move($this->ledger->escrow(), $this->ledger->account($order->shop->user), $order->tokens, 'sale', "Sold {$order->product_name} ({$order->code})", "sale:{$order->id}");
         });
         $order->refresh();
     }
@@ -96,7 +96,7 @@ class TokenShop
             if ($order->product_id && ($product = Product::whereKey($order->product_id)->lockForUpdate()->first()) && $product->stock !== null) {
                 $product->increment('stock');
             }
-            $this->wallet->credit($order->buyer, $order->tokens, 'refund', "Returned: {$order->product_name} ({$order->code})", "refund:{$order->id}");
+            $this->ledger->move($this->ledger->escrow(), $this->ledger->account($order->buyer), $order->tokens, 'refund', "Returned: {$order->product_name} ({$order->code})", "refund:{$order->id}");
         });
         $order->refresh();
     }

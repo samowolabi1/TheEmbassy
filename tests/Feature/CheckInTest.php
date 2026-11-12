@@ -45,6 +45,7 @@ class CheckInTest extends TestCase
 
     public function test_a_member_at_church_checks_in_with_the_screen_code(): void
     {
+        $this->fundTreasury();
         $member = Member::factory()->active()->create();
         $service = $this->service();
 

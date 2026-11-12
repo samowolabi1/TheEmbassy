@@ -500,3 +500,14 @@
 .token-row__amount--out {
   color: var(--slate);
 }
+.send-card {
+  padding: 20px 24px;
+}
+.send-card summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: var(--navy);
+}
+.send-card form {
+  margin-top: 14px;
+}

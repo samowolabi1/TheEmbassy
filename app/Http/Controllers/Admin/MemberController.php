@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Fellowship;
 use App\Models\Member;
-use App\Models\TokenTransaction;
+use App\Models\TokenTransfer;
 use App\Models\Unit;
 use App\Services\Care\FollowUps;
 use App\Support\Csv;
@@ -30,7 +30,7 @@ class MemberController extends Controller
         $tab = array_key_exists($request->query('tab'), self::TABS) ? $request->query('tab') : 'active';
 
         return view('admin.members.index', [
-            'members' => $this->filtered($request, $tab)->with('unit', 'fellowship', 'user')->orderBy('name')->paginate(25)->withQueryString(),
+            'members' => $this->filtered($request, $tab)->with('unit', 'fellowship', 'user.tokenAccount')->orderBy('name')->paginate(25)->withQueryString(),
             'tab' => $tab,
             'tabs' => collect(self::TABS)->map(fn ($label, $key) => ['label' => $label, 'count' => Member::where('status', $key)->count()]),
             'units' => Unit::orderBy('name')->get(),
@@ -48,7 +48,8 @@ class MemberController extends Controller
     {
         return view('admin.members.show', [
             'member' => $member->load('unit', 'fellowship', 'user.shop'),
-            'tokenHistory' => $member->user_id ? TokenTransaction::where('user_id', $member->user_id)->latest('id')->take(8)->get() : collect(),
+            'tokenAccount' => $account = $member->user?->tokenAccount,
+            'tokenHistory' => $account ? TokenTransfer::where(fn ($q) => $q->where('from_account_id', $account->id)->orWhere('to_account_id', $account->id))->latest('id')->take(8)->get() : collect(),
             'givingThisYear' => request()->user()->can('see-giving') ? (int) $member->gifts()->paid()->whereYear('given_on', now()->year)->sum('amount') : null,
             'recentServices' => $member->services()->orderByDesc('held_on')->take(5)->get(),
         ]);
@@ -109,14 +110,14 @@ class MemberController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $tab = array_key_exists($request->query('tab'), self::TABS) ? $request->query('tab') : 'active';
-        $query = $this->filtered($request, $tab)->with('unit', 'fellowship', 'user')->orderBy('name');
+        $query = $this->filtered($request, $tab)->with('unit', 'fellowship', 'user.tokenAccount')->orderBy('name');
 
         return Csv::download('members-'.now()->format('Y-m-d').'.csv',
             ['name', 'phone', 'email', 'gender', 'birthday', 'address', 'unit', 'fellowship', 'status', 'joined_on', 'tokens', 'baptised', 'believers_class', 'workers_training', 'last_attended_on'],
             function ($write) use ($query) {
                 $query->each(fn (Member $m) => $write([
                     $m->name, $m->phone, $m->email, $m->gender, $m->birthday?->toDateString(), $m->address, $m->unit?->name, $m->fellowship?->name,
-                    $m->status, $m->joined_on?->toDateString(), (int) $m->user?->token_balance,
+                    $m->status, $m->joined_on?->toDateString(), (int) $m->user?->tokenBalance(),
                     $m->baptised ? 'yes' : 'no', $m->believers_class ? 'yes' : 'no', $m->workers_training ? 'yes' : 'no', $m->last_attended_on?->toDateString(),
                 ]));
             });

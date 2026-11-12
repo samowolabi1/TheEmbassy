@@ -13,7 +13,7 @@
     <section class="box box--flush">
         <div class="box__head">
             <h2>Staff</h2>
-            <span class="box__note">Each role only sees its own areas. Administrators see everything, including this page.</span>
+            <span class="box__note">Each role only sees its own areas. Administrators see everything, including this page, except giving and the token treasury, which are for the pastor in charge (super admin).</span>
         </div>
         @error('staff') <p class="flash flash--error" role="alert" style="margin: 0 20px">{{ $message }}</p> @enderror
         @foreach ($staff as $person)
@@ -30,6 +30,7 @@
                         <label class="sr-only" for="role-{{ $person->id }}">Role for {{ $person->name }}</label>
                         <select id="role-{{ $person->id }}" name="role" class="select-sm">
                             @foreach ($roles as $key => $role)
+                                @continue($key === 'super' && ! auth()->user()->isSuperAdmin() && $person->role !== 'super')
                                 <option value="{{ $key }}" @selected($person->role === $key)>{{ $role['name'] }}</option>
                             @endforeach
                         </select>
@@ -60,6 +61,7 @@
                 <label class="field">Role
                     <select name="role" required>
                         @foreach ($roles as $key => $role)
+                            @continue($key === 'super' && ! auth()->user()->isSuperAdmin())
                             <option value="{{ $key }}" @selected(old('role', 'secretary') === $key)>{{ $role['name'] }}</option>
                         @endforeach
                     </select>

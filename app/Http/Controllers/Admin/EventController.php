@@ -79,7 +79,9 @@ class EventController extends Controller
                 'booked' => $type->tickets()->whereHas('order', $confirmed)->count(),
             ]),
             'checkedIn' => $event->tickets()->whereHas('order', $confirmed)->whereNotNull('checked_in_at')->count(),
-            'takings' => $event->orders()->where('status', TicketOrder::CONFIRMED)->sum('total'),
+            // Money only: tickets paid with tokens are counted separately.
+            'takings' => $event->orders()->where('status', TicketOrder::CONFIRMED)->whereNull('tokens_paid')->sum('total'),
+            'tokenTakings' => (int) $event->orders()->where('status', TicketOrder::CONFIRMED)->sum('tokens_paid'),
             'tickets' => Ticket::query()
                 ->with(['order', 'type'])
                 ->whereHas('order', fn ($q) => $q->where('event_id', $event->id)->where('status', TicketOrder::CONFIRMED)

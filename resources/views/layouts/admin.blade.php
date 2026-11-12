@@ -35,7 +35,7 @@
             ['id' => 'blog', 'area' => 'content', 'label' => 'Blog', 'route' => 'admin.posts.index'],
             ['id' => 'pages', 'area' => 'content', 'label' => 'Pages (About, home)', 'route' => 'admin.pages.edit', 'params' => ['about']],
             ['id' => 'gallery', 'area' => 'gallery', 'label' => 'Gallery', 'route' => 'admin.gallery.index'],
-            ['id' => 'tokens', 'area' => 'tokens', 'label' => 'Tokens', 'route' => 'admin.tokens.index'],
+            ['id' => 'tokens', 'area' => 'tokens', 'label' => 'Token treasury', 'route' => 'admin.tokens.index'],
             ['id' => 'community', 'area' => 'community', 'label' => 'Community', 'route' => 'admin.community.index',
                 'badge' => $count('community', fn () => \App\Models\CommunityReport::whereNull('resolved_at')->distinct()->count('community_message_id'))],
             ['id' => 'notices', 'area' => 'notices', 'label' => 'Notice board', 'route' => 'admin.notices.index',
