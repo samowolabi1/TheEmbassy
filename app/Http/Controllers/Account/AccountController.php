@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Account;
 use App\Http\Controllers\Controller;
 use App\Models\Fellowship;
 use App\Models\Member;
+use App\Models\Service;
 use App\Models\TokenPayment;
 use App\Models\Unit;
 use App\Models\UnitMeeting;
 use App\Models\UnitMessage;
+use App\Models\WelfarePackage;
+use App\Services\Messaging\Inbox;
 use App\Services\Payments\Payments;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,9 +26,10 @@ use RuntimeException;
  */
 class AccountController extends Controller
 {
-    public function show(Request $request): View
+    public function show(Request $request, Inbox $inbox): View
     {
         $member = $request->user()->member?->load('unit', 'fellowship', 'tokenPlan', 'tokenPayments');
+        $active = $member?->status === Member::ACTIVE;
 
         return view('account.show', [
             'user' => $request->user(),
@@ -38,6 +42,9 @@ class AccountController extends Controller
             'checkedInMeetings' => $member ? $member->meetings()->pluck('unit_meetings.id')->all() : [],
             'duties' => $member ? $member->duties()->with('service', 'unit')->whereHas('service', fn ($q) => $q->where('held_on', '>=', today()->startOfDay()))->get() : collect(),
             'unitMessages' => $member?->unit_id ? UnitMessage::where('unit_id', $member->unit_id)->latest()->take(3)->get() : collect(),
+            'unread' => $active ? $inbox->unread($request->user()) : 0,
+            'joinable' => $active ? Service::joinableNow() : collect(),
+            'openPackages' => $active ? WelfarePackage::open()->whereDoesntHave('applications', fn ($q) => $q->where('member_id', $member->id))->count() : 0,
         ]);
     }
 

@@ -155,7 +155,8 @@ class AttendanceController extends Controller
             'in_person' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'online' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'notes' => ['nullable', 'string', 'max:255'],
-        ], ['end_time.after' => 'The end time must be after the start.']);
+            'join_url' => ['nullable', 'url:https', 'max:500'],
+        ], ['end_time.after' => 'The end time must be after the start.', 'join_url.url' => 'Paste the full https:// link to the Zoom, Google Meet or YouTube stream.']);
 
         $day = Carbon::parse($data['held_on'])->toDateString();
         $data['starts_at'] = ($data['start_time'] ?? null) ? Carbon::parse($day.' '.$data['start_time']) : null;

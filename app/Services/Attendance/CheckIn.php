@@ -63,6 +63,25 @@ class CheckIn
     }
 
     /**
+     * Marks a member present online because they joined through the app: they opened the meeting
+     * link, or kept the live stream playing for a while. Returns false if it didn't apply.
+     */
+    public function joined(Member $member, Service $service): bool
+    {
+        if ($member->status !== Member::ACTIVE || ! $service->online_checkin || ! $service->checkInIsOpen()
+            || $service->members()->whereKey($member->id)->exists()) {
+            return false;
+        }
+        try {
+            $this->record($member, $service, 'online', null);
+        } catch (ValidationException) {
+            return false; // checked in a moment ago
+        }
+
+        return true;
+    }
+
+    /**
      * The great-circle distance between two points, in metres.
      */
     public function metresBetween(float $lat1, float $lng1, float $lat2, float $lng2): float

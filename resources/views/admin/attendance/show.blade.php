@@ -101,6 +101,9 @@
                     <label class="field">In person <input type="number" name="in_person" value="{{ $service->in_person }}" min="0" required></label>
                     <label class="field">Online <input type="number" name="online" value="{{ $service->online }}" min="0" required></label>
                 </div>
+                <label class="field">Online link <input type="url" name="join_url" value="{{ old('join_url', $service->join_url) }}" maxlength="500" placeholder="Zoom, Google Meet or YouTube link">
+                    @error('join_url') <span class="field-error">{{ $message }}</span> @enderror
+                </label>
                 <label class="field">Notes <input type="text" name="notes" value="{{ $service->notes }}" maxlength="255"></label>
                 <button type="submit" class="btn btn--navy">Save</button>
             </form>

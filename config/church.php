@@ -54,6 +54,8 @@ return [
         // When check-in opens and closes, in minutes around the service start and end.
         'opens_before' => 30,
         'closes_after' => 30,
+        // Watching the stream inside the member's account for this many minutes marks them present online.
+        'watch_minutes' => 5,
     ],
 
     // Welfare: the HOD approves support up to `approval_limit` naira; above that a pastor approves.

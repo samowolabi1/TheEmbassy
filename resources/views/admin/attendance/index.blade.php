@@ -38,10 +38,15 @@
                 @error('start_time') <span class="field-error">{{ $message }}</span> @enderror
                 @error('end_time') <span class="field-error">{{ $message }}</span> @enderror
                 <label class="field">Title (optional) <input type="text" name="title" value="{{ old('title') }}" maxlength="120" placeholder="e.g. Thanksgiving night"></label>
+                <label class="field">Online link (optional)
+                    <input type="url" name="join_url" value="{{ old('join_url') }}" maxlength="500" placeholder="Zoom, Google Meet or YouTube link">
+                    <span class="field__hint">Members join from their account. Without a link, they watch the YouTube stream from Sermons &amp; live.</span>
+                    @error('join_url') <span class="field-error">{{ $message }}</span> @enderror
+                </label>
                 <fieldset class="field" style="border: 0; padding: 0; margin: 0">
                     <legend style="margin-bottom: 6px">Members check themselves in</legend>
                     <label class="login__remember"><input type="checkbox" name="in_person_checkin" value="1" @checked(old('in_person_checkin', true))>At church (within the venue radius)</label>
-                    <label class="login__remember"><input type="checkbox" name="online_checkin" value="1" @checked(old('online_checkin', true))>Online (with the code on the live stream)</label>
+                    <label class="login__remember"><input type="checkbox" name="online_checkin" value="1" @checked(old('online_checkin', true))>Online (joining from their account, or the code on the stream)</label>
                 </fieldset>
                 <label class="field">Repeat weekly for
                     <select name="repeat">

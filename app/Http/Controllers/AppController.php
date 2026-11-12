@@ -39,8 +39,9 @@ class AppController extends Controller
                 'purpose' => 'any maskable',
             ])->all(),
             'shortcuts' => [
-                ['name' => 'Watch live', 'url' => '/watch'],
-                ['name' => 'Check in', 'url' => '/check-in'],
+                ['name' => 'My account', 'url' => '/account'],
+                ['name' => 'Mark attendance', 'url' => '/check-in'],
+                ['name' => 'Messages', 'url' => '/account/messages'],
                 ['name' => 'Give', 'url' => '/give'],
             ],
         ], 200, ['Content-Type' => 'application/manifest+json']);

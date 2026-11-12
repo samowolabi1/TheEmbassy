@@ -11,6 +11,7 @@
     ] : [];
     if ($unit->isWelfare() && $user->can('manage-welfare', $unit)) {
         $nav[] = ['id' => 'welfare', 'label' => 'Welfare cases', 'route' => 'unit.welfare.index'];
+        $nav[] = ['id' => 'packages', 'label' => 'Welfare packages', 'route' => 'unit.welfare.packages.index'];
         $nav[] = ['id' => 'celebrations', 'label' => 'Celebrations', 'route' => 'unit.welfare.celebrations'];
     }
     if ($unit->isMedia() && $user->can('media-team', $unit)) {

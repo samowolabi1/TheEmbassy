@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
  * A church service and how many came, in person and online.
  */
-#[Fillable(['held_on', 'starts_at', 'ends_at', 'kind', 'title', 'in_person', 'online', 'notes', 'in_person_checkin', 'online_checkin'])]
+#[Fillable(['held_on', 'starts_at', 'ends_at', 'kind', 'title', 'in_person', 'online', 'notes', 'in_person_checkin', 'online_checkin', 'join_url'])]
 class Service extends Model
 {
     use HasFactory;
@@ -50,6 +51,61 @@ class Service extends Model
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(Member::class)->withPivot('mode', 'checked_in_at', 'distance_m');
+    }
+
+    /**
+     * The media unit's setup for this service, including its YouTube broadcast.
+     *
+     * @return HasOne<ServiceSetup, $this>
+     */
+    public function setup(): HasOne
+    {
+        return $this->hasOne(ServiceSetup::class);
+    }
+
+    /**
+     * The YouTube video to play for this service: from its join link, its broadcast,
+     * or the Watch page's live stream.
+     */
+    public function youtubeId(): ?string
+    {
+        if ($this->join_url && ($id = GalleryItem::youtubeId($this->join_url))) {
+            return $id;
+        }
+
+        $id = $this->setup?->youtube_video_id ?: config('church.live.video_id');
+
+        return is_string($id) && preg_match('/^[A-Za-z0-9_-]{6,20}$/', $id) ? $id : null;
+    }
+
+    /**
+     * A meeting link that isn't YouTube (Zoom, Google Meet, Teams…), opened in its own app.
+     */
+    public function meetingUrl(): ?string
+    {
+        return $this->join_url && ! GalleryItem::youtubeId($this->join_url) ? $this->join_url : null;
+    }
+
+    public function meetingName(): string
+    {
+        $host = strtolower((string) parse_url((string) $this->join_url, PHP_URL_HOST));
+
+        return match (true) {
+            str_contains($host, 'zoom') => 'Zoom',
+            str_contains($host, 'meet.google') => 'Google Meet',
+            str_contains($host, 'teams') => 'Microsoft Teams',
+            default => 'the meeting',
+        };
+    }
+
+    /**
+     * Services members can join online right now: online check-in is on and it's open.
+     *
+     * @return Collection<int, Service>
+     */
+    public static function joinableNow(): Collection
+    {
+        return static::openForCheckIn()->filter(fn (Service $s) => $s->online_checkin)->values();
     }
 
     protected static function booted(): void

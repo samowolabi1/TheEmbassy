@@ -40,6 +40,7 @@ return [
             'church.checkin.max_accuracy' => ['label' => 'Roughest location accepted (metres)', 'type' => 'number', 'rules' => ['integer', 'between:20,1000']],
             'church.checkin.opens_before' => ['label' => 'Check-in opens (minutes before the service)', 'type' => 'number', 'rules' => ['integer', 'between:0,240']],
             'church.checkin.closes_after' => ['label' => 'Check-in closes (minutes after the service ends)', 'type' => 'number', 'rules' => ['integer', 'between:0,240']],
+            'church.checkin.watch_minutes' => ['label' => 'Watching online in the app for this many minutes counts as present', 'type' => 'number', 'rules' => ['integer', 'between:1,60']],
             'church.checkin.require_code' => ['label' => 'In person, also ask for the code on the check-in screen (recommended: GPS alone can be faked)', 'type' => 'checkbox'],
             'church.care.absent_after' => ['label' => 'Check on members after this many missed Sundays in a row', 'type' => 'number', 'rules' => ['integer', 'between:1,12']],
         ],

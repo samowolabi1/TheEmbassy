@@ -15,7 +15,9 @@ The public website, built with [Laravel](https://laravel.com) 13 from the "RCCG 
 | `/give` | Online giving to the church's funds, bank transfer details, appeal progress |
 | `/market` | The member marketplace for products and services; `/market/open-a-shop` to apply |
 | `/notices` | Paid notice board for other churches and businesses; `/notices/advertise` to place one |
-| `/join`, `/login`, `/account` | Membership sign-up, sign-in, and the member's own page (details, giving, tokens) |
+| `/join`, `/login`, `/account` | Membership sign-up, sign-in, and the member's own page: quick links to mark attendance, join online, messages, welfare, community and give; details, giving and tokens |
+| `/account/messages` | The member's messages: what the church sent out, announcements, and their unit's messages |
+| `/services/{id}/join` | Join a service online: the stream plays (or Zoom/Meet opens) and the member is marked present |
 | `/welcome` | First-timer card for visitors; print it as a QR code at the door |
 | `/check-in` | Members check in to a service, at church (location and screen code) or online (stream code) |
 | `/contact`, `/privacy`, `/terms` | Contact form and legal pages |
@@ -73,6 +75,15 @@ Staff sign in at `/admin`. Every area in the design's sidebar is built:
 - **Gallery**: albums with a date, description and optional event; drop in up to 40 photos at a time with an upload progress bar, add YouTube videos, write captions, set the order and the cover, then publish. Photos are turned upright, resized (2000 px, plus a 640 px thumbnail), saved as WebP, and stripped of location and camera data.
 - **Sermons & live**: the message library and series on the home and Watch pages, and the YouTube stream in the Watch page player.
 - **Settings & roles**: staff and their roles, and the church's details (address, service times, bank details, live stream, social links). Saved values replace the placeholders across the site.
+
+## Members' app: attendance, joining online, welfare, messages
+
+Members do all of this from their account (or the installed app):
+
+- **Mark attendance**: at church by phone location and the screen code, or online. When a service is on, the account page shows "… is on · Join now".
+- **Join online services**: staff can add a Zoom, Google Meet or YouTube link to each service (Attendance › the service). Joining from the account plays the YouTube stream inside the app, or opens Zoom/Meet. Keeping the stream playing for a few minutes (5 by default, set in Settings › Attendance check-in) or opening the meeting through the app marks the member present online. Without a link it uses the stream from Sermons & live; the code on the stream still works for people watching elsewhere.
+- **Welfare packages**: the welfare unit sets up packages (what's in them, how many, when applications open and close, where to collect) under Welfare packages. Members apply from Welfare in their account with their household size; the HOD approves, waitlists or declines (never past the number of places), and the member is emailed and notified. Approved members get a reference (PK-XXXXXX) to show at collection, where the unit marks it collected. Applications are private to the welfare team and pastors; CSV export for the list. One-off requests for help work as before.
+- **Messages**: announcements, broadcasts sent from admin and their unit's messages in one inbox with an unread count. Notifications for broadcasts and unit messages open the inbox.
 
 ## The members' community
 

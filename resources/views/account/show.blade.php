@@ -4,14 +4,31 @@
     <section class="container notices-hero stack" style="gap: 12px">
         <span class="eyebrow">MY ACCOUNT</span>
         <h1 class="display notices-hero__title">Hi, {{ \Illuminate\Support\Str::before($member?->name ?? $user->name, ' ') }}.</h1>
+        @if ($member?->status === 'active')
+            @foreach ($joinable as $service)
+                <a href="{{ route('services.join', $service) }}" class="live-banner">
+                    <span class="live-banner__dot" aria-hidden="true"></span>
+                    <span class="stack" style="gap: 2px">
+                        <strong>{{ $service->label() }} is on</strong>
+                        <span>Join online and you'll be marked present</span>
+                    </span>
+                    <span class="btn btn--gold btn--sm">Join now</span>
+                </a>
+            @endforeach
+            <nav class="app-tiles" aria-label="Quick links">
+                <a href="{{ route('check-in') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">✅</span>Mark attendance</a>
+                <a href="{{ $joinable->isNotEmpty() ? route('services.join', $joinable->first()) : route('watch') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">📺</span>Join online</a>
+                <a href="{{ route('account.inbox') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">📣</span>Messages
+                    @if ($unread) <span class="app-tile__badge"><span class="sr-only">unread: </span>{{ $unread > 99 ? '99+' : $unread }}</span> @endif
+                </a>
+                <a href="{{ route('account.welfare') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🤲</span>Welfare
+                    @if ($openPackages) <span class="app-tile__badge app-tile__badge--soft">{{ $openPackages }} open</span> @endif
+                </a>
+                <a href="{{ route('community.index') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">💬</span>Community</a>
+                <a href="{{ route('give') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🎁</span>Give</a>
+            </nav>
+        @endif
         <div style="display: flex; flex-wrap: wrap; gap: 10px">
-            @if ($member?->status === 'active')
-                <a href="{{ route('check-in') }}" class="btn btn--gold btn--sm">Check in to a service</a>
-            @endif
-            @if ($member?->status === 'active')
-                <a href="{{ route('community.index') }}" class="btn btn--navy btn--sm">Community</a>
-                <a href="{{ route('account.welfare') }}" class="btn btn--outline btn--sm">Welfare</a>
-            @endif
             @if ($member?->status === 'active' && $member->unit?->isMedia() && ! $member->unit->isLedBy($member))
                 <a href="{{ route('unit.setup.index', $member->unit) }}" class="btn btn--navy btn--sm">Media team</a>
             @endif
@@ -140,7 +157,7 @@
             <form method="POST" action="{{ route('account.update') }}" class="card notice-form__main" style="flex: none">
                 @csrf
                 @method('PUT')
-                <fieldset class="notice-form__group">
+                <fieldset class="notice-form__group" id="details">
                     <legend>My details</legend>
                     <div class="grid-auto" style="--min: 220px; --gap: 14px">
                         <label class="field">Phone

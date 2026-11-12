@@ -45,6 +45,7 @@
                                 </form>
                             @endif
                             @if ($service->online_checkin)
+                                <a href="{{ route('services.join', $service) }}" class="btn btn--gold" style="align-self: flex-start">Join online</a>
                                 <form method="POST" action="{{ route('check-in.store') }}" class="notice-form__group">
                                     @csrf
                                     <input type="hidden" name="service" value="{{ $service->id }}">
@@ -52,7 +53,7 @@
                                     <label class="field">Code on the live stream
                                         <input type="text" name="code" value="{{ $code }}" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required placeholder="6 digits">
                                     </label>
-                                    <button type="submit" class="btn btn--gold">I'm watching online</button>
+                                    <button type="submit" class="btn btn--outline">I'm watching elsewhere</button>
                                 </form>
                             @endif
                         @endif

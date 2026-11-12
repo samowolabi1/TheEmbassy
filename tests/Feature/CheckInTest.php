@@ -48,7 +48,7 @@ class CheckInTest extends TestCase
         $member = Member::factory()->active()->create();
         $service = $this->service();
 
-        $this->actingAs($member->user)->get(route('check-in'))->assertOk()->assertSee("I'm at church", false)->assertSee("I'm watching online", false);
+        $this->actingAs($member->user)->get(route('check-in'))->assertOk()->assertSee("I'm at church", false)->assertSee("I'm watching elsewhere", false)->assertSee('Join online');
         $this->checkIn($service, ['latitude' => self::NEARBY[0], 'longitude' => self::NEARBY[1], 'accuracy' => 20, 'code' => $service->code()])
             ->assertRedirect(route('check-in'))->assertSessionHas('status', "You're checked in. Welcome to church!");
 
@@ -149,7 +149,7 @@ class CheckInTest extends TestCase
         $service = $this->service(['in_person_checkin' => false]);
         $this->actingAs($member->user);
 
-        $this->get(route('check-in'))->assertDontSee("I'm at church", false)->assertSee("I'm watching online", false);
+        $this->get(route('check-in'))->assertDontSee("I'm at church", false)->assertSee("I'm watching elsewhere", false)->assertSee('Join online');
         $this->post(route('check-in.store'), ['service' => $service->id, 'mode' => 'online', 'code' => '000000'])->assertSessionHasErrors('code');
         $this->post(route('check-in.store'), ['service' => $service->id, 'mode' => 'in_person', 'latitude' => self::NEARBY[0], 'longitude' => self::NEARBY[1], 'accuracy' => 10, 'code' => $service->code()])
             ->assertSessionHasErrors('location');

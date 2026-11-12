@@ -5,13 +5,16 @@ namespace App\Http\Controllers\Unit;
 use App\Http\Controllers\Controller;
 use App\Mail\UnitMessageMail;
 use App\Models\Member;
+use App\Models\PushSubscription;
 use App\Models\Service;
 use App\Models\Unit;
+use App\Services\Messaging\WebPush;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
@@ -90,7 +93,7 @@ class UnitController extends Controller
     /**
      * Email the whole unit, and show the message on their account pages.
      */
-    public function sendMessage(Request $request, Unit $unit): RedirectResponse
+    public function sendMessage(Request $request, Unit $unit, WebPush $push): RedirectResponse
     {
         $data = $request->validate(['subject' => ['required', 'string', 'max:120'], 'body' => ['required', 'string', 'max:5000']]);
         $message = $unit->messages()->make($data);
@@ -111,6 +114,18 @@ class UnitController extends Controller
             }
         }
         $message->forceFill(['emailed' => $sent])->save();
+
+        // And a notification on the phones of members who turned them on.
+        if ($push->configured()) {
+            $userIds = $unit->members()->active()->whereNotNull('user_id')->pluck('user_id');
+            $subscriptions = PushSubscription::whereIn('user_id', $userIds)->get();
+            defer(fn () => $push->send($subscriptions, [
+                'title' => $unit->name.': '.$message->subject,
+                'body' => Str::limit($message->body, 140),
+                'url' => route('account.inbox').'#u'.$message->id,
+                'tag' => 'unit-message-'.$message->id,
+            ]));
+        }
 
         return back()->with('status', "Message sent. Emailed to {$sent} ".str('member')->plural($sent).'; everyone sees it on their account page.');
     }

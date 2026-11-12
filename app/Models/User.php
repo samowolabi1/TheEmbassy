@@ -28,6 +28,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'community_muted_until' => 'datetime',
+            'inbox_read_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

@@ -57,7 +57,7 @@ class BroadcastController extends Controller
             'announcement_id' => $announcement->id,
             'title' => Str::limit($announcement->title, 120, ''),
             'message' => $data['message'],
-            'url' => $announcement->url ?: route('home'),
+            'url' => $announcement->url ?: route('account.inbox'),
             'channels' => array_values(array_unique($data['channels'])),
             'status' => 'queued',
             'created_by' => $request->user()->id,
