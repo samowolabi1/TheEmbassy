@@ -1,0 +1,73 @@
+/* Testimonies: the public page and a single testimony. */
+.testimony-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 20px;
+}
+.testimony-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+  border-radius: 24px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.testimony-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(10, 29, 63, 0.1);
+}
+.testimony-card::before {
+  content: '“';
+  font-family: 'Cinzel', serif;
+  font-size: 64px;
+  line-height: 1;
+  height: 30px;
+  margin-bottom: -6px;
+  color: var(--gold);
+}
+.testimony-card__tag {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--wash);
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 800;
+}
+.testimony-card__title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--navy);
+  line-height: 1.2;
+}
+.testimony-card__text {
+  color: var(--slate);
+  line-height: 1.6;
+}
+.testimony-card__by {
+  margin-top: auto;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.testimony {
+  max-width: 760px;
+}
+.testimony__title {
+  margin: 0;
+}
+.testimony__by {
+  margin: 0;
+  font-weight: 700;
+  color: var(--slate);
+}
+.testimony__body p {
+  font-size: 18px;
+  line-height: 1.75;
+  margin: 0 0 16px;
+}

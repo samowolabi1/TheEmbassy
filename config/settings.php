@@ -88,6 +88,7 @@ return [
             'tokens.rules.profile' => ['label' => 'Completing their profile (once)', 'type' => 'number', 'rules' => ['integer', 'between:0,100000']],
             'tokens.rules.welcome' => ['label' => 'Welcome gift when membership is confirmed', 'type' => 'number', 'rules' => ['integer', 'between:0,100000']],
             'tokens.rules.birthday' => ['label' => 'Birthday gift', 'type' => 'number', 'rules' => ['integer', 'between:0,100000']],
+            'tokens.rules.testimony' => ['label' => 'Testimony published (once a month)', 'type' => 'number', 'rules' => ['integer', 'between:0,100000']],
         ],
     ],
 

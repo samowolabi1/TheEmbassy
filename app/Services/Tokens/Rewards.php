@@ -31,6 +31,7 @@ class Rewards
         'profile' => ['Complete your profile', 'Add your birthday, address, unit and fellowship (once)'],
         'welcome' => ['Welcome gift', 'When your membership is confirmed (once)'],
         'birthday' => ['Birthday gift', 'On your birthday each year'],
+        'testimony' => ['Share a testimony', 'When your testimony is published (once a month)'],
     ];
 
     public function __construct(private Ledger $ledger) {}
@@ -126,6 +127,14 @@ class Rewards
     public function welcome(User $user): int
     {
         return $this->give($user, 'welcome', 'once', 'Welcome to '.config('church.short_name'));
+    }
+
+    /**
+     * Once a month at most, so testimonies are shared for their own sake.
+     */
+    public function testimony(User $user): int
+    {
+        return $this->give($user, 'testimony', now()->format('Y-m'), 'Thank you for sharing your testimony');
     }
 
     public function birthday(User $user): int

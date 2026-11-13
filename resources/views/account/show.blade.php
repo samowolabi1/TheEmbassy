@@ -53,6 +53,8 @@
                     <span class="app-tile__badge app-tile__badge--soft">{{ number_format($user->tokenBalance()) }}</span>
                 </a>
                 @endif
+                <a href="{{ route('account.appointments') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🙏</span>See a pastor</a>
+                <a href="{{ route('account.testimonies') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🙌</span>Testimony</a>
                 <a href="{{ route('give') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🎁</span>Give</a>
             </nav>
         @endif

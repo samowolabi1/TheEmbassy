@@ -75,6 +75,11 @@ return [
         'community' => true, // post the card in the community on the day
     ],
 
+    // Visits with a pastor: how much notice members must give when booking.
+    'appointments' => [
+        'notice_hours' => 12,
+    ],
+
     // The media unit's file library. The server's upload limit (PHP upload_max_filesize and
     // post_max_size, and the web server's body size) must be at least this big.
     'media' => [

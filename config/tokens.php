@@ -34,6 +34,7 @@ return [
         'profile' => 10,
         'welcome' => 20,
         'birthday' => 10,
+        'testimony' => 5,
     ],
 
 ];

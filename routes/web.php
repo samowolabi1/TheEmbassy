@@ -19,6 +19,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrayerRequestController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StudioOverlayController;
+use App\Http\Controllers\TestimonyController;
 use App\Http\Controllers\TicketOrderController;
 use App\Http\Controllers\TokenOrderController;
 use App\Http\Controllers\Unit;
@@ -42,6 +43,8 @@ Route::get('/give', [GiveController::class, 'create'])->name('give');
 Route::post('/give', [GiveController::class, 'store'])->middleware('throttle:10,1')->name('give.store');
 Route::get('/give/thanks/{gift}', [GiveController::class, 'thanks'])->middleware('signed')->name('give.thanks');
 
+Route::get('/testimonies', [TestimonyController::class, 'index'])->name('testimonies.index');
+Route::get('/testimonies/{testimony}', [TestimonyController::class, 'show'])->name('testimonies.show');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/feed', [BlogController::class, 'feed'])->name('blog.feed');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->where('slug', '[a-z0-9-]+')->name('blog.show');
@@ -149,6 +152,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/account/declare', [Account\AccountController::class, 'declare'])->middleware('throttle:10,1')->name('account.declare');
     Route::put('/account/birthday', [Account\AccountController::class, 'birthday'])->name('account.birthday');
     Route::get('/account/birthday-card.png', [Account\AccountController::class, 'birthdayCard'])->middleware('throttle:20,1')->name('account.birthday-card');
+    Route::get('/account/appointments', [Account\AppointmentController::class, 'index'])->name('account.appointments');
+    Route::post('/account/appointments', [Account\AppointmentController::class, 'store'])->middleware('throttle:10,1')->name('account.appointments.store');
+    Route::post('/account/appointments/{appointment}/cancel', [Account\AppointmentController::class, 'cancel'])->name('account.appointments.cancel');
+    Route::get('/account/testimonies', [Account\TestimonyController::class, 'index'])->name('account.testimonies');
+    Route::post('/account/testimonies', [Account\TestimonyController::class, 'store'])->middleware('throttle:5,1')->name('account.testimonies.store');
+    Route::post('/account/testimonies/{testimony}/withdraw', [Account\TestimonyController::class, 'withdraw'])->name('account.testimonies.withdraw');
+    Route::post('/testimonies/{testimony}/praise', [TestimonyController::class, 'praise'])->middleware('throttle:30,1')->name('testimonies.praise');
     Route::post('/account/tokens/send', [Account\AccountController::class, 'sendTokens'])->middleware('throttle:10,1')->name('account.tokens.send');
 });
 
@@ -395,6 +405,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::put('/budgets', [Admin\ExpenseController::class, 'budgets'])->name('budgets.update');
         });
 
+        Route::middleware('can:manage,"appointments"')->prefix('appointments')->name('appointments.')->group(function () {
+            Route::get('/', [Admin\AppointmentController::class, 'index'])->name('index');
+            Route::get('/hours', [Admin\AppointmentController::class, 'hours'])->name('hours');
+            Route::post('/hours', [Admin\AppointmentController::class, 'storeHour'])->name('hours.store');
+            Route::delete('/hours/{hour}', [Admin\AppointmentController::class, 'destroyHour'])->name('hours.destroy');
+            Route::post('/time-off', [Admin\AppointmentController::class, 'storeTimeOff'])->name('time-off.store');
+            Route::delete('/time-off/{timeOff}', [Admin\AppointmentController::class, 'destroyTimeOff'])->name('time-off.destroy');
+            Route::post('/{appointment}/confirm', [Admin\AppointmentController::class, 'confirm'])->name('confirm');
+            Route::post('/{appointment}/decline', [Admin\AppointmentController::class, 'decline'])->name('decline');
+            Route::post('/{appointment}/finish', [Admin\AppointmentController::class, 'finish'])->name('finish');
+        });
+        Route::middleware('can:manage,"testimonies"')->prefix('testimonies')->name('testimonies.')->group(function () {
+            Route::get('/', [Admin\TestimonyController::class, 'index'])->name('index');
+            Route::put('/{testimony}', [Admin\TestimonyController::class, 'update'])->name('update');
+            Route::post('/{testimony}/decline', [Admin\TestimonyController::class, 'decline'])->name('decline');
+            Route::post('/{testimony}/unpublish', [Admin\TestimonyController::class, 'unpublish'])->name('unpublish');
+        });
         Route::middleware('can:manage,"prayer"')->group(function () {
             Route::get('/prayer-requests', [Admin\PrayerRequestController::class, 'index'])->name('prayer-requests.index');
             Route::patch('/prayer-requests/{prayerRequest}', [Admin\PrayerRequestController::class, 'update'])->name('prayer-requests.update');

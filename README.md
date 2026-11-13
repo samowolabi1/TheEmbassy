@@ -17,6 +17,9 @@ The public website, built with [Laravel](https://laravel.com) 13 from the "RCCG 
 | `/notices` | Paid notice board for other churches and businesses; `/notices/advertise` to place one |
 | `/join`, `/login`, `/account` | Membership sign-up, sign-in, and the member's own page: quick links to mark attendance, join online, messages, welfare, community, tokens and give; details |
 | `/account/tokens` | The member's token wallet: balance, ways to earn, what they can get with tokens, their token orders and history |
+| `/account/appointments` | Book a visit with a pastor at an open time, and see your visits (confirmed, moved or declined) |
+| `/account/testimonies` | Share a testimony, choose how your name is shown and where it's shared, and see what became of it |
+| `/testimonies` | Members' published testimonies, by kind (healing, provision, breakthrough…), with "Praise God" |
 | `/account/messages` | The member's messages: what the church sent out, announcements, and their unit's messages |
 | `/services/{id}/join` | Join a service online: the stream plays (or Zoom/Meet opens) and the member is marked present |
 | `/welcome` | First-timer card for visitors; print it as a QR code at the door |
@@ -215,6 +218,26 @@ Every morning at 6:45 (`birthdays:celebrate`), members whose birthday is today a
 - **Tokens**: the birthday tokens, as before.
 
 Members add a photo for their card, and can switch public celebration off, in My account › My birthday card; they can preview their card there at any time. Members who switch it off aren't posted or listed in the community birthdays, and the media unit sees "Prefers not to be shared". 29 February birthdays are celebrated on the 28th in other years.
+
+## Visits with a pastor
+
+Members book a visit from **My account › See a pastor**:
+- **Open times** come from each pastor's weekly visiting hours. The pastor or the church office sets these on admin › Visits with a pastor › Visiting hours (for example Tuesdays 10:00 to 13:00 in 30-minute visits, in person or by call, and where). Times are open up to 21 days ahead, with at least 12 hours' notice (`church.appointments.notice_hours`). Time off, and visits already booked, are taken out.
+- **Booking:** the member picks a pastor (when there's more than one), a time, in person or by call, and what it's about. They can add a note that only that pastor and the pastor in charge can read; the office sees that there is a note, not what it says. A member can have two visits waiting or coming up at once. Two people can't take the same time.
+- **The pastor or office** confirms it (with a message such as where to come, and a call link for calls), moves it to another time (clashes are refused), or declines it with a reason. The member is told by email and on their phone. Afterwards they mark whether it happened.
+- **Reminders:** at 5pm (`appointments:remind`), members get a reminder of the next day's visits, and each pastor gets a list of the people they're seeing.
+- Members can cancel a visit that hasn't happened, and the pastor is told.
+
+Pastors open the page on their own visits; the office sees everyone's, with a filter by pastor. Who can manage this is set in Settings & roles (the "Visits with a pastor" area: pastors and the church office to start with).
+
+## Testimonies
+
+Members share a testimony from **My account › Testimony**:
+- **What they give:** a title, the kind (healing, provision, breakthrough, salvation, deliverance, family, career, protection or other), and the story.
+- **Their choices:** how their name is shown (full name, first name only, or none), whether it can go on the website, and whether it may be read out in a service.
+- **Review:** a pastor, the office or the media team (the "Testimonies" area) reads it on admin › Testimonies. They can tidy the spelling, then publish it or decline it with a kind note the member sees. Published testimonies can be taken down again.
+- **Publishing:** the member is emailed, and earns tokens (5 to start, once a month at most; the pastor in charge sets the amount on the Token treasury page). The testimony appears on `/testimonies` only if the member agreed to the website. Signed-in people can say "Praise God" once each, and the testimony can be shared to WhatsApp.
+- Members can withdraw a testimony at any time.
 
 ## Money: giving, tickets, the market and the notice board
 
