@@ -544,3 +544,19 @@
   gap: 12px;
   padding: 22px;
 }
+.feedback-service {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+.feedback-service summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  cursor: pointer;
+  list-style: none;
+}
+.feedback-service summary::-webkit-details-marker {
+  display: none;
+}

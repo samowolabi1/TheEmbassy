@@ -50,6 +50,9 @@ class AccountController extends Controller
             'unread' => $active ? $inbox->unread($request->user()) : 0,
             'joinable' => $active ? Service::joinableNow() : collect(),
             'birthday' => $active ? app(Birthdays::class)->recent($member) : null,
+            // A service they were at in the last three days and haven't given feedback on.
+            'feedbackDue' => $active ? $member->services()->where('held_on', '>=', today()->subDays(3))->where('held_on', '<=', today())
+                ->whereDoesntHave('feedback', fn ($q) => $q->where('member_id', $member->id))->orderByDesc('held_on')->first() : null,
             'openPackages' => $active ? WelfarePackage::open()->whereDoesntHave('applications', fn ($q) => $q->where('member_id', $member->id))->count() : 0,
         ]);
     }

@@ -4,6 +4,15 @@
     <section class="container notices-hero stack" style="gap: 12px">
         <span class="eyebrow">MY ACCOUNT</span>
         <h1 class="display notices-hero__title">Hi, {{ \App\Models\Member::firstNameOf($member?->name ?? $user->name) }}.</h1>
+        @if ($feedbackDue)
+            <a href="{{ route('account.feedback', ['service' => $feedbackDue->id]) }}#service-{{ $feedbackDue->id }}" class="live-banner" style="background: var(--wash); color: var(--navy)">
+                <span class="stack" style="gap: 2px">
+                    <strong>How was {{ $feedbackDue->label() }}?</strong>
+                    <span>Tell us in a minute: what blessed you and what we can do better.</span>
+                </span>
+                <span class="btn btn--navy btn--sm">Give feedback</span>
+            </a>
+        @endif
         @if ($birthday)
             @php
                 $wishes = $birthday->message ? \App\Models\CommunityMessage::where('reply_to_id', $birthday->message->id)->whereNull('removed_at')->count() + \App\Models\CommunityReaction::where('community_message_id', $birthday->message->id)->count() : 0;
@@ -56,6 +65,7 @@
                 <a href="{{ route('account.prayer') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🙏</span>Prayer</a>
                 <a href="{{ route('account.appointments') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🗓️</span>See a pastor</a>
                 <a href="{{ route('account.testimonies') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🙌</span>Testimony</a>
+                <a href="{{ route('account.feedback') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">💡</span>Feedback</a>
                 <a href="{{ route('give') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🎁</span>Give</a>
             </nav>
         @endif

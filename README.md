@@ -17,6 +17,7 @@ The public website, built with [Laravel](https://laravel.com) 13 from the "RCCG 
 | `/notices` | Paid notice board for other churches and businesses; `/notices/advertise` to place one |
 | `/join`, `/login`, `/account` | Membership sign-up, sign-in, and the member's own page: quick links to mark attendance, join online, messages, welfare, community, tokens and give; details |
 | `/account/tokens` | The member's token wallet: balance, ways to earn, what they can get with tokens, their token orders and history |
+| `/account/feedback` | Rate a recent service (what blessed you, what could be better), and send suggestions and see the church's answers |
 | `/account/prayer` | Send a prayer request, follow it up, read the prayer team's replies, and mark it answered (then share it as a testimony) |
 | `/account/prayer/wall` | The members' prayer wall: requests members chose to share with the church, with "I prayed" |
 | `/account/appointments` | Book a visit with a pastor at an open time, and see your visits (confirmed, moved or declined) |
@@ -234,6 +235,18 @@ Anyone can send a prayer request from the form on the home page, as before. Memb
 - **Replies:** the prayer team (the "Prayer requests" area) sees members' requests on admin › Prayer requests, with filters for "From members" and "On the prayer wall". They can reply with a word of encouragement or a scripture. The member gets it by email, on their phone, and on their prayer page, and the request shows as prayed for. Requests from the home page have no account to reply to, so the team follows up with the contact details left.
 - **Answered:** members tell the church when God answers, with what happened, and are invited to share it as a testimony (the testimony form starts with their request and answer).
 - **The prayer wall** is for approved members only. It shows shared requests from the last 60 days (first name, or no name), and members tap "I prayed" once each so the person knows how many prayed. Staff can take a request off the wall. Members can remove their own requests.
+
+## Feedback and suggestions
+
+Members give feedback from **My account › Feedback**:
+- **On services** held in the last 7 days: an overall rating (poor to excellent), what went well, and what could be better. The parts to pick from are worship, the sermon, prayer, welcome and ushering, sound and screens, the live stream, timing, the venue and children's church. They can add a comment and leave their name off. Sending again updates their feedback.
+  - **Nudge:** for three days after a service a member checked in to, their account page asks "How was Sunday service?".
+- **Suggestions** on anything (services, events, units, welfare, youth, facilities, the app, communication or something else), with or without their name. Members see where each suggestion is up to (sent, being looked at, we're doing it, done, or not for now) and the church's answer.
+
+The pastors and church office (the "Feedback" area) see it on **admin › Feedback & suggestions**:
+- **Each service:** the average rating, how many responded, what was praised and what was flagged most, the spread of ratings, and the comments.
+- **Suggestions:** an inbox, filtered by where each one is up to. Staff set the status and write an answer; the member is emailed and notified on their phone when there's a new answer.
+- **Names:** anything sent without a name shows as "A member (no name)".
 
 ## Visits with a pastor
 

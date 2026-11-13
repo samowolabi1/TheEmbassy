@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -51,6 +52,16 @@ class Service extends Model
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(Member::class)->withPivot('mode', 'checked_in_at', 'distance_m');
+    }
+
+    /**
+     * Members' feedback on this service.
+     *
+     * @return HasMany<ServiceFeedback, $this>
+     */
+    public function feedback(): HasMany
+    {
+        return $this->hasMany(ServiceFeedback::class);
     }
 
     /**

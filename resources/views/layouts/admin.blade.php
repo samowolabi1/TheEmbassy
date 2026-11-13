@@ -47,6 +47,8 @@
             ['id' => 'events', 'area' => 'events', 'label' => 'Events & tickets', 'route' => 'admin.events.index'],
             ['id' => 'appointments', 'area' => 'appointments', 'label' => 'Visits with a pastor', 'route' => 'admin.appointments.index',
                 'badge' => \App\Models\Appointment::where('status', 'requested')->when(in_array($user->role, ['super', 'pastor'], true), fn ($q) => $q->where('pastor_id', $user->id))->count() ?: null],
+            ['id' => 'feedback', 'area' => 'feedback', 'label' => 'Feedback & suggestions', 'route' => 'admin.feedback.index',
+                'badge' => \App\Models\Suggestion::where('status', 'new')->count() ?: null],
             ['id' => 'testimonies', 'area' => 'testimonies', 'label' => 'Testimonies', 'route' => 'admin.testimonies.index',
                 'badge' => \App\Models\Testimony::where('status', 'pending')->count() ?: null],
             ['id' => 'prayer', 'area' => 'prayer', 'label' => 'Prayer requests', 'route' => 'admin.prayer-requests.index',

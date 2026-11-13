@@ -155,6 +155,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/account/declare', [Account\AccountController::class, 'declare'])->middleware('throttle:10,1')->name('account.declare');
     Route::put('/account/birthday', [Account\AccountController::class, 'birthday'])->name('account.birthday');
     Route::get('/account/birthday-card.png', [Account\AccountController::class, 'birthdayCard'])->middleware('throttle:20,1')->name('account.birthday-card');
+    Route::get('/account/feedback', [Account\FeedbackController::class, 'index'])->name('account.feedback');
+    Route::post('/account/feedback/services/{service}', [Account\FeedbackController::class, 'rate'])->middleware('throttle:20,1')->name('account.feedback.rate');
+    Route::post('/account/feedback/suggestions', [Account\FeedbackController::class, 'suggest'])->middleware('throttle:5,1')->name('account.feedback.suggest');
     Route::get('/account/prayer', [Account\PrayerController::class, 'index'])->name('account.prayer');
     Route::post('/account/prayer', [Account\PrayerController::class, 'store'])->middleware('throttle:10,1')->name('account.prayer.store');
     Route::get('/account/prayer/wall', [Account\PrayerController::class, 'wall'])->name('account.prayer.wall');
@@ -424,6 +427,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/{appointment}/confirm', [Admin\AppointmentController::class, 'confirm'])->name('confirm');
             Route::post('/{appointment}/decline', [Admin\AppointmentController::class, 'decline'])->name('decline');
             Route::post('/{appointment}/finish', [Admin\AppointmentController::class, 'finish'])->name('finish');
+        });
+        Route::middleware('can:manage,"feedback"')->prefix('feedback')->name('feedback.')->group(function () {
+            Route::get('/', [Admin\FeedbackController::class, 'index'])->name('index');
+            Route::get('/services/{service}', [Admin\FeedbackController::class, 'service'])->name('service');
+            Route::post('/suggestions/{suggestion}', [Admin\FeedbackController::class, 'respond'])->name('respond');
         });
         Route::middleware('can:manage,"testimonies"')->prefix('testimonies')->name('testimonies.')->group(function () {
             Route::get('/', [Admin\TestimonyController::class, 'index'])->name('index');
