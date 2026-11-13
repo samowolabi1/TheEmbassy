@@ -12,10 +12,10 @@
     <header class="page-head">
         <div class="stack" style="gap: 4px">
             <h1>Pages</h1>
-            <span class="page-head__sub">The words and photos on the About page and the home page testimony.</span>
+            <span class="page-head__sub">The words and photos on the About page, and the home page's slider and testimony.</span>
         </div>
         <div class="actions">
-            <a href="{{ $page === 'about' ? route('about') : route('home').'#prayer' }}" class="btn btn--outline" target="_blank">View on the website</a>
+            <a href="{{ $page === 'about' ? route('about') : route('home') }}" class="btn btn--outline" target="_blank">View on the website</a>
         </div>
     </header>
 
@@ -146,6 +146,112 @@
                 @endforeach
             </section>
         @else
+            @php
+                $slideRows = old('slides', collect($content['slides'] ?? [])->map(fn ($sl, $i) => [...$sl, 'from' => $i, 'order' => $i + 1])->all());
+                $blank = ['from' => null, 'kicker' => '', 'kicker_style' => 'outline', 'title' => '', 'accent' => '', 'text' => '', 'primary_label' => '', 'primary_link' => '', 'secondary_label' => '', 'secondary_link' => '', 'photo_alt' => '', 'swatch' => 'mid', 'feature' => 'none', 'feature_text' => '', 'feature_ref' => '', 'show_until' => null, 'hidden' => false];
+                $slideRows = array_values($slideRows);
+                if (count($slideRows) < \App\Http\Controllers\Admin\PageContentController::MAX_SLIDES) {
+                    $slideRows[] = [...$blank, 'order' => count($slideRows) + 1];
+                }
+            @endphp
+            <section class="box form" id="slider">
+                <h2>Slider</h2>
+                <span class="box__note">The slides at the top of the home page, in order. Clear a slide's title to remove it, or tick "Hide" to keep it for later. The empty slide at the end adds a new one. Up to {{ \App\Http\Controllers\Admin\PageContentController::MAX_SLIDES }} slides.</span>
+                @error('slides') <span class="field-error">{{ $message }}</span> @enderror
+                @foreach ($slideRows as $i => $sl)
+                    @php $photo = isset($sl['from']) && $sl['from'] !== '' && $sl['from'] !== null ? ($content['slides'][(int) $sl['from']]['photo'] ?? null) : null; @endphp
+                    <details class="slide-editor" @if ($errors->has("slides.{$i}.*") || ($sl['from'] === null && $sl['title'] !== '')) open @endif>
+                        <summary>
+                            @if ($photo)
+                                <img src="{{ \App\Models\PageContent::photoUrl($photo) }}" alt="" class="slide-editor__thumb">
+                            @else
+                                <span class="slide-editor__thumb bg-{{ $sl['swatch'] ?? 'mid' }}" aria-hidden="true"></span>
+                            @endif
+                            <span class="slide-editor__title">
+                                @if ($sl['from'] === null && trim($sl['title'] ?? '') === '')
+                                    + Add a slide
+                                @else
+                                    {{ $i + 1 }}. {{ trim(($sl['title'] ?? '').' '.($sl['accent'] ?? '')) ?: 'Sermon series (from the newest series)' }}
+                                @endif
+                            </span>
+                            @if (! empty($sl['hidden']))<span class="pill pill--draft">Hidden</span>@endif
+                            @if (! empty($sl['show_until']))<span class="pill pill--info">Until {{ \Illuminate\Support\Carbon::parse($sl['show_until'])->format('j M') }}</span>@endif
+                        </summary>
+                        <div class="stack" style="gap: 14px; padding-top: 14px">
+                            <input type="hidden" name="slides[{{ $i }}][from]" value="{{ $sl['from'] ?? '' }}">
+                            <div class="form-row">
+                                <label class="field" style="max-width: 110px">Position <input type="number" name="slides[{{ $i }}][order]" value="{{ $sl['order'] ?? $i + 1 }}" min="0" max="99"></label>
+                                <label class="field">Small label above <input type="text" name="slides[{{ $i }}][kicker]" value="{{ $sl['kicker'] ?? '' }}" maxlength="40" placeholder="e.g. SAT 14 NOVEMBER"></label>
+                                <label class="field">Label style
+                                    <select name="slides[{{ $i }}][kicker_style]">
+                                        <option value="outline" @selected(($sl['kicker_style'] ?? '') !== 'gold')>Outline</option>
+                                        <option value="gold" @selected(($sl['kicker_style'] ?? '') === 'gold')>Gold</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <div class="form-row">
+                                <label class="field">Title
+                                    <textarea name="slides[{{ $i }}][title]" maxlength="80" rows="2" placeholder="e.g. Royal Youth">{{ $sl['title'] ?? '' }}</textarea>
+                                    <span class="field__hint">Press Enter for a new line.</span>
+                                </label>
+                                <label class="field">Highlighted line (gold) <input type="text" name="slides[{{ $i }}][accent]" value="{{ $sl['accent'] ?? '' }}" maxlength="60" placeholder="e.g. Convention"></label>
+                            </div>
+                            <label class="field">Text <textarea name="slides[{{ $i }}][text]" maxlength="220" rows="2">{{ $sl['text'] ?? '' }}</textarea></label>
+                            <div class="form-row">
+                                <label class="field">Main button <input type="text" name="slides[{{ $i }}][primary_label]" value="{{ $sl['primary_label'] ?? '' }}" maxlength="40" placeholder="e.g. Get your ticket"></label>
+                                <label class="field">Goes to
+                                    <input type="text" name="slides[{{ $i }}][primary_link]" value="{{ $sl['primary_link'] ?? '' }}" maxlength="300" placeholder="/events">
+                                    @error("slides.{$i}.primary_link") <span class="field-error">{{ $message }}</span> @enderror
+                                </label>
+                                <label class="field">Second button <input type="text" name="slides[{{ $i }}][secondary_label]" value="{{ $sl['secondary_label'] ?? '' }}" maxlength="40"></label>
+                                <label class="field">Goes to
+                                    <input type="text" name="slides[{{ $i }}][secondary_link]" value="{{ $sl['secondary_link'] ?? '' }}" maxlength="300">
+                                    @error("slides.{$i}.secondary_link") <span class="field-error">{{ $message }}</span> @enderror
+                                </label>
+                            </div>
+                            <span class="field__hint">Button links: a page on this site (<code>/events</code>, <code>/about#visit</code>, <code>/give</code>), a full address (<code>https://…</code>), or <code>@youtube</code> (the church's channel), <code>@sermon</code> (the newest sermon), <code>@share</code> (a "share this" button).</span>
+                            <div class="form-row">
+                                <div class="field">
+                                    <span>Picture (wide, about 3:2)</span>
+                                    @if ($photo)
+                                        <img src="{{ \App\Models\PageContent::photoUrl($photo) }}" alt="" class="cover-preview">
+                                        <label class="login__remember"><input type="checkbox" name="slides[{{ $i }}][remove_photo]" value="1">Remove this picture</label>
+                                    @endif
+                                    <input type="file" name="slides[{{ $i }}][photo]" accept="image/jpeg,image/png,image/webp" class="file-input">
+                                    @error("slides.{$i}.photo") <span class="field-error">{{ $message }}</span> @enderror
+                                </div>
+                                <label class="field">Describe the picture <input type="text" name="slides[{{ $i }}][photo_alt]" value="{{ $sl['photo_alt'] ?? '' }}" maxlength="150" placeholder="e.g. The Tribe worshipping on Sunday"></label>
+                                <label class="field">Colour without a picture
+                                    <select name="slides[{{ $i }}][swatch]">
+                                        @foreach (\App\Http\Controllers\Admin\PageContentController::SLIDE_SWATCHES as $swatch)
+                                            <option value="{{ $swatch }}" @selected(($sl['swatch'] ?? 'mid') === $swatch)>{{ ucfirst($swatch) }}</option>
+                                        @endforeach
+                                    </select>
+                                </label>
+                            </div>
+                            <div class="form-row">
+                                <label class="field">Over the picture
+                                    <select name="slides[{{ $i }}][feature]">
+                                        @foreach (\App\Http\Controllers\Admin\PageContentController::SLIDE_FEATURES as $key => $label)
+                                            <option value="{{ $key }}" @selected(($sl['feature'] ?? 'none') === $key)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </label>
+                                <label class="field">Date badge or scripture text <input type="text" name="slides[{{ $i }}][feature_text]" value="{{ $sl['feature_text'] ?? '' }}" maxlength="300" placeholder="e.g. 14 NOV"></label>
+                                <label class="field">Scripture reference <input type="text" name="slides[{{ $i }}][feature_ref]" value="{{ $sl['feature_ref'] ?? '' }}" maxlength="40" placeholder="e.g. 1 Peter 2:9"></label>
+                            </div>
+                            <div class="form-row" style="align-items: end">
+                                <label class="field" style="max-width: 220px">Show until (optional)
+                                    <input type="date" name="slides[{{ $i }}][show_until]" value="{{ $sl['show_until'] ?? '' }}">
+                                    <span class="field__hint">Hides itself after this day, e.g. after an event.</span>
+                                </label>
+                                <label class="login__remember"><input type="checkbox" name="slides[{{ $i }}][hidden]" value="1" @checked(! empty($sl['hidden']))>Hide this slide</label>
+                            </div>
+                        </div>
+                    </details>
+                @endforeach
+            </section>
+
             @php $t = $content['testimony']; @endphp
             <section class="box form">
                 <h2>Testimony</h2>

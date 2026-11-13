@@ -1,7 +1,7 @@
 // Home page highlights carousel: rotates every 6 seconds unless paused or reduced motion is on.
 const carousel = document.querySelector('[data-carousel]');
 
-if (carousel) {
+if (carousel && carousel.querySelectorAll('[data-slide]').length > 1) {
     const slides = [...carousel.querySelectorAll('[data-slide]')];
     const dots = [...carousel.querySelectorAll('[data-dot]')];
     const num = carousel.querySelector('[data-slide-num]');

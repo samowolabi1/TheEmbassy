@@ -837,3 +837,25 @@
 .app-actions__status:empty {
   display: none;
 }
+
+/* A slide with a photo the church uploaded (admin › Pages › Home page). */
+.slide__media--photo {
+  background: var(--midnight);
+}
+.slide__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.slide__media--photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(4, 12, 30, 0) 55%, rgba(4, 12, 30, 0.55));
+  pointer-events: none;
+}
+.slide__media--photo > :not(.slide__photo) {
+  z-index: 1;
+}

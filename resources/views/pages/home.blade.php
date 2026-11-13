@@ -3,6 +3,13 @@
 @php
     $links = config('church.links');
     $testimony = $home['testimony'];
+    // Slides staff haven't hidden, and whose "show until" date hasn't passed.
+    $slides = collect($home['slides'] ?? [])
+        ->reject(fn ($s) => ! empty($s['hidden']) || (! empty($s['show_until']) && \Illuminate\Support\Carbon::parse($s['show_until'])->endOfDay()->isPast()))
+        ->values();
+    if ($slides->isEmpty()) {
+        $slides = collect(config('content.home.slides'))->take(1);
+    }
     $followLinks = [
         ['label' => 'Instagram', 'icon' => 'instagram', 'href' => $links['instagram']],
         ['label' => 'YouTube', 'icon' => 'youtube', 'href' => $links['youtube']],
@@ -18,82 +25,17 @@
     <section class="hero on-dark" aria-roledescription="carousel" aria-label="Highlights" data-carousel>
         <div class="container hero__inner">
             <div class="hero__slides">
-                <div class="slide" role="group" aria-roledescription="slide" aria-label="1 of 4" data-slide>
-                    <div class="slide__copy">
-                        <span class="slide__kicker slide__kicker--outline">RCCG YOUTH CHURCH</span>
-                        <h1 class="display slide__title">Young. Royal.<br><span class="accent">Rooted in Christ.</span></h1>
-                        <p class="slide__text">A home for students, creatives and young professionals. Come as you are and grow into who God called you to be.</p>
-                        <div class="slide__ctas">
-                            <a href="{{ route('about') }}#visit" class="btn btn--gold">Plan your visit</a>
-                            <a href="{{ $links['youtube'] }}" class="btn btn--outline-light"><x-icon name="play" :size="16" />Watch on YouTube</a>
-                        </div>
-                    </div>
-                    <div role="img" aria-label="Photo placeholder: Sunday worship" class="placeholder slide__media bg-mid hero__bordered">
-                        <span class="placeholder__note placeholder__note--right">[Photo: Sunday worship]</span>
-                        <div class="next-card">
-                            <span class="next-card__label">NEXT GATHERING</span>
-                            <span class="next-card__time">Sunday · {{ config('church.sunday_time') }}</span>
-                            <span class="next-card__where">{{ config('church.address') }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 4" data-slide hidden>
-                    <div class="slide__copy">
-                        <span class="slide__kicker slide__kicker--gold">SAT 14 NOVEMBER</span>
-                        <h1 class="display slide__title">Royal Youth<br><span class="accent">Convention</span></h1>
-                        <p class="slide__text">Worship, honest conversations and the biggest Tribe hangout of the year. Bring a friend.</p>
-                        <div class="slide__ctas">
-                            <a href="{{ route('events') }}" class="btn btn--gold">Get your ticket</a>
-                            <a href="{{ route('events') }}" class="btn btn--outline-light">Event details</a>
-                        </div>
-                    </div>
-                    <div role="img" aria-label="Photo placeholder: convention artwork" class="placeholder slide__media bg-gold">
-                        <x-crown :width="420" :height="350" fill="var(--midnight)" jewels class="crown-bg" style="right: -60px; bottom: -70px; opacity: 0.1" />
-                        <span class="placeholder__note placeholder__note--right">[Convention flyer]</span>
-                        <span class="slide__date">14<br><span>NOV</span></span>
-                    </div>
-                </div>
-
-                <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 4" data-slide hidden>
-                    <div class="slide__copy">
-                        <span class="slide__kicker slide__kicker--outline">NEW SERMON SERIES</span>
-                        <h1 class="display slide__title">{{ $headline['series_title'] }}<br><span class="accent">{{ $headline['series_accent'] }}</span></h1>
-                        <p class="slide__text">A series on identity, purpose and living as a royal priesthood. New episodes every Sunday.</p>
-                        <div class="slide__ctas">
-                            <a href="{{ $headline['url'] ?? route('watch') }}" class="btn btn--gold"><x-icon name="play" :size="16" />Watch {{ $headline['week'] ? 'week '.$headline['week'] : 'now' }}</a>
-                            <a href="{{ route('watch') }}" class="btn btn--outline-light">All episodes</a>
-                        </div>
-                    </div>
-                    <div role="img" aria-label="Photo placeholder: series artwork" class="placeholder slide__media bg-night hero__bordered">
-                        <x-crown :width="360" :height="300" jewels band class="crown-bg slide__crown" style="opacity: 0.9" />
-                        <span class="placeholder__note placeholder__note--right">[Series artwork]</span>
-                        <span class="slide__series">{{ strtoupper(trim($headline['series_title'].' '.$headline['series_accent'])) }}</span>
-                    </div>
-                </div>
-
-                <div class="slide" role="group" aria-roledescription="slide" aria-label="4 of 4" data-slide hidden>
-                    <div class="slide__copy">
-                        <span class="slide__kicker slide__kicker--outline">THIS WEEK'S DECLARATION</span>
-                        <h1 class="display slide__title">I am chosen.<br>I am royal.<br><span class="accent">I am His.</span></h1>
-                        <div class="slide__ctas">
-                            <a href="#declaration" class="btn btn--gold">Read the full declaration</a>
-                            <button type="button" class="btn btn--outline-light" data-share data-share-text="I am chosen. I am royal. I am His. 1 Peter 2:9">Share it</button>
-                        </div>
-                    </div>
-                    <div class="slide__media slide__verse">
-                        <x-crown :width="64" :height="54" jewels />
-                        <span class="slide__quote">"But you are a chosen people, a royal priesthood, a holy nation, God's special possession."</span>
-                        <span class="slide__ref">1 PETER 2:9</span>
-                    </div>
-                </div>
+                @foreach ($slides as $i => $slide)
+                    @include('pages.partials.hero-slide', ['slide' => $slide, 'i' => $i, 'total' => $slides->count()])
+                @endforeach
             </div>
 
+            @if ($slides->count() > 1)
             <div class="hero__controls">
                 <div class="hero__progress">
-                    <span class="hero__count"><span data-slide-num>01</span> <span class="hero__of">/ 04</span></span>
+                    <span class="hero__count"><span data-slide-num>01</span> <span class="hero__of">/ {{ str_pad((string) $slides->count(), 2, '0', STR_PAD_LEFT) }}</span></span>
                     <div class="hero__dots">
-                        @foreach (range(0, 3) as $n)
+                        @foreach (range(0, $slides->count() - 1) as $n)
                             <button type="button" class="dot" aria-label="Go to slide {{ $n + 1 }}" @if ($n === 0) aria-current="true" @endif data-dot="{{ $n }}"><span class="dot__fill"></span></button>
                         @endforeach
                     </div>
@@ -104,6 +46,7 @@
                     <button type="button" class="hero__pause" data-pause aria-pressed="false">Pause</button>
                 </div>
             </div>
+            @endif
         </div>
     </section>
 

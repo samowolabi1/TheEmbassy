@@ -15,11 +15,24 @@ use Illuminate\View\View;
 use RuntimeException;
 
 /**
- * The words and photos on the About page and the home page testimony.
+ * The words and photos on the About page, and the home page's slider and testimony.
  */
 class PageContentController extends Controller
 {
     private const PHOTO = ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:15360'];
+
+    /** What a slide can show over its picture. */
+    public const SLIDE_FEATURES = [
+        'none' => 'Nothing',
+        'service' => 'Next Sunday\'s time and place',
+        'date' => 'A date badge (e.g. 14 NOV)',
+        'series' => 'The current sermon series',
+        'verse' => 'A scripture (in place of the picture)',
+    ];
+
+    public const SLIDE_SWATCHES = ['mid', 'night', 'navy', 'gold', 'ice', 'wash'];
+
+    public const MAX_SLIDES = 8;
 
     public function edit(string $page): View
     {
@@ -125,6 +138,7 @@ class PageContentController extends Controller
      */
     private function home(Request $request, array $current, Images $images): array
     {
+        $slides = $this->slides($request, $current, $images);
         $data = $request->validate([
             'quote' => ['required', 'string', 'max:500'],
             'name' => ['required', 'string', 'max:100'],
@@ -137,7 +151,7 @@ class PageContentController extends Controller
         $initials = trim($data['initials'] ?? '') ?: collect(preg_split('/\s+/', preg_replace('/[^\pL\s]/u', '', $data['name'])))
             ->filter()->take(2)->map(fn ($w) => mb_substr($w, 0, 1))->join('');
 
-        return ['testimony' => [
+        return ['slides' => $slides, 'testimony' => [
             'quote' => $data['quote'],
             'name' => $data['name'],
             'initials' => mb_strtoupper($initials),
@@ -147,9 +161,99 @@ class PageContentController extends Controller
     }
 
     /**
+     * The home page slider. Rows without a title are dropped (a sermon series slide can leave
+     * it blank to use the series' name); photos follow the row they came from.
+     *
+     * @param  array<string, mixed>  $current
+     * @return list<array<string, mixed>>
+     */
+    private function slides(Request $request, array $current, Images $images): array
+    {
+        // A form without the slider (e.g. only the testimony) leaves the slides as they are.
+        if (! $request->has('slides')) {
+            return $current['slides'] ?? [];
+        }
+        $link = ['nullable', 'string', 'max:300', 'regex:~^(/|#|https?://|@youtube$|@sermon$|@share$)~'];
+        $data = $request->validate([
+            'slides' => ['nullable', 'array', 'max:'.(self::MAX_SLIDES + 2)],
+            'slides.*.from' => ['nullable', 'integer', 'min:0'],
+            'slides.*.order' => ['nullable', 'integer', 'min:0', 'max:99'],
+            'slides.*.kicker' => ['nullable', 'string', 'max:40'],
+            'slides.*.kicker_style' => ['nullable', Rule::in(['outline', 'gold'])],
+            'slides.*.title' => ['nullable', 'string', 'max:80'],
+            'slides.*.accent' => ['nullable', 'string', 'max:60'],
+            'slides.*.text' => ['nullable', 'string', 'max:220'],
+            'slides.*.primary_label' => ['nullable', 'string', 'max:40'],
+            'slides.*.primary_link' => [...$link, 'required_with:slides.*.primary_label'],
+            'slides.*.secondary_label' => ['nullable', 'string', 'max:40'],
+            'slides.*.secondary_link' => [...$link, 'required_with:slides.*.secondary_label'],
+            'slides.*.photo' => self::PHOTO,
+            'slides.*.remove_photo' => ['nullable', 'boolean'],
+            'slides.*.photo_alt' => ['nullable', 'string', 'max:150'],
+            'slides.*.swatch' => ['nullable', Rule::in(self::SLIDE_SWATCHES)],
+            'slides.*.feature' => ['nullable', Rule::in(array_keys(self::SLIDE_FEATURES))],
+            'slides.*.feature_text' => ['nullable', 'string', 'max:300'],
+            'slides.*.feature_ref' => ['nullable', 'string', 'max:40'],
+            'slides.*.show_until' => ['nullable', 'date'],
+            'slides.*.hidden' => ['nullable', 'boolean'],
+        ], [
+            'slides.*.primary_link.regex' => 'Links start with / (a page on this site), # or https://, or are @youtube, @sermon or @share.',
+            'slides.*.secondary_link.regex' => 'Links start with / (a page on this site), # or https://, or are @youtube, @sermon or @share.',
+            'slides.*.primary_link.required_with' => 'Where should this button go?',
+            'slides.*.secondary_link.required_with' => 'Where should this button go?',
+        ]);
+
+        $kept = [];
+        $slides = [];
+        foreach ($data['slides'] ?? [] as $i => $row) {
+            $was = isset($row['from']) ? ($current['slides'][(int) $row['from']] ?? null) : null;
+            $feature = $row['feature'] ?? 'none';
+            if (trim($row['title'] ?? '') === '' && $feature !== 'series') {
+                continue;
+            }
+            $photo = $this->photo($request->file("slides.{$i}.photo"), $was['photo'] ?? null, (bool) ($row['remove_photo'] ?? false), "slides.{$i}.photo", $images, 1800);
+            $kept[] = $photo;
+            $slides[] = [
+                'order' => (int) ($row['order'] ?? $i),
+                'kicker' => trim($row['kicker'] ?? ''),
+                'kicker_style' => $row['kicker_style'] ?? 'outline',
+                'title' => trim(str_replace("\r", '', $row['title'] ?? '')),
+                'accent' => trim($row['accent'] ?? ''),
+                'text' => trim($row['text'] ?? ''),
+                'primary_label' => trim($row['primary_label'] ?? ''),
+                'primary_link' => trim($row['primary_link'] ?? '') ?: null,
+                'secondary_label' => trim($row['secondary_label'] ?? ''),
+                'secondary_link' => trim($row['secondary_link'] ?? '') ?: null,
+                'photo' => $photo,
+                'photo_alt' => trim($row['photo_alt'] ?? ''),
+                'swatch' => $row['swatch'] ?? 'mid',
+                'feature' => $feature,
+                'feature_text' => trim($row['feature_text'] ?? '') ?: null,
+                'feature_ref' => trim($row['feature_ref'] ?? '') ?: null,
+                'show_until' => $row['show_until'] ?? null,
+                'hidden' => (bool) ($row['hidden'] ?? false),
+            ];
+        }
+        if (count($slides) > self::MAX_SLIDES) {
+            throw ValidationException::withMessages(['slides' => 'Up to '.self::MAX_SLIDES.' slides. Hide or clear one first.']);
+        }
+        if ($slides === []) {
+            throw ValidationException::withMessages(['slides' => 'Keep at least one slide.']);
+        }
+        // Photos of slides that were removed.
+        foreach ($current['slides'] ?? [] as $old) {
+            if (($old['photo'] ?? null) && ! in_array($old['photo'], $kept, true)) {
+                $images->delete($old['photo'], $this->thumbOf($old['photo']));
+            }
+        }
+
+        return collect($slides)->sortBy('order')->values()->map(fn ($s) => collect($s)->except('order')->all())->all();
+    }
+
+    /**
      * The photo to keep: a new upload, the existing one, or none. Replaced photos are deleted.
      */
-    private function photo(?UploadedFile $file, ?string $existing, bool $remove, string $field, Images $images): ?string
+    private function photo(?UploadedFile $file, ?string $existing, bool $remove, string $field, Images $images, int $width = 1400): ?string
     {
         if (! $file && ! $remove) {
             return $existing;
@@ -162,7 +266,7 @@ class PageContentController extends Controller
         }
 
         try {
-            return $images->store($file, 'pages', 1400, 480)['path'];
+            return $images->store($file, 'pages', $width, 480)['path'];
         } catch (RuntimeException $e) {
             throw ValidationException::withMessages([$field => $e->getMessage()]);
         }
