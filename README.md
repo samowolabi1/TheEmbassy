@@ -371,16 +371,61 @@ Repeat the steps above on a new server, with the new church's `CHURCH_*` and `BR
 
 ## Running it
 
-Needs PHP 8.3+, Composer and Node 20.19+ (or 22.12+).
+### On your computer
+
+**1. Install the tools** (once):
+- **PHP 8.3 or newer**, with the extensions `gd` (with FreeType, JPEG and WebP), `pdo_sqlite`, `mbstring`, `openssl`, `curl`, `fileinfo`, `intl`, `dom` and `zip`. Optional: `exif`, so phone photos come out the right way up.
+- **Composer** (PHP's package manager).
+- **Node.js 20.19+ or 22.12+**, which comes with npm.
+- **Git**.
+
+Easiest per system:
+- **macOS:** [Laravel Herd](https://herd.laravel.com) (PHP and Composer in one), then Node from nodejs.org. Or with Homebrew: `brew install php composer node git`.
+- **Windows:** [Laravel Herd](https://herd.laravel.com) for PHP and Composer, Node from nodejs.org, and Git from git-scm.com.
+- **Ubuntu/Debian:** `sudo apt install php8.3-cli php8.3-gd php8.3-sqlite3 php8.3-mbstring php8.3-curl php8.3-xml php8.3-intl php8.3-zip unzip git`, then Composer from getcomposer.org and Node from nodejs.org (or nvm).
+
+Check with `php -v`, `composer -V`, `node -v` and `php -m` (look for `gd` and `pdo_sqlite`).
+
+**2. Get the code and set it up:**
 
 ```sh
-composer setup        # installs PHP and npm packages, creates .env, runs migrations, builds assets
-php artisan db:seed   # starting content from the design, units, funds and plans
-php artisan serve     # site at http://localhost:8000
-npm run dev           # in a second terminal while editing CSS/JS, for live reload
+git clone https://github.com/samowolabi1/TheEmbassy.git
+cd TheEmbassy
+git checkout claude/royal-tribe-embassy-design-h9ecd1   # until it's merged into main
+composer setup        # PHP and npm packages, .env, the SQLite database, tables, the uploads link, and the built CSS/JS
+php artisan db:seed   # starting content: announcements, events, units, funds, plans and more
+php artisan admin:create you@example.com --name="Your Name" --super   # your admin login (prints a password)
 ```
 
-Tests and code style:
+**3. Run it:**
+
+```sh
+php artisan serve     # the site at http://localhost:8000; admin at http://localhost:8000/admin/login
+```
+
+Optional, each in its own terminal:
+
+```sh
+npm run dev               # live reload while you change CSS or JavaScript
+php artisan schedule:work # the timed jobs: birthdays, reminders, sending announcements, YouTube sync…
+```
+
+**Trying it out:**
+- **Member side:** sign up at `/join`, then approve yourself in admin › Members (waiting for approval), and sign in at `/login`.
+- **Market seller:** apply at `/market/open-a-shop`, then approve the shop in admin › Tribe Market.
+- **Emails** aren't sent locally (`MAIL_MAILER=log`). They're written to `storage/logs/laravel.log`, including password reset and welcome links.
+- **Optional services:** Paystack, SMS (Termii), push notifications, YouTube and Facebook/Instagram are off until their keys are set (in `.env`, or later in admin › Settings & roles). Everything else works without them.
+
+**Starting over:** `php artisan migrate:fresh --seed`, then `admin:create` again. **Updating** after pulling new code: `composer install && npm install && npm run build && php artisan migrate`.
+
+**If something's wrong:**
+- **Photos don't show:** run `php artisan storage:link`.
+- **Unstyled page, or "Vite manifest not found":** run `npm run build`.
+- **`could not find driver`:** the PHP `pdo_sqlite` extension is missing.
+- **Birthday cards or share pictures fail:** PHP's `gd` needs FreeType and WebP.
+- **Port 8000 in use:** `php artisan serve --port=8080`, and set `APP_URL` in `.env` to match.
+
+### Tests and code style
 
 ```sh
 php artisan test
