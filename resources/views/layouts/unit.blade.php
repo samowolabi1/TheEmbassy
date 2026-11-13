@@ -17,6 +17,8 @@
     if ($unit->isMedia() && $user->can('media-team', $unit)) {
         $nav[] = ['id' => 'equipment', 'label' => 'Equipment', 'route' => 'unit.equipment.index'];
         $nav[] = ['id' => 'setup', 'label' => 'Service setup & streaming', 'route' => 'unit.setup.index'];
+        $nav[] = ['id' => 'requests', 'label' => 'Requests', 'route' => 'unit.requests.index', 'badge' => \App\Models\MediaRequest::where('status', 'new')->count() ?: null];
+        $nav[] = ['id' => 'library', 'label' => 'File library', 'route' => 'unit.library.index'];
         $nav[] = ['id' => 'social', 'label' => 'Social media', 'route' => 'unit.social.index'];
     }
 @endphp
@@ -43,9 +45,12 @@
             </a>
             <nav class="side__nav" aria-label="{{ $unit->name }}">
                 @foreach ($nav as $item)
-                    <a href="{{ route($item['route'], $unit) }}" class="side__link" @if ($item['id'] === $active) aria-current="page" @endif>{{ $item['label'] }}</a>
+                    <a href="{{ route($item['route'], $unit) }}" class="side__link" @if ($item['id'] === $active) aria-current="page" @endif>{{ $item['label'] }}@if ($item['badge'] ?? null) <span class="side__badge"><span class="sr-only">new: </span>{{ $item['badge'] }}</span>@endif</a>
                 @endforeach
                 <a href="{{ route('account') }}" class="side__link">My account</a>
+                @if (! $unit->isMedia() && $user->can('request-media'))
+                    <a href="{{ route('media-requests.index') }}" class="side__link">Ask the media team</a>
+                @endif
                 @if ($user->isStaff())
                     <a href="{{ route('admin.dashboard') }}" class="side__link">Church admin</a>
                 @endif

@@ -65,6 +65,12 @@ return [
     ],
 
     // Pastoral care: who to check on.
+    // The media unit's file library. The server's upload limit (PHP upload_max_filesize and
+    // post_max_size, and the web server's body size) must be at least this big.
+    'media' => [
+        'max_upload_mb' => (int) env('MEDIA_MAX_UPLOAD_MB', 500),
+    ],
+
     'care' => [
         // Raise a follow-up when an active member has missed this many Sunday services in a row.
         'absent_after' => 3,

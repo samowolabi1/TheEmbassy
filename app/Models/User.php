@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
@@ -60,6 +62,36 @@ class User extends Authenticatable
     public function tokenAccount(): HasOne
     {
         return $this->hasOne(TokenAccount::class);
+    }
+
+    /**
+     * The media unit's team: its members, its HOD and assistant, and staff with the media role.
+     */
+    public function inMediaTeam(): bool
+    {
+        $unit = Unit::ofKind('media');
+
+        return $unit !== null && Gate::forUser($this)->allows('media-team', $unit);
+    }
+
+    /**
+     * Who can ask the media unit for something: staff, and the heads (and assistants) of units.
+     */
+    public function canRequestMedia(): bool
+    {
+        return $this->isStaff() || $this->ledUnits()->isNotEmpty();
+    }
+
+    /**
+     * The units this person is head or assistant head of.
+     *
+     * @return Collection<int, Unit>
+     */
+    public function ledUnits(): Collection
+    {
+        return $this->member && $this->member->status === Member::ACTIVE
+            ? Unit::where('hod_member_id', $this->member->id)->orWhere('assistant_member_id', $this->member->id)->orderBy('name')->get()
+            : collect();
     }
 
     /**

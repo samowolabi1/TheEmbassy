@@ -10,6 +10,8 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\GiveController;
 use App\Http\Controllers\MarketController;
+use App\Http\Controllers\MediaFileController;
+use App\Http\Controllers\MediaRequestController;
 use App\Http\Controllers\NewsletterSubscriptionController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\PageController;
@@ -222,7 +224,22 @@ Route::middleware(['auth', 'can:media-team,unit'])->prefix('units/{unit}/media')
     Route::post('/social/{post}/act', [Unit\SocialController::class, 'act'])->name('social.act');
     Route::delete('/social/{post}', [Unit\SocialController::class, 'destroy'])->name('social.destroy');
 
+    Route::get('/requests', [Unit\MediaRequestController::class, 'index'])->name('requests.index');
+    Route::get('/requests/{mediaRequest}', [Unit\MediaRequestController::class, 'show'])->name('requests.show');
+    Route::post('/requests/{mediaRequest}/assign', [Unit\MediaRequestController::class, 'assign'])->name('requests.assign');
+    Route::post('/requests/{mediaRequest}/deliver', [Unit\MediaRequestController::class, 'deliver'])->name('requests.deliver');
+    Route::post('/requests/{mediaRequest}/comments', [Unit\MediaRequestController::class, 'comment'])->middleware('throttle:20,1')->name('requests.comment');
+    Route::get('/library', [Unit\LibraryController::class, 'index'])->name('library.index');
+    Route::post('/library', [Unit\LibraryController::class, 'upload'])->name('library.upload');
+    Route::post('/library/links', [Unit\LibraryController::class, 'link'])->name('library.link');
+    Route::put('/library/{file}', [Unit\LibraryController::class, 'update'])->name('library.update');
+    Route::delete('/library/{file}', [Unit\LibraryController::class, 'destroy'])->name('library.destroy');
     Route::middleware('can:lead-media,unit')->group(function () {
+        Route::post('/requests/{mediaRequest}/decline', [Unit\MediaRequestController::class, 'decline'])->name('requests.decline');
+        Route::post('/requests/{mediaRequest}/close', [Unit\MediaRequestController::class, 'close'])->name('requests.close');
+        Route::post('/library/folders', [Unit\LibraryController::class, 'storeFolder'])->name('library.folders.store');
+        Route::put('/library/folders/{folder}', [Unit\LibraryController::class, 'updateFolder'])->name('library.folders.update');
+        Route::delete('/library/folders/{folder}', [Unit\LibraryController::class, 'destroyFolder'])->name('library.folders.destroy');
         Route::post('/equipment', [Unit\EquipmentController::class, 'store'])->name('equipment.store');
         Route::put('/equipment/{equipment}', [Unit\EquipmentController::class, 'update'])->name('equipment.update');
         Route::post('/equipment/{equipment}/out', [Unit\EquipmentController::class, 'checkOut'])->name('equipment.out');
@@ -245,6 +262,19 @@ Route::middleware(['auth', 'can:media-team,unit'])->prefix('units/{unit}/media')
         Route::delete('/setup/{service}/youtube', [Unit\YouTubeController::class, 'destroy'])->name('youtube.destroy');
     });
 });
+
+// Asking the media unit for something: unit heads and staff.
+Route::middleware(['auth', 'can:request-media'])->prefix('media-requests')->name('media-requests.')->group(function () {
+    Route::get('/', [MediaRequestController::class, 'index'])->name('index');
+    Route::post('/', [MediaRequestController::class, 'store'])->middleware('throttle:10,1')->name('store');
+});
+Route::middleware('auth')->prefix('media-requests')->name('media-requests.')->group(function () {
+    Route::get('/{mediaRequest}', [MediaRequestController::class, 'show'])->name('show');
+    Route::post('/{mediaRequest}/comments', [MediaRequestController::class, 'comment'])->middleware('throttle:20,1')->name('comment');
+    Route::post('/{mediaRequest}/respond', [MediaRequestController::class, 'respond'])->name('respond');
+});
+// Library files and request attachments, only to those allowed to see them.
+Route::get('/media-files/{file}/{mode}', [MediaFileController::class, 'show'])->middleware('auth')->whereIn('mode', ['view', 'download', 'thumb'])->name('media-files.show');
 
 // Google sends the media leader back here after YouTube sign-in (register this address in Google Cloud).
 Route::get('/youtube/callback', [Unit\YouTubeController::class, 'callback'])->middleware('auth')->name('youtube.callback');

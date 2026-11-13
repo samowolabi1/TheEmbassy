@@ -43,6 +43,9 @@
             @if ($user->isStaff())
                 <a href="{{ route('admin.dashboard') }}" class="btn btn--navy btn--sm">Admin dashboard</a>
             @endif
+            @if ($ledUnits->isNotEmpty() || $user->isStaff())
+                <a href="{{ route('media-requests.index') }}" class="btn btn--outline btn--sm">Ask the media team</a>
+            @endif
             @can('run-shop')
                 <a href="{{ route('vendor.products.index') }}" class="btn btn--outline btn--sm">My shop</a>
             @endcan

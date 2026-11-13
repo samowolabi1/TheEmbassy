@@ -1,4 +1,4 @@
-// Gallery uploads: drag and drop, a count of chosen photos, and an upload progress bar.
+// Uploads (gallery photos, media library files): drag and drop, a count of chosen files, and a progress bar.
 
 const form = document.querySelector('[data-photo-upload]');
 
@@ -7,10 +7,13 @@ if (form) {
     const zone = form.querySelector('[data-dropzone]');
     const count = form.querySelector('[data-photo-count]');
     const progress = form.querySelector('[data-photo-progress]');
+    // The same uploader serves the gallery (photos) and the media library (any file).
+    const noun = form.dataset.noun || 'photo';
+    const processing = form.dataset.processing || 'Resizing photos…';
 
     const showCount = () => {
         const n = input.files.length;
-        count.textContent = n ? `${n} photo${n === 1 ? '' : 's'} chosen` : '';
+        count.textContent = n ? `${n} ${noun}${n === 1 ? '' : 's'} chosen` : '';
     };
     input.addEventListener('change', showCount);
 
@@ -41,7 +44,7 @@ if (form) {
         count.textContent = 'Uploading…';
         xhr.upload.addEventListener('progress', (ev) => {
             if (ev.lengthComputable) progress.value = Math.round((ev.loaded / ev.total) * 100);
-            if (progress.value === 100) count.textContent = 'Resizing photos…';
+            if (progress.value === 100) count.textContent = processing;
         });
         xhr.addEventListener('load', () => {
             let data = {};
@@ -55,7 +58,7 @@ if (form) {
                 return;
             }
             const errors = Object.values(data.errors ?? {}).flat();
-            count.textContent = errors[0] ?? (xhr.status === 413 ? 'Those photos are too big to send at once. Try fewer.' : 'Upload failed. Try fewer photos at a time.');
+            count.textContent = errors[0] ?? (xhr.status === 413 ? `Those ${noun}s are too big to send at once. Try fewer.` : `Upload failed. Try fewer ${noun}s at a time.`);
             button.disabled = false;
             progress.hidden = true;
         });

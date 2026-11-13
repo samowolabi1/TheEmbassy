@@ -36,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
             && (($user->member && $user->member->status === 'active' && $user->member->unit_id === $unit->id) || $unit->isLedBy($user->member) || $user->canManage('sermons')));
         Gate::define('lead-media', fn (User $user, Unit $unit) => $unit->isMedia() && ($unit->isLedBy($user->member) || $user->canManage('sermons') || $user->canManage('units')));
         // Welfare cases are confidential: the welfare unit's leaders and staff with the welfare area only.
+        // Asking the media unit for a flyer, video or coverage: staff and unit heads.
+        Gate::define('request-media', fn (User $user) => $user->canRequestMedia());
         Gate::define('manage-welfare', fn (User $user, Unit $unit) => $unit->isWelfare() && ($unit->isLedBy($user->member) || $user->canManage('welfare')));
         // Giving records and totals, and control of the token currency, belong to the pastor in charge (super admin) alone.
         Gate::define('see-giving', fn (User $user) => $user->isSuperAdmin());

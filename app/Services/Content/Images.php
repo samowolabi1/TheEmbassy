@@ -36,6 +36,16 @@ class Images
     }
 
     /**
+     * Save only a small copy of a picture (for a grid) to the given disk; returns its path.
+     */
+    public function thumbnail(UploadedFile $file, string $folder, int $width = 480, string $disk = 'public'): string
+    {
+        $name = $folder.'/'.now()->format('Y/m').'/'.Str::random(32);
+
+        return $this->save($this->scale($this->load($file), $width), $name.'-thumb.webp', 76, $disk);
+    }
+
+    /**
      * Remove saved files (any of them may be null).
      */
     public function delete(?string ...$paths): void
@@ -108,11 +118,11 @@ class Images
         return $scaled;
     }
 
-    private function save(GdImage $image, string $path, int $quality): string
+    private function save(GdImage $image, string $path, int $quality, string $disk = 'public'): string
     {
         ob_start();
         imagewebp($image, null, $quality);
-        Storage::disk('public')->put($path, (string) ob_get_clean());
+        Storage::disk($disk)->put($path, (string) ob_get_clean());
 
         return $path;
     }
