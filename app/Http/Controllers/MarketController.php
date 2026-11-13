@@ -6,8 +6,10 @@ use App\Mail\NewEnquiry;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\VendorPlan;
+use App\Services\Market\ShareCards;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -34,6 +36,7 @@ class MarketController extends Controller
     public function shop(Request $request, Shop $shop): View
     {
         $this->ensureVisible($request, $shop);
+        $this->countShareVisit($request, $shop);
 
         return view('market.shop', [
             'shop' => $shop,
@@ -45,11 +48,59 @@ class MarketController extends Controller
     {
         $this->ensureVisible($request, $product->shop);
         abort_unless($product->is_active, 404);
+        $this->countShareVisit($request, $product);
 
         return view('market.product', [
             'product' => $product->load('shop.user.member'),
             'more' => $product->shop->products()->where('is_active', true)->whereKeyNot($product->id)->latest()->take(3)->get(),
         ]);
+    }
+
+    /**
+     * A picture for sharing the listing (square, story or wide), or its QR code.
+     */
+    public function productImage(Request $request, Product $product, string $format, ShareCards $cards): Response
+    {
+        $this->ensureVisible($request, $product->shop);
+        abort_unless($product->is_active, 404);
+        $bytes = $format === 'qr' ? $cards->qr($cards->url($product, 'qr')) : $cards->product($product, $format);
+
+        return $this->png($request, $bytes, $product->slug.'-'.$format.'.png');
+    }
+
+    public function shopImage(Request $request, Shop $shop, string $format, ShareCards $cards): Response
+    {
+        $this->ensureVisible($request, $shop);
+        $bytes = $format === 'qr' ? $cards->qr($cards->url($shop, 'qr')) : $cards->shop($shop, $format);
+
+        return $this->png($request, $bytes, $shop->slug.'-'.$format.'.png');
+    }
+
+    private function png(Request $request, string $bytes, string $name): Response
+    {
+        return response($bytes, 200, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'private, max-age=600',
+            'Content-Disposition' => ($request->boolean('download') ? 'attachment' : 'inline').'; filename="'.$name.'"',
+        ]);
+    }
+
+    /**
+     * Someone arrived from a link the seller shared (?s=wa, fb, x…). Counted once per visitor,
+     * and never the seller looking at their own page.
+     */
+    private function countShareVisit(Request $request, Product|Shop $item): void
+    {
+        $via = $request->query('s');
+        $shop = $item instanceof Product ? $item->shop : $item;
+        if (! in_array($via, ['wa', 'fb', 'x', 'tg', 'qr', 'link', 'share', 'status'], true) || $request->user()?->id === $shop->user_id) {
+            return;
+        }
+        $key = 'shared.'.class_basename($item).'.'.$item->id;
+        if (! $request->session()->has($key)) {
+            $request->session()->put($key, true);
+            $item->newQuery()->whereKey($item->id)->increment('share_visits');
+        }
     }
 
     /**

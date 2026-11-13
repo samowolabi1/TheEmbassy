@@ -1,10 +1,17 @@
 @extends('layouts.app', [
     'title' => $product->name,
     'active' => 'market',
-    'description' => \Illuminate\Support\Str::limit($product->description, 150),
+    'description' => $product->priceLabel().' · '.\Illuminate\Support\Str::limit($product->description, 140),
+    'image' => route('market.product.image', [$product, 'wide']),
+    'ogType' => 'product',
 ])
 
 @php($shop = $product->shop)
+
+@push('head')
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+@endpush
 
 @section('content')
     <section class="container notices-hero section--last">
@@ -29,6 +36,7 @@
                     @endif
                     <p class="lede" style="margin: 0; white-space: pre-line">{{ $product->description }}</p>
                     <span class="product__seller">Sold by <a href="{{ route('market.shop', $shop) }}" style="font-weight: 800">{{ $shop->name }}</a></span>
+                    @include('market.share-bar', ['item' => $product, 'cards' => app(\App\Services\Market\ShareCards::class), 'image' => route('market.product.image', [$product, 'square'])])
                 </div>
             </div>
 

@@ -58,6 +58,8 @@ Route::get('/market/open-a-shop', [MarketController::class, 'apply'])->name('mar
 Route::post('/market/open-a-shop', [MarketController::class, 'storeApplication'])->middleware('throttle:5,1')->name('market.apply.store');
 Route::get('/market/shops/{shop}', [MarketController::class, 'shop'])->name('market.shop');
 Route::get('/market/products/{product}', [MarketController::class, 'product'])->name('market.product');
+Route::get('/market/products/{product}/share/{format}.png', [MarketController::class, 'productImage'])->whereIn('format', ['square', 'story', 'wide', 'qr'])->middleware('throttle:60,1')->name('market.product.image');
+Route::get('/market/shops/{shop}/share/{format}.png', [MarketController::class, 'shopImage'])->whereIn('format', ['square', 'story', 'wide', 'qr'])->middleware('throttle:60,1')->name('market.shop.image');
 Route::post('/market/products/{product}/enquire', [MarketController::class, 'enquire'])->middleware('throttle:5,1')->name('market.enquire');
 Route::middleware('auth')->group(function () {
     Route::post('/market/products/{product}/tokens', [TokenOrderController::class, 'store'])->middleware('throttle:10,1')->name('market.tokens');
@@ -88,6 +90,7 @@ Route::prefix('vendor')->name('vendor.')->group(function () {
         Route::post('/token-orders/complete', [Vendor\TokenOrderController::class, 'complete'])->name('token-orders.complete');
         Route::post('/token-orders/{order}/decline', [Vendor\TokenOrderController::class, 'decline'])->name('token-orders.decline');
         Route::resource('products', Vendor\ProductController::class)->only(['index', 'create', 'store', 'edit', 'update']);
+        Route::get('/share', [Vendor\ShareController::class, 'index'])->name('share.index');
     });
 });
 

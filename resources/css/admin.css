@@ -1510,3 +1510,30 @@ input[type='file'] {
   font-weight: 700;
   font-size: 13px;
 }
+
+/* Sellers' share kit */
+.share-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.share-kit {
+  display: grid;
+  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.share-kit__preview img {
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(10, 29, 63, 0.16);
+}
+@media (max-width: 640px) {
+  .share-kit {
+    grid-template-columns: 1fr;
+  }
+  .share-kit__preview {
+    max-width: 260px;
+  }
+}

@@ -28,6 +28,9 @@
                     <span class="pill pill--warn">Sold out</span>
                 @endif
                 <span class="list-item__actions">
+                    @if ($product->is_active)
+                        <a href="{{ route('vendor.share.index') }}#product-{{ $product->slug }}" class="btn btn--ghost btn--xs">Share<span class="sr-only"> {{ $product->name }}</span></a>
+                    @endif
                     <a href="{{ route('vendor.products.edit', $product) }}" class="btn btn--ghost btn--xs">Edit<span class="sr-only"> {{ $product->name }}</span></a>
                 </span>
             </div>

@@ -102,3 +102,8 @@
   border: 1px solid var(--gold);
   background: #fffaf0;
 }
+.share-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

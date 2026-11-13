@@ -249,6 +249,17 @@ Members share a testimony from **My account › Testimony**:
 - **Publishing:** the member is emailed, and earns tokens (5 to start, once a month at most; the pastor in charge sets the amount on the Token treasury page). The testimony appears on `/testimonies` only if the member agreed to the website. Signed-in people can say "Praise God" once each, and the testimony can be shared to WhatsApp.
 - Members can withdraw a testimony at any time.
 
+### Sharing shops and listings
+
+Sellers have a **Share** page in their shop area (and a Share button on each listing):
+- **Pictures, drawn by the app** for the shop and every listing: a square post (Instagram, Facebook), a tall one for WhatsApp status and stories, and a wide link preview. Each has the photo (a shop shows up to four of its listings), the name, the price or category, the shop, the market's name and a QR code that opens the page. They're redrawn when the listing changes.
+- **A ready-written caption**, with the name, price, a short description and the link. They can edit it before copying.
+- **One-tap sharing** to WhatsApp, Facebook, X and Telegram, and copy link. On phones, "Share…" opens the phone's share sheet with the picture attached, so it goes straight into WhatsApp status or Instagram.
+- **Downloads** of each picture, and a QR code for flyers and stalls.
+- **Visits from shared links:** each shared link is marked with where it was shared (`?s=wa`, `fb`, `x`, `tg`, `qr`…). Visits are counted once per visitor, never the seller's own, and shown on the Share page.
+
+Shop and listing pages also have proper link previews (photo, price and name show when the link is pasted into WhatsApp or Facebook), and share buttons for anyone who wants to pass them on. The naira sign uses the Anton font, as Poppins doesn't have it.
+
 ## Money: giving, tickets, the market and the notice board
 
 All online payments go through Paystack and are recorded in one `payments` table (amounts in kobo). A payment only counts once Paystack confirms the amount and currency, either when the buyer returns or through the signed webhook at `/webhooks/paystack`; the same confirmation arriving twice changes nothing.

@@ -44,3 +44,43 @@ const shareText = encodeURIComponent(`${document.querySelector('h1')?.textConten
 for (const a of document.querySelectorAll('[data-share-href]')) {
     a.href = a.dataset.shareHref + shareText;
 }
+
+// [data-share-native]: the phone's own share sheet, with the picture when the phone can share
+// files (so it lands in WhatsApp status or Instagram ready to post). Hidden where there's no
+// share sheet, as on most computers.
+for (const btn of document.querySelectorAll('[data-share-native]')) {
+    if (!navigator.share) continue;
+    btn.hidden = false;
+    btn.addEventListener('click', async () => {
+        const text = btn.dataset.shareText ?? '';
+        const title = btn.dataset.shareTitle ?? document.title;
+        try {
+            if (btn.dataset.shareImage) {
+                const blob = await (await fetch(btn.dataset.shareImage)).blob();
+                const file = new File([blob], `${title.replace(/[^\w-]+/g, '-').toLowerCase()}.png`, { type: 'image/png' });
+                if (navigator.canShare?.({ files: [file] })) {
+                    await navigator.share({ files: [file], text, title });
+                    return;
+                }
+            }
+            await navigator.share({ text, title });
+        } catch {
+            // Share sheet dismissed: nothing to do.
+        }
+    });
+}
+
+// [data-copy-from]: copies the text of another element (e.g. a caption the seller edited).
+for (const btn of document.querySelectorAll('[data-copy-from]')) {
+    btn.addEventListener('click', async () => {
+        const source = document.querySelector(btn.dataset.copyFrom);
+        const label = btn.textContent;
+        try {
+            await navigator.clipboard.writeText(source?.value ?? source?.textContent ?? '');
+            btn.textContent = 'Copied';
+            setTimeout(() => (btn.textContent = label), 2000);
+        } catch {
+            source?.select?.();
+        }
+    });
+}
