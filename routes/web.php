@@ -255,6 +255,10 @@ Route::middleware(['auth', 'can:media-team,unit'])->prefix('units/{unit}/media')
     Route::middleware('can:lead-media,unit')->group(function () {
         Route::post('/studio/regenerate', [Unit\StudioController::class, 'regenerate'])->name('studio.regenerate');
         Route::put('/birthdays/template', [Unit\BirthdayController::class, 'updateTemplate'])->name('birthdays.template');
+        Route::post('/birthdays/designs', [Unit\BirthdayController::class, 'storeDesign'])->name('birthdays.designs.store');
+        Route::get('/birthdays/designs/{design}', [Unit\BirthdayController::class, 'editDesign'])->name('birthdays.designs.edit');
+        Route::put('/birthdays/designs/{design}', [Unit\BirthdayController::class, 'updateDesign'])->name('birthdays.designs.update');
+        Route::delete('/birthdays/designs/{design}', [Unit\BirthdayController::class, 'destroyDesign'])->name('birthdays.designs.destroy');
         Route::post('/requests/{mediaRequest}/decline', [Unit\MediaRequestController::class, 'decline'])->name('requests.decline');
         Route::post('/requests/{mediaRequest}/close', [Unit\MediaRequestController::class, 'close'])->name('requests.close');
         Route::post('/library/folders', [Unit\LibraryController::class, 'storeFolder'])->name('library.folders.store');

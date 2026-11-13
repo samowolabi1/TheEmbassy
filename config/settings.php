@@ -60,11 +60,10 @@ return [
         'title' => 'Birthday cards',
         'editor' => 'media',
         'fields' => [
-            'church.birthday.design' => ['label' => 'Design', 'type' => 'text'],
+            'church.birthday.design' => ['label' => 'Designs in use', 'type' => 'text'],
             'church.birthday.headline' => ['label' => 'Headline', 'type' => 'text'],
             'church.birthday.message' => ['label' => 'Message', 'type' => 'textarea'],
             'church.birthday.verse' => ['label' => 'Verse', 'type' => 'textarea'],
-            'church.birthday.background' => ['label' => 'Background picture', 'type' => 'text'],
             'church.birthday.community' => ['label' => 'Post cards in the community', 'type' => 'checkbox'],
         ],
     ],

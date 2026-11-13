@@ -68,11 +68,10 @@ return [
     // Birthday cards: the media unit sets the design and words in its area (Birthdays). Members
     // are celebrated on the day in the community and on their account, unless they opt out.
     'birthday' => [
-        'design' => 'royal', // royal, sunrise, ivory
+        'design' => 'royal,neon,balloons,gold,pastel,sunset', // built-in designs and uploads (upload-{id}); each member gets one
         'headline' => 'Happy Birthday',
         'message' => 'Wishing you a new year full of God\'s favour, joy and fruitfulness. The whole Tribe celebrates you today!',
         'verse' => '"The LORD bless you and keep you; the LORD make His face shine upon you." Numbers 6:24-25',
-        'background' => null, // a picture uploaded by the media unit, used instead of the design's colours
         'community' => true, // post the card in the community on the day
     ],
 

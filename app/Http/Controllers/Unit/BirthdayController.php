@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Unit;
 
 use App\Http\Controllers\Controller;
+use App\Models\BirthdayDesign;
 use App\Models\Member;
 use App\Models\Setting;
 use App\Models\SocialPost;
@@ -42,66 +43,119 @@ class BirthdayController extends Controller
         return view('unit.media.birthdays', [
             'unit' => $unit,
             'template' => $cards->template(),
+            'designs' => $cards->all(),
+            'enabled' => $cards->enabled(),
+            'uploads' => BirthdayDesign::orderBy('id')->get(),
             'community' => (bool) config('church.birthday.community'),
             'upcoming' => $upcoming,
+            'cards' => $cards,
             'canLead' => Gate::allows('lead-media', $unit),
         ]);
     }
 
-    public function updateTemplate(Request $request, Unit $unit, Images $images): RedirectResponse
+    /**
+     * Which designs are in use, and the words on the built-in ones.
+     */
+    public function updateTemplate(Request $request, Unit $unit, BirthdayCard $cards): RedirectResponse
     {
         $data = $request->validate([
-            'design' => ['required', Rule::in(array_keys(BirthdayCard::DESIGNS))],
+            'designs' => ['required', 'array', 'min:1'],
+            'designs.*' => [Rule::in(array_keys($cards->all()))],
             'headline' => ['required', 'string', 'max:30'],
             'message' => ['required', 'string', 'max:200'],
             'verse' => ['nullable', 'string', 'max:160'],
-            'background' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:15360'],
-            'remove_background' => ['nullable', 'boolean'],
-        ], ['message.max' => 'Keep the message under 200 characters so it fits the card.', 'verse.max' => 'Keep the verse under 160 characters.']);
+        ], [
+            'designs.required' => 'Choose at least one design.',
+            'message.max' => 'Keep the message under 200 characters so it fits the card.',
+            'verse.max' => 'Keep the verse under 160 characters.',
+        ]);
 
-        $values = [
-            'church.birthday.design' => $data['design'],
+        Setting::putMany([
+            'church.birthday.design' => implode(',', $data['designs']),
             'church.birthday.headline' => $data['headline'],
             'church.birthday.message' => $data['message'],
             'church.birthday.verse' => $data['verse'] ?? '',
             'church.birthday.community' => $request->boolean('community') ? '1' : '0',
-        ];
-        $current = config('church.birthday.background');
-        if ($request->boolean('remove_background') || $request->hasFile('background')) {
-            if ($current) {
-                Storage::disk('public')->delete($current);
-            }
-            $values['church.birthday.background'] = '';
-        }
-        if ($file = $request->file('background')) {
-            try {
-                $saved = $images->store($file, 'celebrations/backgrounds', 2200, 160);
-            } catch (RuntimeException $e) {
-                return back()->withErrors(['background' => $e->getMessage()]);
-            }
-            $images->delete($saved['thumb_path']);
-            $values['church.birthday.background'] = $saved['path'];
-        }
-        Setting::putMany($values);
+        ]);
 
-        return back()->with('status', 'Birthday card template saved.');
+        return back()->with('status', count($data['designs']) > 1 ? 'Saved. Each member gets one of your '.count($data['designs']).' designs.' : 'Saved.');
     }
 
     /**
-     * The template as it looks now, with the viewer's own name as the example.
+     * A card with the viewer's own name as the example: any design, or an uploaded design
+     * with placement that hasn't been saved yet (for the editor's live preview).
      */
     public function preview(Request $request, Unit $unit, BirthdayCard $cards): Response
     {
+        $design = array_key_exists((string) $request->query('design'), $cards->all()) ? $request->query('design') : null;
+        $layout = null;
+        if ($design && str_starts_with($design, 'upload-') && $request->has('layout')) {
+            $layout = $this->layoutFrom((array) $request->query('layout'), BirthdayDesign::findOrFail((int) substr($design, 7))->layout());
+        }
         $member = $request->user()->member;
+        $bytes = $cards->render($member?->name ?? $request->user()->name, today(), $member?->photo_path, $design, 7, $layout);
 
-        return $this->png($cards->render($member?->name ?? $request->user()->name, today(), $member?->photo_path, [], 7), 'birthday-card-preview.png');
+        return $this->png($bytes, 'birthday-card-preview.png');
+    }
+
+    /**
+     * A finished design made elsewhere (Canva, Photoshop…), uploaded as a picture.
+     */
+    public function storeDesign(Request $request, Unit $unit, Images $images, BirthdayCard $cards): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:80'],
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:20480'],
+        ], ['image.max' => 'Choose a picture under 20 MB.']);
+        try {
+            $saved = $images->store($request->file('image'), 'celebrations/designs', 2160, 160);
+        } catch (RuntimeException $e) {
+            return back()->withErrors(['image' => $e->getMessage()]);
+        }
+        $images->delete($saved['thumb_path']);
+
+        $design = new BirthdayDesign(['name' => $data['name']]);
+        $design->background_path = $saved['path'];
+        $design->created_by = $request->user()->id;
+        $design->save();
+        // Put it to use alongside the others.
+        Setting::putMany(['church.birthday.design' => implode(',', [...$cards->enabled(), $design->key()])]);
+
+        return redirect()->route('unit.birthdays.designs.edit', [$unit, $design])
+            ->with('status', 'Design uploaded. Now place the photo and name where they belong on it.');
+    }
+
+    public function editDesign(Unit $unit, BirthdayDesign $design): View
+    {
+        return view('unit.media.birthday-design', ['unit' => $unit, 'design' => $design, 'layout' => $design->layout()]);
+    }
+
+    public function updateDesign(Request $request, Unit $unit, BirthdayDesign $design): RedirectResponse
+    {
+        $request->validate(['name' => ['required', 'string', 'max:80']]);
+        $design->update(['name' => $request->input('name'), 'layout' => $this->layoutFrom((array) $request->input('layout', []), BirthdayDesign::DEFAULTS, true)]);
+
+        return redirect()->route('unit.birthdays.index', $unit)->with('status', "\"{$design->name}\" saved.");
+    }
+
+    public function destroyDesign(Request $request, Unit $unit, BirthdayDesign $design, Images $images, BirthdayCard $cards): RedirectResponse
+    {
+        $key = $design->key();
+        $images->delete($design->background_path);
+        $design->delete();
+        $left = array_values(array_filter($cards->enabled(), fn ($d) => $d !== $key));
+        Setting::putMany(['church.birthday.design' => implode(',', $left ?: ['royal'])]);
+
+        return back()->with('status', "\"{$design->name}\" removed.");
     }
 
     public function card(Request $request, Unit $unit, Member $member, BirthdayCard $cards): Response
     {
         abort_unless($member->birthday && $member->status === Member::ACTIVE, 404);
 
-        return $this->png($cards->forMember($member), Str::slug($member->name).'-birthday.png', $request->boolean('download'));
+        $design = array_key_exists((string) $request->query('design'), $cards->all()) ? $request->query('design') : null;
+
+        return $this->png($cards->forMember($member, $design), Str::slug($member->name).'-birthday.png', $request->boolean('download'));
     }
 
     /**
@@ -142,6 +196,38 @@ class BirthdayController extends Controller
         $post->save();
 
         return redirect()->route('unit.social.show', [$unit, $post])->with('status', 'Draft post made with the card. Check the caption, then send it for approval or publish.');
+    }
+
+    /**
+     * Placement from the form or the preview, kept within sensible limits.
+     *
+     * @param  array<string, mixed>  $input
+     * @param  array<string, mixed>  $fallback
+     * @return array<string, mixed>
+     */
+    private function layoutFrom(array $input, array $fallback, bool $checkboxes = false): array
+    {
+        $num = fn (string $key, float $min, float $max) => isset($input[$key]) && is_numeric($input[$key]) ? max($min, min($max, (float) $input[$key])) : $fallback[$key];
+        $colour = fn (string $key) => isset($input[$key]) && is_string($input[$key]) && preg_match('/^#[0-9a-fA-F]{6}$/', $input[$key]) ? strtolower($input[$key]) : $fallback[$key];
+        // Unticked boxes aren't sent by a form, so when saving the form, missing means off.
+        $bool = fn (string $key) => $checkboxes ? ! empty($input[$key]) : (isset($input[$key]) ? (bool) $input[$key] : $fallback[$key]);
+
+        return [
+            'photo_shape' => in_array($input['photo_shape'] ?? null, ['circle', 'rounded', 'none'], true) ? $input['photo_shape'] : $fallback['photo_shape'],
+            'photo_x' => $num('photo_x', 5, 95),
+            'photo_y' => $num('photo_y', 5, 95),
+            'photo_size' => $num('photo_size', 10, 90),
+            'photo_border' => ($input['photo_border_on'] ?? ($checkboxes ? null : '1')) ? $colour('photo_border') : null,
+            'name_y' => $num('name_y', 5, 98),
+            'name_size' => (int) $num('name_size', 24, 160),
+            'name_font' => array_key_exists($input['name_font'] ?? '', BirthdayCard::NAME_FONTS) ? $input['name_font'] : $fallback['name_font'],
+            'name_color' => $colour('name_color'),
+            'name_upper' => $bool('name_upper'),
+            'name_shadow' => $bool('name_shadow'),
+            'show_date' => $bool('show_date'),
+            'date_color' => $colour('date_color'),
+            'show_message' => $bool('show_message'),
+        ];
     }
 
     private function nextBirthday(Member $member, Carbon $from): Carbon

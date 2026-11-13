@@ -1479,3 +1479,34 @@ input[type='file'] {
   color: var(--slate);
   cursor: pointer;
 }
+
+/* Birthday card designs */
+.design-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 16px;
+}
+.design-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+}
+.design-tile--on {
+  border-color: var(--gold);
+  background: var(--wash);
+}
+.design-tile img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+.design-tile__label {
+  font-weight: 700;
+  font-size: 13px;
+}
