@@ -410,6 +410,8 @@ npm run dev               # live reload while you change CSS or JavaScript
 php artisan schedule:work # the timed jobs: birthdays, reminders, sending announcements, YouTube sync…
 ```
 
+**Demo market** (optional): `php artisan db:seed --class=MarketDemoSeeder` fills the Tribe Market with 8 shops and about 27 products and services. Each listing gets a generated picture and a realistic price, and some can also be bought with tokens. Plan prices, buyer enquiries and a coupon (`DEMO20`, 20% off a subscription) are included. One shop's subscription has lapsed, so it's hidden from the market, and one is waiting for an admin to approve it. The sellers sign in at `/vendor/login` as `seller1@demo.test` to `seller8@demo.test` with the password `demo-password`. It's safe to run again, and it refuses to run when `APP_ENV=production`.
+
 **Trying it out:**
 - **Member side:** sign up at `/join`, then approve yourself in admin › Members (waiting for approval), and sign in at `/login`.
 - **Market seller:** apply at `/market/open-a-shop`, then approve the shop in admin › Tribe Market.
