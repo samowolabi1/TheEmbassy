@@ -18,6 +18,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrayerRequestController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\StudioOverlayController;
 use App\Http\Controllers\TicketOrderController;
 use App\Http\Controllers\TokenOrderController;
 use App\Http\Controllers\Unit;
@@ -146,6 +147,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/services/{service}/watching', [Account\JoinController::class, 'watching'])->middleware('throttle:10,1')->name('services.watching');
     Route::post('/check-in', [Account\CheckInController::class, 'store'])->middleware('throttle:10,1')->name('check-in.store');
     Route::post('/account/declare', [Account\AccountController::class, 'declare'])->middleware('throttle:10,1')->name('account.declare');
+    Route::put('/account/birthday', [Account\AccountController::class, 'birthday'])->name('account.birthday');
+    Route::get('/account/birthday-card.png', [Account\AccountController::class, 'birthdayCard'])->middleware('throttle:20,1')->name('account.birthday-card');
     Route::post('/account/tokens/send', [Account\AccountController::class, 'sendTokens'])->middleware('throttle:10,1')->name('account.tokens.send');
 });
 
@@ -229,12 +232,29 @@ Route::middleware(['auth', 'can:media-team,unit'])->prefix('units/{unit}/media')
     Route::post('/requests/{mediaRequest}/assign', [Unit\MediaRequestController::class, 'assign'])->name('requests.assign');
     Route::post('/requests/{mediaRequest}/deliver', [Unit\MediaRequestController::class, 'deliver'])->name('requests.deliver');
     Route::post('/requests/{mediaRequest}/comments', [Unit\MediaRequestController::class, 'comment'])->middleware('throttle:20,1')->name('requests.comment');
+    Route::get('/birthdays', [Unit\BirthdayController::class, 'index'])->name('birthdays.index');
+    Route::get('/birthdays/preview.png', [Unit\BirthdayController::class, 'preview'])->middleware('throttle:60,1')->name('birthdays.preview');
+    Route::get('/birthdays/{member}/card.png', [Unit\BirthdayController::class, 'card'])->middleware('throttle:60,1')->name('birthdays.card');
+    Route::post('/birthdays/{member}/photo', [Unit\BirthdayController::class, 'photo'])->name('birthdays.photo');
+    Route::post('/birthdays/{member}/social', [Unit\BirthdayController::class, 'social'])->name('birthdays.social');
+    Route::get('/studio', [Unit\StudioController::class, 'index'])->name('studio.index');
+    Route::post('/studio/scene', [Unit\StudioController::class, 'scene'])->name('studio.scene');
+    Route::post('/studio/caption', [Unit\StudioController::class, 'caption'])->name('studio.caption');
+    Route::post('/studio/scripture', [Unit\StudioController::class, 'scripture'])->name('studio.scripture');
+    Route::post('/studio/ticker', [Unit\StudioController::class, 'ticker'])->name('studio.ticker');
+    Route::post('/studio/logo', [Unit\StudioController::class, 'logo'])->name('studio.logo');
+    Route::post('/studio/clear', [Unit\StudioController::class, 'clear'])->name('studio.clear');
+    Route::delete('/studio/presets/{preset}', [Unit\StudioController::class, 'destroyPreset'])->name('studio.presets.destroy');
+    Route::post('/studio/guests', [Unit\StudioController::class, 'storeGuest'])->name('studio.guests.store');
+    Route::delete('/studio/guests/{guest}', [Unit\StudioController::class, 'destroyGuest'])->name('studio.guests.destroy');
     Route::get('/library', [Unit\LibraryController::class, 'index'])->name('library.index');
     Route::post('/library', [Unit\LibraryController::class, 'upload'])->name('library.upload');
     Route::post('/library/links', [Unit\LibraryController::class, 'link'])->name('library.link');
     Route::put('/library/{file}', [Unit\LibraryController::class, 'update'])->name('library.update');
     Route::delete('/library/{file}', [Unit\LibraryController::class, 'destroy'])->name('library.destroy');
     Route::middleware('can:lead-media,unit')->group(function () {
+        Route::post('/studio/regenerate', [Unit\StudioController::class, 'regenerate'])->name('studio.regenerate');
+        Route::put('/birthdays/template', [Unit\BirthdayController::class, 'updateTemplate'])->name('birthdays.template');
         Route::post('/requests/{mediaRequest}/decline', [Unit\MediaRequestController::class, 'decline'])->name('requests.decline');
         Route::post('/requests/{mediaRequest}/close', [Unit\MediaRequestController::class, 'close'])->name('requests.close');
         Route::post('/library/folders', [Unit\LibraryController::class, 'storeFolder'])->name('library.folders.store');
@@ -273,6 +293,9 @@ Route::middleware('auth')->prefix('media-requests')->name('media-requests.')->gr
     Route::post('/{mediaRequest}/comments', [MediaRequestController::class, 'comment'])->middleware('throttle:20,1')->name('comment');
     Route::post('/{mediaRequest}/respond', [MediaRequestController::class, 'respond'])->name('respond');
 });
+// The live studio overlay for OBS: no sign-in, a secret link instead.
+Route::get('/studio/overlay/{token}', [StudioOverlayController::class, 'show'])->middleware('throttle:60,1')->name('studio.overlay');
+Route::get('/studio/overlay/{token}/state', [StudioOverlayController::class, 'state'])->middleware('throttle:600,1')->name('studio.overlay.state');
 // Library files and request attachments, only to those allowed to see them.
 Route::get('/media-files/{file}/{mode}', [MediaFileController::class, 'show'])->middleware('auth')->whereIn('mode', ['view', 'download', 'thumb'])->name('media-files.show');
 

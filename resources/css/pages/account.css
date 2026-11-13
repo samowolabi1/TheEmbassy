@@ -511,3 +511,24 @@
 .send-card form {
   margin-top: 14px;
 }
+.birthday-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+  padding: 20px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #fff6df, #ffe9c2);
+  border: 1px solid #f1d38f;
+}
+.birthday-banner__card {
+  width: 160px;
+  height: auto;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(10, 29, 63, 0.2);
+}
+@media (min-width: 640px) {
+  .birthday-banner__card {
+    width: 200px;
+  }
+}

@@ -801,3 +801,12 @@
     padding: 20px;
   }
 }
+/* The church's birthday post: a warm card in the stream. */
+.msg--celebration .msg__bubble {
+  background: linear-gradient(135deg, #fff6df, #ffe9c2);
+  border: 1px solid #f1d38f;
+}
+.msg--celebration .msg__avatar {
+  background: #fff1c7;
+  font-size: 18px;
+}

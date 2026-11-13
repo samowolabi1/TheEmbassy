@@ -5,7 +5,7 @@
         <div class="card auth" style="text-align: center; align-items: center">
             @if ($gift->status === 'paid')
                 <span class="eyebrow">THANK YOU</span>
-                <h1 class="auth__title">God bless you, {{ \Illuminate\Support\Str::before($gift->name, ' ') }}.</h1>
+                <h1 class="auth__title">God bless you, {{ \App\Models\Member::firstNameOf($gift->name) }}.</h1>
                 <p class="lede" style="margin: 0">We've received your gift of <strong>₦{{ number_format($gift->amount / 100) }}</strong> to {{ $gift->fund->name }}.@if ($gift->email) A receipt is on its way to {{ $gift->email }}.@endif</p>
                 <span class="field-hint">Reference {{ $gift->code }}</span>
             @else

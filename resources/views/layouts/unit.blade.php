@@ -17,8 +17,10 @@
     if ($unit->isMedia() && $user->can('media-team', $unit)) {
         $nav[] = ['id' => 'equipment', 'label' => 'Equipment', 'route' => 'unit.equipment.index'];
         $nav[] = ['id' => 'setup', 'label' => 'Service setup & streaming', 'route' => 'unit.setup.index'];
+        $nav[] = ['id' => 'studio', 'label' => 'Live studio', 'route' => 'unit.studio.index'];
         $nav[] = ['id' => 'requests', 'label' => 'Requests', 'route' => 'unit.requests.index', 'badge' => \App\Models\MediaRequest::where('status', 'new')->count() ?: null];
         $nav[] = ['id' => 'library', 'label' => 'File library', 'route' => 'unit.library.index'];
+        $nav[] = ['id' => 'birthdays', 'label' => 'Birthday cards', 'route' => 'unit.birthdays.index'];
         $nav[] = ['id' => 'social', 'label' => 'Social media', 'route' => 'unit.social.index'];
     }
 @endphp

@@ -13,11 +13,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Someone in the church family. They may have a login (user) or be on the register only.
  */
-#[Fillable(['name', 'phone', 'email', 'gender', 'birthday', 'anniversary', 'address', 'unit_id', 'fellowship_id', 'joined_on', 'baptised', 'believers_class', 'workers_training', 'notes', 'notify_sms'])]
+#[Fillable(['name', 'phone', 'email', 'gender', 'birthday', 'anniversary', 'address', 'unit_id', 'fellowship_id', 'joined_on', 'baptised', 'believers_class', 'workers_training', 'notes', 'notify_sms', 'celebrate_birthday'])]
 class Member extends Model
 {
     use HasFactory;
@@ -42,6 +43,7 @@ class Member extends Model
     protected function casts(): array
     {
         return [
+            'celebrate_birthday' => 'boolean',
             'birthday' => 'date',
             'anniversary' => 'date',
             'joined_on' => 'date',
@@ -214,5 +216,44 @@ class Member extends Model
         }
 
         return strlen($digits) >= 10 && strlen($digits) <= 15 ? $digits : null;
+    }
+
+    /**
+     * Whether today is their birthday (29 February birthdays are kept on the 28th in other years).
+     */
+    public function hasBirthdayToday(): bool
+    {
+        if (! $this->birthday) {
+            return false;
+        }
+        $day = $this->birthday->format('m-d');
+
+        return $day === today()->format('m-d') || ($day === '02-29' && ! today()->isLeapYear() && today()->format('m-d') === '02-28');
+    }
+
+    public function photoUrl(): ?string
+    {
+        return $this->photo_path ? Storage::disk('public')->url($this->photo_path) : null;
+    }
+
+    /**
+     * Their first name, without a title such as Bro., Sis. or Pastor.
+     */
+    public function firstName(): string
+    {
+        return self::firstNameOf($this->name);
+    }
+
+    public static function firstNameOf(?string $name): string
+    {
+        $words = array_values(array_filter(preg_split('/\s+/', trim((string) $name)) ?: []));
+        $titles = ['bro', 'brother', 'sis', 'sister', 'pst', 'pastor', 'dcn', 'dcns', 'deacon', 'deaconess', 'mr', 'mrs', 'ms', 'miss', 'dr', 'evang', 'elder', 'rev', 'prof', 'engr', 'barr', 'chief'];
+        foreach ($words as $word) {
+            if (! in_array(trim(mb_strtolower($word), '.()'), $titles, true)) {
+                return $word;
+            }
+        }
+
+        return $words[0] ?? (string) $name;
     }
 }

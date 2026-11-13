@@ -6,7 +6,7 @@
     <header class="page-head">
         <div class="stack" style="gap: 4px">
             <span class="page-head__kicker">{{ now()->format('l, j F') }}</span>
-            <h1>{{ $greeting }}, {{ \Illuminate\Support\Str::before($name, ' ') ?: $name }}</h1>
+            <h1>{{ $greeting }}, {{ \App\Models\Member::firstNameOf($name) ?: $name }}</h1>
         </div>
         <div class="actions">
             <a href="{{ route('home') }}" class="btn btn--outline">View website</a>

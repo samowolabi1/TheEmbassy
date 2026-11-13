@@ -57,7 +57,7 @@ class Feed
     }
 
     /**
-     * Members whose birthday is in the next week, today first. Only the day is shown, never the year.
+     * Members whose birthday is in the next week, today first. Only the day is shown, never the year, and only for members happy to be celebrated.
      *
      * @return Collection<int, array{member: Member, date: Carbon, today: bool}>
      */
@@ -65,7 +65,7 @@ class Feed
     {
         $days = collect(range(0, 6))->map(fn ($i) => today()->addDays($i));
 
-        return Member::where('status', Member::ACTIVE)->whereNotNull('birthday')->get(['id', 'name', 'birthday', 'unit_id'])
+        return Member::where('status', Member::ACTIVE)->whereNotNull('birthday')->where('celebrate_birthday', true)->get(['id', 'name', 'birthday', 'unit_id'])
             ->map(function (Member $m) use ($days) {
                 $date = $days->first(fn ($d) => $d->month === $m->birthday->month && $d->day === $m->birthday->day);
 

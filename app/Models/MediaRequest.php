@@ -117,7 +117,7 @@ class MediaRequest extends Model
     {
         return match ($this->status) {
             'new' => 'Waiting for the media team',
-            'in_progress' => ($this->assignee ? Str::before($this->assignee->name, ' ').' is working on it' : 'In progress'),
+            'in_progress' => ($this->assignee ? Member::firstNameOf($this->assignee->name).' is working on it' : 'In progress'),
             'delivered' => 'Ready: please check it',
             default => self::STATUSES[$this->status] ?? $this->status,
         };

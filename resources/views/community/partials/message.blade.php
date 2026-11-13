@@ -1,15 +1,19 @@
 {{-- One message in a community room. Every button is a small form, so it all works without JavaScript too. --}}
 @php
     $author = $message->user;
-    $mine = $author?->id === $viewer->id;
+    // A birthday post is from the church, about the member it celebrates.
+    $celebration = $message->kind === 'birthday';
+    $mine = ! $celebration && $author?->id === $viewer->id;
     $summary = $message->isRemoved() ? [] : $message->reactionSummary($viewer);
 @endphp
-<li id="m{{ $message->id }}" @class(['msg', 'msg--mine' => $mine, 'msg--removed' => $message->isRemoved()]) data-message-id="{{ $message->id }}" data-author="{{ $author?->communityName() }}">
-    <span class="msg__avatar" aria-hidden="true">{{ $author?->initials() ?? '?' }}</span>
+<li id="m{{ $message->id }}" @class(['msg', 'msg--mine' => $mine, 'msg--removed' => $message->isRemoved(), 'msg--celebration' => $celebration]) data-message-id="{{ $message->id }}" data-author="{{ $celebration ? config('church.short_name') : $author?->communityName() }}">
+    <span class="msg__avatar" aria-hidden="true">{{ $celebration ? '🎂' : ($author?->initials() ?? '?') }}</span>
     <div class="msg__bubble">
         <div class="msg__head">
-            <span class="msg__name">{{ $author?->communityName() ?? 'Former member' }}</span>
-            @if ($author?->moderatesCommunity())
+            <span class="msg__name">{{ $celebration ? config('church.short_name') : ($author?->communityName() ?? 'Former member') }}</span>
+            @if ($celebration)
+                <span class="msg__badge">Birthday</span>
+            @elseif ($author?->moderatesCommunity())
                 <span class="msg__badge">Staff</span>
             @endif
             <time class="msg__time" datetime="{{ $message->created_at->toIso8601String() }}">{{ $message->created_at->isToday() ? $message->created_at->format('g:i A') : $message->created_at->format('j M, g:i A') }}</time>
@@ -23,7 +27,7 @@
         @else
             @if ($message->replyTo)
                 <a href="#m{{ $message->replyTo->id }}" class="msg__reply">
-                    <strong>{{ $message->replyTo->user?->communityName() }}</strong>
+                    <strong>{{ $message->replyTo->kind === 'birthday' ? config('church.short_name') : $message->replyTo->user?->communityName() }}</strong>
                     <span>{{ $message->replyTo->isRemoved() ? 'Message removed' : \Illuminate\Support\Str::limit($message->replyTo->body ?? ($message->replyTo->poll ? 'Poll: '.$message->replyTo->poll['question'] : 'Photo'), 90) }}</span>
                 </a>
             @endif
@@ -34,7 +38,7 @@
 
             @if ($message->image_path)
                 <a href="{{ $message->imageUrl() }}" class="msg__image" target="_blank" rel="noopener">
-                    <img src="{{ $message->thumbUrl() }}" alt="Photo from {{ $author?->communityName() }}" loading="lazy" decoding="async">
+                    <img src="{{ $message->thumbUrl() }}" alt="{{ $celebration ? 'Birthday card for '.$author?->communityName() : 'Photo from '.$author?->communityName() }}" loading="lazy" decoding="async">
                 </a>
             @endif
 
@@ -110,7 +114,7 @@
                         <button type="submit" class="msg__action">{{ $mine ? 'Delete' : 'Remove' }}</button>
                     </form>
                 @endif
-                @unless ($mine)
+                @unless ($mine || $celebration)
                     <details class="msg__menu">
                         <summary class="msg__action">Report</summary>
                         <form method="POST" action="{{ route('community.messages.report', $message) }}" class="msg__pop msg__edit" data-community-action data-report>

@@ -3,6 +3,7 @@
 namespace App\Services\Messaging;
 
 use App\Models\Announcement;
+use App\Models\BirthdayCelebration;
 use App\Models\Broadcast;
 use App\Models\UnitMessage;
 use App\Models\User;
@@ -47,7 +48,15 @@ class Inbox
                 'body' => $m->body, 'url' => null, 'at' => $m->created_at, 'key' => 'u'.$m->id,
             ]) : collect();
 
-        return $broadcasts->concat($announcements)->concat($unit)->sortByDesc(fn ($i) => $i['at']->timestamp)->values();
+        // Their own birthday wishes from the church, with their card.
+        $birthdays = $user->member ? BirthdayCelebration::where('member_id', $user->member->id)->where('created_at', '>=', $since)->get()
+            ->map(fn (BirthdayCelebration $c) => [
+                'kind' => 'birthday', 'from' => config('church.short_name'), 'title' => 'Happy birthday! 🎉',
+                'body' => 'The whole '.config('church.short_name').' family celebrates you today. May this new year bring you God\'s favour, joy and fruitfulness. Your birthday card is ready to download and share.',
+                'url' => $c->cardUrl(), 'at' => $c->created_at, 'key' => 'c'.$c->id,
+            ]) : collect();
+
+        return $broadcasts->concat($announcements)->concat($unit)->concat($birthdays)->sortByDesc(fn ($i) => $i['at']->timestamp)->values();
     }
 
     public function unread(User $user): int

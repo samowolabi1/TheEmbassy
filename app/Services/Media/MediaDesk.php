@@ -57,7 +57,7 @@ class MediaDesk
         $request->forceFill(['assigned_member_id' => $member->id, 'status' => 'in_progress', 'accepted_at' => $request->accepted_at ?? now()])->save();
 
         if ($first) {
-            $this->toRequester($request, 'The media team is on it', Str::before($member->name, ' ').' from the media team is working on "'.$request->title.'".');
+            $this->toRequester($request, 'The media team is on it', Member::firstNameOf($member->name).' from the media team is working on "'.$request->title.'".');
         }
         if ($member->user_id !== $by->id) {
             $this->send([$member->user?->email ?? $member->email], $request, 'Assigned to you: '.$request->title, 'You\'ve been given this request. It\'s needed by '.$request->needed_by->format('D j M').'.', true);

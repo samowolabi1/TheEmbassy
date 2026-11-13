@@ -13,7 +13,7 @@ use Illuminate\Support\HtmlString;
  * A message in a community room: text, a photo, or a poll, optionally replying to another.
  * Removed messages stay as "message removed" so replies still make sense.
  */
-#[Fillable(['community_room_id', 'user_id', 'reply_to_id', 'body', 'image_path', 'image_thumb_path', 'poll', 'edited_at', 'removed_at', 'removed_by'])]
+#[Fillable(['community_room_id', 'user_id', 'reply_to_id', 'body', 'image_path', 'image_thumb_path', 'poll', 'edited_at', 'removed_at', 'removed_by', 'kind'])]
 class CommunityMessage extends Model
 {
     /** Reactions people can add. */
@@ -83,7 +83,7 @@ class CommunityMessage extends Model
 
     public function canEdit(User $user): bool
     {
-        return ! $this->isRemoved() && $this->user_id === $user->id && $this->poll === null
+        return ! $this->isRemoved() && $this->kind === null && $this->user_id === $user->id && $this->poll === null
             && $this->created_at->gt(now()->subMinutes(self::EDIT_MINUTES)) && ! $user->isMutedInCommunity();
     }
 

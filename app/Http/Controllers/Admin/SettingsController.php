@@ -84,7 +84,7 @@ class SettingsController extends Controller
      */
     public static function groups(): array
     {
-        return collect(config('settings'))->reject(fn ($group) => $group['super'] ?? false)->all();
+        return collect(config('settings'))->reject(fn ($group) => ($group['super'] ?? false) || isset($group['editor']))->all();
     }
 
     /**

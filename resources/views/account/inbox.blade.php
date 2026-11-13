@@ -28,7 +28,7 @@
         <ol class="inbox__list">
             @forelse ($items as $item)
                 <li id="{{ $item['key'] }}" @class(['inbox__item', 'inbox__item--new' => ! $lastRead || $item['at']->gt($lastRead)])>
-                    <span class="inbox__icon" aria-hidden="true">{{ ['broadcast' => '📣', 'announcement' => '📌', 'unit' => '👥'][$item['kind']] }}</span>
+                    <span class="inbox__icon" aria-hidden="true">{{ ['broadcast' => '📣', 'announcement' => '📌', 'unit' => '👥', 'birthday' => '🎂'][$item['kind']] }}</span>
                     <span class="inbox__body">
                         <span class="inbox__meta">
                             {{ $item['from'] }} · <time datetime="{{ $item['at']->toIso8601String() }}">{{ $item['at']->isToday() ? $item['at']->format('g:i A') : $item['at']->format('j M') }}</time>

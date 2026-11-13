@@ -14,11 +14,15 @@ use App\Models\Unit;
 use App\Models\UnitMeeting;
 use App\Models\UnitMessage;
 use App\Models\WelfarePackage;
+use App\Services\Celebrations\BirthdayCard;
+use App\Services\Celebrations\Birthdays;
+use App\Services\Content\Images;
 use App\Services\Messaging\Inbox;
 use App\Services\Tokens\Ledger;
 use App\Services\Tokens\Rewards;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -45,6 +49,7 @@ class AccountController extends Controller
             'unitMessages' => $member?->unit_id ? UnitMessage::where('unit_id', $member->unit_id)->latest()->take(3)->get() : collect(),
             'unread' => $active ? $inbox->unread($request->user()) : 0,
             'joinable' => $active ? Service::joinableNow() : collect(),
+            'birthday' => $active ? app(Birthdays::class)->recent($member) : null,
             'openPackages' => $active ? WelfarePackage::open()->whereDoesntHave('applications', fn ($q) => $q->where('member_id', $member->id))->count() : 0,
         ]);
     }
@@ -65,6 +70,47 @@ class AccountController extends Controller
         $tokens = app(Rewards::class)->profile($member->fresh('user'));
 
         return back()->with('status', 'Your details are saved.'.($tokens ? " Your profile is complete: +{$tokens} tokens!" : ''));
+    }
+
+    /**
+     * Their birthday card: a photo to put on it, and whether to be celebrated publicly.
+     */
+    public function birthday(Request $request, Images $images): RedirectResponse
+    {
+        $member = $this->member($request);
+        $request->validate([
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:15360'],
+            'remove_photo' => ['nullable', 'boolean'],
+        ], ['photo.max' => 'Choose a photo under 15 MB.']);
+
+        if ($request->boolean('remove_photo') || $request->hasFile('photo')) {
+            $images->delete($member->photo_path);
+            $member->photo_path = null;
+        }
+        if ($file = $request->file('photo')) {
+            try {
+                $saved = $images->store($file, 'members/photos', 1200, 160);
+            } catch (\RuntimeException $e) {
+                return back()->withErrors(['photo' => $e->getMessage()]);
+            }
+            $images->delete($saved['thumb_path']);
+            $member->photo_path = $saved['path'];
+        }
+        $member->celebrate_birthday = $request->boolean('celebrate_birthday');
+        $member->save();
+
+        return back()->with('status', 'Birthday card settings saved.');
+    }
+
+    /**
+     * Their own card, to preview before the day or download on it.
+     */
+    public function birthdayCard(Request $request, BirthdayCard $cards): Response
+    {
+        $member = $this->member($request);
+        abort_unless($member->birthday, 404);
+
+        return response($cards->forMember($member), 200, ['Content-Type' => 'image/png', 'Cache-Control' => 'private, no-store', 'Content-Disposition' => 'inline; filename="birthday-card.png"']);
     }
 
     /**

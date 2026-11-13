@@ -55,6 +55,20 @@ return [
     ],
 
     // The token currency: changed only by the pastor in charge, on admin › Treasury (not this page).
+    // Edited by the media unit on its Birthdays page, not on the Settings page.
+    'birthday' => [
+        'title' => 'Birthday cards',
+        'editor' => 'media',
+        'fields' => [
+            'church.birthday.design' => ['label' => 'Design', 'type' => 'text'],
+            'church.birthday.headline' => ['label' => 'Headline', 'type' => 'text'],
+            'church.birthday.message' => ['label' => 'Message', 'type' => 'textarea'],
+            'church.birthday.verse' => ['label' => 'Verse', 'type' => 'textarea'],
+            'church.birthday.background' => ['label' => 'Background picture', 'type' => 'text'],
+            'church.birthday.community' => ['label' => 'Post cards in the community', 'type' => 'checkbox'],
+        ],
+    ],
+
     'tokens' => [
         'title' => 'Tokens',
         'super' => true,

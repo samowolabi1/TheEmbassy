@@ -1416,3 +1416,66 @@ input[type='file'] {
   gap: 10px;
   min-width: 0;
 }
+
+/* Live studio */
+.studio-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 14px;
+  background: repeating-conic-gradient(#2a3550 0% 25%, #222c44 0% 50%) 50% / 24px 24px;
+}
+.studio-preview iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1920px;
+  height: 1080px;
+  border: 0;
+  transform-origin: 0 0;
+  transform: scale(var(--studio-scale, 0.3));
+  pointer-events: none;
+}
+.studio-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.studio-preset {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--white);
+}
+.studio-preset__show {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 12px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+}
+.studio-preset__show span {
+  color: var(--slate);
+}
+.studio-preset__show:hover {
+  background: var(--wash);
+}
+.studio-preset__remove {
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: none;
+  padding: 0 10px;
+  font-size: 18px;
+  color: var(--slate);
+  cursor: pointer;
+}

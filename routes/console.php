@@ -4,6 +4,7 @@ use App\Models\Member;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Care\FollowUps;
+use App\Services\Celebrations\Birthdays;
 use App\Services\Content\InlineImages;
 use App\Services\Market\SubscriptionReminders;
 use App\Services\Messaging\Broadcaster;
@@ -140,6 +141,10 @@ Artisan::command('tokens:daily', function (Rewards $rewards, TokenShop $shop, Le
 })->purpose('Give birthday tokens, return tokens for orders never handed over, and check the token books balance');
 
 // Run `php artisan schedule:run` every minute from cron (see the README).
+Artisan::command('birthdays:celebrate', function (Birthdays $birthdays) {
+    $this->info('Celebrated '.$birthdays->run().' birthdays.');
+})->purpose('Make today\'s birthday cards, post them in the community and send birthday wishes');
+
 Schedule::command('youtube:sync')->everyMinute()->withoutOverlapping();
 Schedule::command('social:publish')->everyMinute()->withoutOverlapping();
 Schedule::command('units:remind')->dailyAt('09:00')->timezone('Africa/Lagos');
@@ -149,4 +154,5 @@ Schedule::command('messages:send')->everyMinute()->withoutOverlapping(30);
 Schedule::command('newsletter:queue')->weeklyOn(1, (string) config('church.newsletter.send_at', '07:00'))->timezone('Africa/Lagos')
     ->when(fn () => (bool) config('church.newsletter.enabled'));
 Schedule::command('tokens:daily')->dailyAt('06:30')->timezone('Africa/Lagos');
+Schedule::command('birthdays:celebrate')->dailyAt('06:45')->timezone('Africa/Lagos');
 Schedule::command('blog:prune-images')->weeklyOn(0, '03:00')->timezone('Africa/Lagos');

@@ -3,7 +3,30 @@
 @section('content')
     <section class="container notices-hero stack" style="gap: 12px">
         <span class="eyebrow">MY ACCOUNT</span>
-        <h1 class="display notices-hero__title">Hi, {{ \Illuminate\Support\Str::before($member?->name ?? $user->name, ' ') }}.</h1>
+        <h1 class="display notices-hero__title">Hi, {{ \App\Models\Member::firstNameOf($member?->name ?? $user->name) }}.</h1>
+        @if ($birthday)
+            @php
+                $wishes = $birthday->message ? \App\Models\CommunityMessage::where('reply_to_id', $birthday->message->id)->whereNull('removed_at')->count() + \App\Models\CommunityReaction::where('community_message_id', $birthday->message->id)->count() : 0;
+            @endphp
+            <div class="birthday-banner" id="birthday">
+                <img src="{{ $birthday->cardUrl() }}" alt="Your birthday card" class="birthday-banner__card" width="270" height="338">
+                <div class="stack" style="gap: 10px">
+                    <span class="eyebrow">🎂 {{ $member->hasBirthdayToday() ? 'TODAY' : 'YOUR BIRTHDAY' }}</span>
+                    <h2 class="h2 h2--sm" style="margin: 0">Happy birthday, {{ $member->firstName() }}! 🎉</h2>
+                    <p class="lede" style="margin: 0">The whole {{ config('church.short_name') }} family celebrates you. Here's your card to share.</p>
+                    @if ($wishes)
+                        <p style="margin: 0; font-weight: 700">{{ $wishes }} {{ \Illuminate\Support\Str::plural('wish', $wishes) }} and reactions in the community so far.</p>
+                    @endif
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                        <a href="{{ $birthday->cardUrl() }}" download="birthday-card.png" class="btn btn--gold btn--sm">Download card</a>
+                        <a href="https://wa.me/?text={{ rawurlencode('It\'s my birthday! 🎉 '.$birthday->cardUrl()) }}" target="_blank" rel="noopener" class="btn btn--outline btn--sm">Share on WhatsApp</a>
+                        @if ($birthday->message && ! $birthday->message->isRemoved())
+                            <a href="{{ route('community.room', $birthday->message->room) }}#m{{ $birthday->message->id }}" class="btn btn--outline btn--sm">See the wishes</a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
         @if ($member?->status === 'active')
             @foreach ($joinable as $service)
                 <a href="{{ route('services.join', $service) }}" class="live-banner">
@@ -190,6 +213,37 @@
                     <button type="submit" class="btn btn--navy" style="align-self: flex-start">Save details</button>
                 </fieldset>
             </form>
+
+            @if ($member->status === 'active')
+                <form method="POST" action="{{ route('account.birthday') }}" enctype="multipart/form-data" class="card notice-form__main" style="flex: none">
+                    @csrf
+                    @method('PUT')
+                    <fieldset class="notice-form__group" id="birthday-card">
+                        <legend>My birthday card</legend>
+                        <p class="lede" style="margin: 0">On your birthday the church makes you a card, shares it in the community and celebrates you. Only the day is shown, never the year.</p>
+                        <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start">
+                            @if ($member->birthday)
+                                <a href="{{ route('account.birthday-card') }}" target="_blank" rel="noopener"><img src="{{ route('account.birthday-card') }}" alt="A preview of your birthday card" width="160" height="200" loading="lazy" style="border-radius: 12px; box-shadow: 0 6px 20px rgba(10, 29, 63, 0.15)"></a>
+                            @endif
+                            <div class="stack" style="gap: 12px; flex: 1 1 240px">
+                                <label class="field">{{ $member->photo_path ? 'Change the photo on your card' : 'A photo for your card (optional)' }}
+                                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp">
+                                    <span class="field-hint">A clear photo of your face. Without one, your card shows your initials.</span>
+                                    @error('photo') <span class="field-error">{{ $message }}</span> @enderror
+                                </label>
+                                @if ($member->photo_path)
+                                    <label class="check"><input type="checkbox" name="remove_photo" value="1">Remove my photo</label>
+                                @endif
+                                <label class="check"><input type="checkbox" name="celebrate_birthday" value="1" @checked($member->celebrate_birthday)>Celebrate my birthday with the church (card in the community)</label>
+                                @unless ($member->birthday)
+                                    <span class="field-hint">Add your birthday in My details above to get a card.</span>
+                                @endunless
+                                <button type="submit" class="btn btn--navy" style="align-self: flex-start">Save</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+            @endif
 
             <div class="card notice-form__main" style="flex: none">
                 <h2>Notifications on this phone</h2>

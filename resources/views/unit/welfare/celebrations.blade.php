@@ -18,7 +18,7 @@
                     <span class="list-item__meta">{{ $e['label'] }}{{ $e['years'] ? ' ('.$e['years'].' years)' : '' }} · {{ $e['days'] === 0 ? 'Today' : ($e['days'] === 1 ? 'Tomorrow' : $e['date']->format('D j M')) }}{{ $m->unit ? ' · '.$m->unit->name : '' }}</span>
                 </span>
                 @if ($m->whatsappUrl())
-                    @php($greeting = $e['label'] === 'Birthday' ? 'Happy birthday, '.\Illuminate\Support\Str::before($m->name, ' ').'! The whole '.config('church.short_name').' family celebrates you today. God bless you!' : 'Happy wedding anniversary, '.\Illuminate\Support\Str::before($m->name, ' ').'! Celebrating God\'s faithfulness in your home. From all of us at '.config('church.short_name').'.')
+                    @php($greeting = $e['label'] === 'Birthday' ? 'Happy birthday, '.\App\Models\Member::firstNameOf($m->name).'! The whole '.config('church.short_name').' family celebrates you today. God bless you!' : 'Happy wedding anniversary, '.\App\Models\Member::firstNameOf($m->name).'! Celebrating God\'s faithfulness in your home. From all of us at '.config('church.short_name').'.')
                     <a href="{{ $m->whatsappUrl() }}?text={{ rawurlencode($greeting) }}" class="btn btn--ghost btn--xs" target="_blank" rel="noopener">Send greeting</a>
                 @endif
             </div>
