@@ -5,12 +5,12 @@
 ])
 
 @section('content')
-    <article class="container section--tight stack testimony" style="gap: 20px">
+    <article class="container section--tight stack testimony-page" style="gap: 20px">
         <a href="{{ route('testimonies.index') }}" class="back-link"><x-icon name="chevron-left" :size="16" />Testimonies</a>
         <span class="eyebrow">{{ mb_strtoupper($testimony->categoryLabel()) }}</span>
-        <h1 class="display testimony__title">{{ $testimony->title }}</h1>
-        <p class="testimony__by">{{ $testimony->byline() }} · {{ $testimony->published_at->format('j F Y') }}</p>
-        <div class="testimony__body">
+        <h1 class="display testimony-page__title">{{ $testimony->title }}</h1>
+        <p class="testimony-page__by">{{ $testimony->byline() }} · {{ $testimony->published_at->format('j F Y') }}</p>
+        <div class="testimony-page__body">
             @foreach (preg_split("/\R{2,}/", trim($testimony->body)) as $paragraph)
                 <p>{!! nl2br(e($paragraph)) !!}</p>
             @endforeach

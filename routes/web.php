@@ -152,6 +152,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/account/declare', [Account\AccountController::class, 'declare'])->middleware('throttle:10,1')->name('account.declare');
     Route::put('/account/birthday', [Account\AccountController::class, 'birthday'])->name('account.birthday');
     Route::get('/account/birthday-card.png', [Account\AccountController::class, 'birthdayCard'])->middleware('throttle:20,1')->name('account.birthday-card');
+    Route::get('/account/prayer', [Account\PrayerController::class, 'index'])->name('account.prayer');
+    Route::post('/account/prayer', [Account\PrayerController::class, 'store'])->middleware('throttle:10,1')->name('account.prayer.store');
+    Route::get('/account/prayer/wall', [Account\PrayerController::class, 'wall'])->name('account.prayer.wall');
+    Route::post('/account/prayer/{prayer}/answered', [Account\PrayerController::class, 'answered'])->name('account.prayer.answered');
+    Route::delete('/account/prayer/{prayer}', [Account\PrayerController::class, 'destroy'])->name('account.prayer.destroy');
+    Route::post('/account/prayer/{prayer}/pray', [Account\PrayerController::class, 'pray'])->middleware('throttle:60,1')->name('account.prayer.pray');
     Route::get('/account/appointments', [Account\AppointmentController::class, 'index'])->name('account.appointments');
     Route::post('/account/appointments', [Account\AppointmentController::class, 'store'])->middleware('throttle:10,1')->name('account.appointments.store');
     Route::post('/account/appointments/{appointment}/cancel', [Account\AppointmentController::class, 'cancel'])->name('account.appointments.cancel');
@@ -426,6 +432,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/prayer-requests', [Admin\PrayerRequestController::class, 'index'])->name('prayer-requests.index');
             Route::patch('/prayer-requests/{prayerRequest}', [Admin\PrayerRequestController::class, 'update'])->name('prayer-requests.update');
             Route::delete('/prayer-requests/{prayerRequest}', [Admin\PrayerRequestController::class, 'destroy'])->name('prayer-requests.destroy');
+            Route::post('/prayer-requests/{prayerRequest}/reply', [Admin\PrayerRequestController::class, 'reply'])->name('prayer-requests.reply');
+            Route::post('/prayer-requests/{prayerRequest}/off-wall', [Admin\PrayerRequestController::class, 'offWall'])->name('prayer-requests.off-wall');
         });
 
         Route::middleware('can:manage,"subscribers"')->group(function () {

@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
+use App\Models\PrayerRequest;
 use App\Models\Testimony;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -19,9 +21,18 @@ class TestimonyController extends Controller
     {
         $member = $this->member($request);
 
+        // Coming from an answered prayer: start the story off.
+        $prayer = $request->filled('prayer')
+            ? PrayerRequest::where('member_id', $member->id)->whereNotNull('answered_at')->find((int) $request->query('prayer'))
+            : null;
+
         return view('account.testimonies', [
             'member' => $member,
             'mine' => Testimony::where('member_id', $member->id)->latest()->get(),
+            'prefill' => $prayer ? [
+                'category' => ['health' => 'healing', 'finance' => 'provision', 'family' => 'family', 'work' => 'career', 'grief' => 'other', 'spiritual' => 'breakthrough', 'guidance' => 'breakthrough'][$prayer->category] ?? 'other',
+                'body' => 'I asked the church to pray: "'.Str::limit($prayer->request, 300).'"'."\n\n".($prayer->answer_note ? $prayer->answer_note."\n\n" : ''),
+            ] : [],
         ]);
     }
 

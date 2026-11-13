@@ -55,18 +55,18 @@
   font-weight: 700;
   color: var(--navy);
 }
-.testimony {
+.testimony-page {
   max-width: 760px;
 }
-.testimony__title {
+.testimony-page__title {
   margin: 0;
 }
-.testimony__by {
+.testimony-page__by {
   margin: 0;
   font-weight: 700;
   color: var(--slate);
 }
-.testimony__body p {
+.testimony-page__body p {
   font-size: 18px;
   line-height: 1.75;
   margin: 0 0 16px;

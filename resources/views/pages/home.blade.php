@@ -305,6 +305,11 @@
         <div class="card panel stack prayer" style="padding: 40px">
             <span class="eyebrow">PRAYER REQUEST</span>
             <h2 class="h2 h2--sm">How can we pray with you?</h2>
+            @auth
+                @if (auth()->user()->member?->status === 'active')
+                    <p class="prayer__sent-text" style="margin: 0">You're signed in: <a href="{{ route('account.prayer') }}" class="accent-bronze">send it from your account</a> to follow it up, hear back from the prayer team, and let the church pray with you.</p>
+                @endif
+            @endauth
             @if (session('prayer_sent'))
                 <div class="prayer__sent stack" role="status">
                     <span class="prayer__sent-title">We've received it. We're praying with you.</span>

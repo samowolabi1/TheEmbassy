@@ -17,6 +17,8 @@ The public website, built with [Laravel](https://laravel.com) 13 from the "RCCG 
 | `/notices` | Paid notice board for other churches and businesses; `/notices/advertise` to place one |
 | `/join`, `/login`, `/account` | Membership sign-up, sign-in, and the member's own page: quick links to mark attendance, join online, messages, welfare, community, tokens and give; details |
 | `/account/tokens` | The member's token wallet: balance, ways to earn, what they can get with tokens, their token orders and history |
+| `/account/prayer` | Send a prayer request, follow it up, read the prayer team's replies, and mark it answered (then share it as a testimony) |
+| `/account/prayer/wall` | The members' prayer wall: requests members chose to share with the church, with "I prayed" |
 | `/account/appointments` | Book a visit with a pastor at an open time, and see your visits (confirmed, moved or declined) |
 | `/account/testimonies` | Share a testimony, choose how your name is shown and where it's shared, and see what became of it |
 | `/testimonies` | Members' published testimonies, by kind (healing, provision, breakthrough…), with "Praise God" |
@@ -218,6 +220,14 @@ Every morning at 6:45 (`birthdays:celebrate`), members whose birthday is today a
 - **Tokens**: the birthday tokens, as before.
 
 Members add a photo for their card, and can switch public celebration off, in My account › My birthday card; they can preview their card there at any time. Members who switch it off aren't posted or listed in the community birthdays, and the media unit sees "Prefers not to be shared". 29 February birthdays are celebrated on the 28th in other years.
+
+## Prayer requests
+
+Anyone can send a prayer request from the form on the home page, as before. Members can also send them from **My account › Prayer**:
+- **Choices:** they pick what it's about (health, family, finances, work, spiritual growth, direction, grief, thanksgiving or something else) and who can see it. That's only the pastors (private), the pastors and prayer team, or the church too, on the members' prayer wall, where they can choose not to show their name.
+- **Replies:** the prayer team (the "Prayer requests" area) sees members' requests on admin › Prayer requests, with filters for "From members" and "On the prayer wall". They can reply with a word of encouragement or a scripture. The member gets it by email, on their phone, and on their prayer page, and the request shows as prayed for. Requests from the home page have no account to reply to, so the team follows up with the contact details left.
+- **Answered:** members tell the church when God answers, with what happened, and are invited to share it as a testimony (the testimony form starts with their request and answer).
+- **The prayer wall** is for approved members only. It shows shared requests from the last 60 days (first name, or no name), and members tap "I prayed" once each so the person knows how many prayed. Staff can take a request off the wall. Members can remove their own requests.
 
 ## Visits with a pastor
 

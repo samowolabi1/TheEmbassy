@@ -26,13 +26,13 @@
                     <label class="field">What kind of testimony
                         <select name="category" required>
                             @foreach (\App\Models\Testimony::CATEGORIES as $key => $label)
-                                <option value="{{ $key }}" @selected(old('category') === $key)>{{ $label }}</option>
+                                <option value="{{ $key }}" @selected(old('category', $prefill['category'] ?? null) === $key)>{{ $label }}</option>
                             @endforeach
                         </select>
                     </label>
                 </div>
                 <label class="field">Your story
-                    <textarea name="body" required minlength="40" maxlength="5000" rows="9" placeholder="What happened, what you prayed for, and what God did.">{{ old('body') }}</textarea>
+                    <textarea name="body" required minlength="40" maxlength="5000" rows="9" placeholder="What happened, what you prayed for, and what God did.">{{ old('body', $prefill['body'] ?? '') }}</textarea>
                     @error('body') <span class="field-error">{{ $message }}</span> @enderror
                 </label>
                 <fieldset class="notice-form__group" style="gap: 8px">
