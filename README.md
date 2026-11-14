@@ -107,6 +107,8 @@ Members do all of this from their account (or the installed app):
 
 ## Tokens: the app's own currency
 
+**The name:** members see the currency as **Crowns** (👑) to start. The pastor in charge renames it and picks its icon on the treasury page (for example Stars ⭐ or Jewels 💎), and every page, email and message follows. This guide and the code still call them tokens.
+
 Tokens are a closed currency inside the app. **1 token = ₦2** (the pastor in charge can change this). Nobody buys tokens with money and nobody cashes them out; they're earned by taking part and spent inside the app.
 
 **Members only.** Only approved church members (an active member record) can earn, hold, send, receive or spend tokens. Visitors, staff accounts without a member record, and sellers who aren't members never see a token option: non-member sellers list items for money only and pay their shop subscription with money (Paystack) exactly as before. If someone stops being a member, their listings stop taking tokens and they can't spend or receive any more; refunds already owed to them still go back to their wallet, and the pastor in charge can still take tokens back or put the wallet on hold.

@@ -1,9 +1,9 @@
-@extends('layouts.app', ['title' => 'Tokens', 'active' => null])
+@extends('layouts.app', ['title' => TokenName::title(), 'active' => null])
 
 @section('content')
     <section class="container section section--last">
         <div class="card auth" style="text-align: center; align-items: center">
-            <span class="eyebrow">TOKENS</span>
+            <span class="eyebrow">{{ mb_strtoupper(TokenName::many()) }}</span>
             <h1 class="auth__title">{{ TokenName::title() }} are for church members.</h1>
             <p class="lede" style="margin: 0">Members earn {{ TokenName::many() }} by coming to church, joining online and taking part, and spend them in the {{ config('church.brand.market_name') }}. Once your membership is confirmed, your wallet opens here.</p>
             <a href="{{ route('account') }}" class="btn btn--navy">My account</a>

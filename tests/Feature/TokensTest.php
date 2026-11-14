@@ -76,7 +76,7 @@ class TokensTest extends TestCase
     public function test_nobody_pays_dues_any_more(): void
     {
         $member = $this->member();
-        $this->actingAs($member->user)->get(route('account.tokens'))->assertOk()->assertSee('MY TOKENS')->assertDontSee('Pay Crowns');
+        $this->actingAs($member->user)->get(route('account.tokens'))->assertOk()->assertSee('MY CROWNS')->assertDontSee('Pay Crowns');
         $this->post('/account/tokens')->assertStatus(405);
         $this->assertFalse(\Schema::hasTable('token_plans'));
     }

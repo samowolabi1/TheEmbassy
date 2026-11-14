@@ -43,7 +43,7 @@
         </form>
         <div class="table-wrap">
             <table class="table" style="min-width: 720px">
-                <thead><tr><th>NAME</th><th>UNIT</th><th>TOKENS</th><th>LAST ATTENDED</th><th class="num"><span class="sr-only">Actions</span></th></tr></thead>
+                <thead><tr><th>NAME</th><th>UNIT</th><th>{{ mb_strtoupper(TokenName::many()) }}</th><th>LAST ATTENDED</th><th class="num"><span class="sr-only">Actions</span></th></tr></thead>
                 <tbody>
                     @forelse ($members as $m)
                         <tr>
