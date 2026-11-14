@@ -279,6 +279,14 @@ Sellers have a **Share** page in their shop area (and a Share button on each lis
 
 Shop and listing pages also have proper link previews (photo, price and name show when the link is pasted into WhatsApp or Facebook), and share buttons for anyone who wants to pass them on. The naira sign uses the Anton font, as Poppins doesn't have it.
 
+### Map and directions
+
+The church's address (admin › Settings & roles › Church details) drives everything location-related:
+- **About page:** a live Google map, plus "Get directions" and "Open in Google Maps" buttons. "Get directions" opens turn-by-turn directions from wherever the visitor is.
+- **Elsewhere:** the Contact page also has "Get directions"; the footer address and the "Next gathering" card on the home slider link to the map.
+
+No Google API key is needed. If Google puts the pin in the wrong place, paste a shared Google Maps link into "Directions link" and an embed link (Google Maps › Share › Embed a map) into "Map embed link"; they're used instead of the address. The starting address is set in `config/church.php`.
+
 ## Money: giving, tickets, the market and the notice board
 
 All online payments go through Paystack and are recorded in one `payments` table (amounts in kobo). A payment only counts once Paystack confirms the amount and currency, either when the buyer returns or through the signed webhook at `/webhooks/paystack`; the same confirmation arriving twice changes nothing.

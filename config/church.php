@@ -29,12 +29,13 @@ return [
 
     'tagline' => 'A youth parish of The Redeemed Christian Church of God.',
     'description' => 'A youth parish of The Redeemed Christian Church of God for students, creatives and young professionals.',
-    'address' => '[Venue address]',
+    'address' => '11 Lawrence Omagbemi Street, Powerline, Ejigbo, Lagos',
     'sunday_time' => '[Time]',
     'midweek_day' => '[Midweek day]',
     'midweek_time' => '[Time]',
     'handle' => '@[yourhandle]',
-    'directions_url' => '#',
+    // Optional: Google Maps links that override the ones made from the address.
+    'directions_url' => null,
     'map_embed_url' => null,
     'service_length' => '[length]',
     'parking' => '[Parking details]',

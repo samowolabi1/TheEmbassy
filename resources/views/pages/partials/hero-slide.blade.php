@@ -63,7 +63,11 @@
                     <div class="next-card">
                         <span class="next-card__label">NEXT GATHERING</span>
                         <span class="next-card__time">Sunday · {{ config('church.sunday_time') }}</span>
-                        <span class="next-card__where">{{ config('church.address') }}</span>
+                        @if ($directions = \App\Support\ChurchLocation::directionsUrl())
+                            <a href="{{ $directions }}" target="_blank" rel="noopener" class="next-card__where" style="color: inherit">{{ config('church.address') }} · Directions →</a>
+                        @else
+                            <span class="next-card__where">{{ config('church.address') }}</span>
+                        @endif
                     </div>
                     @break
                 @case('date')

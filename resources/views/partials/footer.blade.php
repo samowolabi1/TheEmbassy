@@ -47,7 +47,11 @@
             </div>
             <div class="foot__col">
                 <span class="foot__heading">VISIT</span>
-                <span>{{ config('church.address') }}</span>
+                @if ($mapUrl = \App\Support\ChurchLocation::mapUrl())
+                    <a href="{{ $mapUrl }}" target="_blank" rel="noopener">{{ config('church.address') }}</a>
+                @else
+                    <span>{{ config('church.address') }}</span>
+                @endif
                 <span>Sundays · {{ config('church.sunday_time') }}</span>
                 <span>{{ config('church.midweek_day') }} · {{ config('church.midweek_time') }}</span>
                 <a href="{{ route('about') }}#visit" class="foot__strong">Plan your visit →</a>

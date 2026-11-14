@@ -8,9 +8,9 @@ return [
     'church' => [
         'title' => 'Church details',
         'fields' => [
-            'church.address' => ['label' => 'Venue address', 'type' => 'text'],
-            'church.directions_url' => ['label' => 'Directions link (Google Maps)', 'type' => 'url'],
-            'church.map_embed_url' => ['label' => 'Map embed link (Google Maps › Share › Embed › the src link)', 'type' => 'url'],
+            'church.address' => ['label' => 'Venue address', 'type' => 'text', 'hint' => 'Shown on the website, and used for the Google map and "Get directions". Include the area and city, e.g. 11 Lawrence Omagbemi Street, Powerline, Ejigbo, Lagos.'],
+            'church.directions_url' => ['label' => 'Directions link (optional)', 'type' => 'url', 'hint' => 'Leave empty to use the address. Only needed if Google Maps puts the pin in the wrong place: open your church on Google Maps, tap Share and paste the link.'],
+            'church.map_embed_url' => ['label' => 'Map embed link (optional)', 'type' => 'url', 'hint' => 'Leave empty to use the address. To pin the exact spot: Google Maps › Share › Embed a map, and paste the link inside src="…".'],
             'church.sunday_time' => ['label' => 'Sunday service time', 'type' => 'text', 'hint' => 'e.g. 9:00 AM'],
             'church.midweek_day' => ['label' => 'Midweek service day', 'type' => 'text', 'hint' => 'e.g. Wednesday'],
             'church.midweek_time' => ['label' => 'Midweek service time', 'type' => 'text'],

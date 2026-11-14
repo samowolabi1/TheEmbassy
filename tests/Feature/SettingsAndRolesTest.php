@@ -74,7 +74,7 @@ class SettingsAndRolesTest extends TestCase
 
     public function test_saved_settings_replace_placeholders_across_the_site(): void
     {
-        $this->get('/')->assertSee('[Venue address]');
+        $this->get('/')->assertSee('[Time]');
         $this->actingAs(User::factory()->admin()->create());
 
         $this->put(route('admin.settings.update'), [
@@ -88,7 +88,7 @@ class SettingsAndRolesTest extends TestCase
 
         $this->assertSame('12 Crown Avenue, Lekki', Setting::firstWhere('key', 'church.address')->value);
         Setting::applyToConfig(); // what every request does at boot
-        $this->get('/')->assertSee('12 Crown Avenue, Lekki')->assertSee('9:00 AM')->assertSee('https://instagram.com/royaltribe', false)->assertDontSee('[Venue address]');
+        $this->get('/')->assertSee('12 Crown Avenue, Lekki')->assertSee('9:00 AM')->assertSee('https://instagram.com/royaltribe', false)->assertDontSee('Lawrence Omagbemi');
         $this->get('/watch')->assertSee('youtube-nocookie.com/embed/dQw4w9WgXcQ', false)->assertSee('LIVE ON YOUTUBE');
         $this->get('/about')->assertSee('Free parking in the school compound');
     }

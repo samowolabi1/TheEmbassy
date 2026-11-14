@@ -58,7 +58,9 @@
                     @if (config('church.phone'))<dt>Phone</dt><dd><a href="tel:{{ preg_replace('/[^\d+]/', '', config('church.phone')) }}">{{ config('church.phone') }}</a></dd>@endif
                     @if (config('church.email'))<dt>Email</dt><dd><a href="mailto:{{ config('church.email') }}">{{ config('church.email') }}</a></dd>@endif
                 </dl>
-                <a href="{{ config('church.directions_url') }}" class="btn btn--navy">Get directions</a>
+                @if ($directions = \App\Support\ChurchLocation::directionsUrl())
+                    <a href="{{ $directions }}" target="_blank" rel="noopener" class="btn btn--navy">Get directions</a>
+                @endif
                 <a href="{{ route('home') }}#prayer" class="btn btn--outline">Send a prayer request</a>
             </aside>
         </div>

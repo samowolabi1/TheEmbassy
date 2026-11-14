@@ -126,8 +126,8 @@
         <div class="stack" style="gap: 20px">
             <span class="eyebrow">PLAN YOUR VISIT</span>
             <h2 class="h2">We saved you a seat.</h2>
-            @if (str_starts_with((string) config('church.map_embed_url'), 'https://www.google.com/maps/embed'))
-                <iframe src="{{ config('church.map_embed_url') }}" title="Map to {{ config('church.short_name') }}" class="visit__map" style="border: 0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            @if ($embed = \App\Support\ChurchLocation::embedUrl())
+                <iframe src="{{ $embed }}" title="Map to {{ config('church.short_name') }}" class="visit__map" style="border: 0; background: var(--ice)" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
             @else
                 <div role="img" aria-label="Map placeholder" class="placeholder bg-ice visit__map">
                     <span class="placeholder__note">[Map]</span>
@@ -144,7 +144,12 @@
                     <span class="visit__value">{{ config('church.sunday_time') }}</span>
                 </div>
             </div>
-            <a href="{{ config('church.directions_url') }}" class="btn btn--gold" style="align-self: flex-start; height: 54px; font-size: 15px">Get directions</a>
+            @if ($directions = \App\Support\ChurchLocation::directionsUrl())
+                <div style="display: flex; gap: 10px; flex-wrap: wrap">
+                    <a href="{{ $directions }}" target="_blank" rel="noopener" class="btn btn--gold" style="height: 54px; font-size: 15px"><x-icon name="pin" :size="18" />Get directions</a>
+                    <a href="{{ \App\Support\ChurchLocation::mapUrl() }}" target="_blank" rel="noopener" class="btn btn--outline" style="height: 54px; font-size: 15px">Open in Google Maps</a>
+                </div>
+            @endif
         </div>
         <div class="stack" style="gap: 12px">
             <h3 class="faq__heading">Questions first-timers ask</h3>
