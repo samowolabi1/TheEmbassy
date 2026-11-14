@@ -470,6 +470,13 @@ It's safe to run again, and it refuses to run when `APP_ENV=production`.
 
 **Demo library** (optional): `php artisan db:seed --class=LibraryDemoSeeder` adds 14 books across the categories. With the demo members there (run `MemberDemoSeeder` first), four books are on loan (one overdue, one due in two days), two members are waiting for the same book, two are set aside to collect, and six members have written reviews. It's safe to run again, and it refuses to run when `APP_ENV=production`.
 
+**Demo income and expenses** (optional): `php artisan db:seed --class=MoneyDemoSeeder` fills this month and the three before it, dated from today:
+- **Money in:** an offering after every Sunday and midweek service, thanksgiving, building fund pledges, a wedding hall hire each month, welfare contributions, bookstand sales, an alumni donation and youth conference takings.
+- **Money out:** diesel before every Sunday, electricity, internet data for the stream, refreshments, printing, transport, welfare support, outreach, new cables and the conference costs, with budgets for this month and last.
+- **Checking:** older entries are confirmed or approved, one of each was declined with a reason, and the last week's are waiting to be checked.
+
+Four demo staff record and check them, signing in at `/admin/login` with the password `demo-password`: `finance@demo.test` (Finance, who confirms and approves), `office@demo.test` (Church office), `usher@demo.test` (Ushering) and `media@demo.test` (Media). It's safe to run again, and it refuses to run when `APP_ENV=production`.
+
 **Trying it out:**
 - **Member side:** sign up at `/join`, then approve yourself in admin › Members (waiting for approval), and sign in at `/login`.
 - **Market seller:** apply at `/market/open-a-shop`, then approve the shop in admin › Tribe Market.
