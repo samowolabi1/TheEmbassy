@@ -420,10 +420,21 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('/finance/accounts/{account}', [Admin\FinanceController::class, 'destroyAccount'])->name('accounts.destroy');
         });
 
+        // Every staff member records money in and out; finance and pastors confirm it.
+        Route::get('/money', [Admin\MoneyController::class, 'index'])->name('money.index');
+        Route::post('/money/income', [Admin\MoneyController::class, 'storeIncome'])->middleware('throttle:30,1')->name('money.income.store');
+        Route::post('/expenses', [Admin\ExpenseController::class, 'store'])->middleware('throttle:30,1')->name('expenses.store');
+
         Route::middleware('can:manage,"expenses"')->group(function () {
+            Route::get('/income', [Admin\IncomeController::class, 'index'])->name('income.index');
+            Route::get('/income/export', [Admin\IncomeController::class, 'export'])->name('income.export');
+            Route::get('/income/{income}/receipt', [Admin\IncomeController::class, 'receipt'])->name('income.receipt');
+            Route::post('/income/{income}/confirm', [Admin\IncomeController::class, 'confirm'])->name('income.confirm');
+            Route::post('/income/{income}/decline', [Admin\IncomeController::class, 'decline'])->name('income.decline');
+            Route::post('/money-categories', [Admin\IncomeController::class, 'storeCategory'])->name('money-categories.store');
+            Route::put('/money-categories/{category}', [Admin\IncomeController::class, 'updateCategory'])->name('money-categories.update');
             Route::get('/expenses', [Admin\ExpenseController::class, 'index'])->name('expenses.index');
             Route::get('/expenses/export', [Admin\ExpenseController::class, 'export'])->name('expenses.export');
-            Route::post('/expenses', [Admin\ExpenseController::class, 'store'])->name('expenses.store');
             Route::get('/expenses/{expense}/receipt', [Admin\ExpenseController::class, 'receipt'])->name('expenses.receipt');
             Route::post('/expenses/{expense}/approve', [Admin\ExpenseController::class, 'approve'])->name('expenses.approve');
             Route::post('/expenses/{expense}/decline', [Admin\ExpenseController::class, 'decline'])->name('expenses.decline');

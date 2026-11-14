@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Budget;
 use App\Models\Expense;
+use App\Models\MoneyCategory;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,9 +37,9 @@ class ExpenseController extends Controller
             'tab' => $tab,
             'tabs' => collect(self::TABS)->map(fn ($label, $key) => ['label' => $label, 'count' => Expense::where('status', $key)->count()]),
             'expenses' => Expense::with('requester', 'decider')->where('status', $tab)->latest('spent_on')->latest('id')->paginate(20)->withQueryString(),
-            'categories' => config('finance.expense_categories'),
+            'categories' => MoneyCategory::names(MoneyCategory::OUT),
             'month' => $month,
-            'lines' => collect(config('finance.expense_categories'))->map(fn ($category) => [
+            'lines' => collect(MoneyCategory::names(MoneyCategory::OUT))->map(fn ($category) => [
                 'category' => $category,
                 'budget' => (int) ($budgets[$category] ?? 0),
                 'spent' => (int) ($spent[$category] ?? 0),
@@ -50,7 +51,7 @@ class ExpenseController extends Controller
     {
         $data = $request->validate([
             'title' => ['required', 'string', 'max:120'],
-            'category' => ['required', Rule::in(config('finance.expense_categories'))],
+            'category' => ['required', Rule::in(MoneyCategory::names(MoneyCategory::OUT))],
             'amount' => ['required', 'numeric', 'min:1', 'max:1000000000'],
             'spent_on' => ['required', 'date', 'before_or_equal:today'],
             'description' => ['nullable', 'string', 'max:1000'],
@@ -62,7 +63,8 @@ class ExpenseController extends Controller
         $expense->requested_by = $request->user()->id;
         $expense->save();
 
-        return redirect()->route('admin.expenses.index')->with('status', "\"{$expense->title}\" logged and waiting for approval.");
+        return redirect()->to($request->user()->canManage('expenses') ? route('admin.expenses.index') : route('admin.money.index', ['type' => 'out']))
+            ->with('status', "\"{$expense->title}\" logged and waiting for approval.");
     }
 
     public function approve(Request $request, Expense $expense): RedirectResponse
@@ -97,7 +99,7 @@ class ExpenseController extends Controller
             'budgets.*' => ['nullable', 'numeric', 'min:0', 'max:1000000000'],
         ]);
 
-        foreach (config('finance.expense_categories') as $i => $category) {
+        foreach (MoneyCategory::names(MoneyCategory::OUT) as $i => $category) {
             $amount = $data['budgets'][$i] ?? null;
             $budget = Budget::where('category', $category)->whereDate('month', $month->toDateString())->first();
             if ($amount === null || $amount === '') {

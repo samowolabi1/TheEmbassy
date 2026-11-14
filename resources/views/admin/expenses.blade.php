@@ -9,6 +9,7 @@
             <span class="page-head__sub">Log spending with a receipt. Someone other than the person who logged it approves.</span>
         </div>
         <div class="actions">
+            <a href="{{ route('admin.income.index') }}" class="btn btn--ghost">Income &amp; summary</a>
             <a href="{{ route('admin.expenses.export', ['month' => $month->format('Y-m')]) }}" class="btn btn--outline">Export {{ $month->format('M Y') }}</a>
             <a href="#new-expense" class="btn btn--gold"><x-icon name="plus" :size="16" />New expense</a>
         </div>

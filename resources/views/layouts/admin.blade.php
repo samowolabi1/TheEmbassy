@@ -23,6 +23,9 @@
         ],
         'MONEY' => [
             ['id' => 'finance', 'area' => 'finance', 'label' => 'Giving', 'route' => 'admin.finance.index'],
+            ['id' => 'money', 'label' => 'Record income & spending', 'route' => 'admin.money.index'],
+            ['id' => 'income', 'area' => 'expenses', 'label' => 'Income & summary', 'route' => 'admin.income.index',
+                'badge' => $count('expenses', fn () => \App\Models\Income::where('status', \App\Models\Income::PENDING)->count())],
             ['id' => 'expenses', 'area' => 'expenses', 'label' => 'Expenses & budgets', 'route' => 'admin.expenses.index',
                 'badge' => $count('expenses', fn () => \App\Models\Expense::where('status', \App\Models\Expense::PENDING)->count())],
         ],

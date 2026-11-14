@@ -15,7 +15,7 @@ return [
         'units' => 'Units & fellowships',
         'subscribers' => 'Weekly email & subscribers',
         'finance' => 'Giving, funds & bank accounts',
-        'expenses' => 'Expenses & budgets',
+        'expenses' => 'Income, expenses & budgets',
         'market' => 'Market',
         'content' => 'Content: announcements, blog and pages',
         'gallery' => 'Photo gallery',
