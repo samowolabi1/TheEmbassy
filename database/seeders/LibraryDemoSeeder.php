@@ -8,6 +8,7 @@ use App\Models\BookReview;
 use App\Models\Member;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use RuntimeException;
 
 /**
@@ -18,10 +19,15 @@ use RuntimeException;
  *
  *     php artisan db:seed --class=LibraryDemoSeeder
  *
+ * A demo librarian runs the desk: librarian@demo.test with the password "demo-password", at
+ * /admin/login.
+ *
  * Safe to run again: books already there are left alone. Refuses to run on a live site.
  */
 class LibraryDemoSeeder extends Seeder
 {
+    public const PASSWORD = 'demo-password';
+
     private const BOOKS = [
         ['The Purpose Driven Life', 'Rick Warren', 'christian-living', 3, 'A1', 'Forty short chapters on why you are here, written to be read one a day.'],
         ['Mere Christianity', 'C. S. Lewis', 'christian-living', 2, 'A1', 'A clear, thoughtful case for the Christian faith, first given as radio talks.'],
@@ -54,6 +60,10 @@ class LibraryDemoSeeder extends Seeder
             throw new RuntimeException('The library demo is for local copies only, not a live site.');
         }
 
+        $librarian = User::firstOrCreate(['email' => 'librarian@demo.test'], ['name' => 'Sis. Bisi Adewale', 'password' => Hash::make(self::PASSWORD)]);
+        $librarian->forceFill(['role' => 'librarian'])->save();
+        $this->command?->line('Librarian login: librarian@demo.test, password '.self::PASSWORD.' (at /admin/login).');
+
         $books = collect();
         foreach (self::BOOKS as [$title, $author, $category, $copies, $shelf, $about]) {
             $books->push(Book::firstOrCreate(['title' => $title], [
@@ -65,9 +75,8 @@ class LibraryDemoSeeder extends Seeder
         if ($members->count() < 8 || BookLoan::exists()) {
             return;
         }
-        $librarian = User::whereIn('role', ['admin', 'pastor', 'librarian'])->orderBy('id')->first();
         $loan = fn (int $book, int $member, string $status, array $extra = []) => (new BookLoan)->forceFill([
-            'book_id' => $books[$book]->id, 'member_id' => $members[$member]->id, 'status' => $status, 'handled_by' => $librarian?->id, ...$extra,
+            'book_id' => $books[$book]->id, 'member_id' => $members[$member]->id, 'status' => $status, 'handled_by' => $librarian->id, ...$extra,
         ])->save();
 
         // Out on loan: one overdue, one due soon, others with time left.

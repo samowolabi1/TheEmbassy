@@ -32,7 +32,13 @@ class LibraryDemoSeederTest extends TestCase
         $this->actingAs($member)->get(route('library.index'))->assertOk()->assertSee('Mere Christianity');
         $this->get(route('community.reviews'))->assertOk()->assertSee('forty days');
 
-        $this->actingAs(User::factory()->admin()->create());
+        $librarian = User::where('email', 'librarian@demo.test')->firstOrFail();
+        $this->assertSame([1, 'librarian'], [User::where('email', 'librarian@demo.test')->count(), $librarian->role]);
+        $this->assertSame(BookLoan::where('status', BookLoan::ON_LOAN)->count(), BookLoan::where('status', BookLoan::ON_LOAN)->where('handled_by', $librarian->id)->count());
+        auth()->logout();
+        $this->post(route('admin.login.store'), ['email' => 'librarian@demo.test', 'password' => 'demo-password'])->assertRedirect();
+        $this->assertAuthenticatedAs($librarian);
+        $this->get(route('admin.finance.index'))->assertForbidden();
         $this->get(route('admin.library.desk', ['tab' => 'overdue']))->assertOk()->assertSee('The Purpose Driven Life');
     }
 
@@ -40,6 +46,7 @@ class LibraryDemoSeederTest extends TestCase
     {
         $this->seed(LibraryDemoSeeder::class);
         $this->assertSame([14, 0], [Book::count(), BookLoan::count()]);
+        $this->assertSame('librarian', User::where('email', 'librarian@demo.test')->value('role'));
     }
 
     public function test_it_refuses_to_run_on_a_live_site(): void
