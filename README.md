@@ -21,6 +21,7 @@ The public website, built with [Laravel](https://laravel.com) 13 from the "RCCG 
 | `/account/prayer` | Send a prayer request, follow it up, read the prayer team's replies, and mark it answered (then share it as a testimony) |
 | `/account/prayer/wall` | The members' prayer wall: requests members chose to share with the church, with "I prayed" |
 | `/account/appointments` | Book a visit with a pastor at an open time, and see your visits (confirmed, moved or declined) |
+| `/library` | Borrow books from the church library, renew them, join a waiting list and review them |
 | `/account/testimonies` | Share a testimony, choose how your name is shown and where it's shared, and see what became of it |
 | `/testimonies` | Members' published testimonies, by kind (healing, provision, breakthrough…), with "Praise God" |
 | `/account/messages` | The member's messages: what the church sent out, announcements, and their unit's messages |
@@ -77,6 +78,7 @@ Staff sign in at `/admin`. Every area in the design's sidebar is built:
 - **Giving**: the church's bank accounts in each currency (naira, dollar, pound, euro and more, with sort code, routing number, SWIFT and IBAN where they apply), marked for tithes and offerings, donations, or both; funds, each set as bank transfer only (tithes and offerings) or also payable through Paystack (donations); cash and transfers received recorded by finance staff.
 - **Giving is private to the pastor in charge.** Only the pastor in charge (super admin) sees giving records and totals: transactions, fund totals and balances, the giving report export, the dashboard's giving panels and a member's giving on their profile. Finance staff and pastors record what comes in but don't see it afterwards, and members don't see a giving history on their account. Givers still get an email receipt for an online donation, and an appeal's public progress bar on the Give page shows the total raised.
 - **Expenses & budgets**: spending logged with a receipt, approved by someone other than the person who logged it, against monthly budgets per category; CSV export.
+- **Library**: the lending desk (hand books over, take them back, chase overdue ones, the waiting list) and the book catalogue. See [The church library](#the-church-library-and-book-reviews).
 - **Tribe Market**: shop applications, shops and subscription status, plan prices, coupons, and subscription payments with CSV export.
 - **Content & announcements**, **Notice board**, **Events & tickets**, **Prayer requests**, **Contact messages**.
 - **Sending announcements**: "Send" on a live announcement texts it to active members (through Termii; members can turn texts off in their account), notifies every phone that turned on app notifications, or opens WhatsApp with the message ready to post in the church groups or channel. The page shows the SMS length and pages, how many people each channel reaches, and progress. Sending the same announcement twice in a day needs an extra tick.
@@ -258,6 +260,24 @@ Members book a visit from **My account › See a pastor**:
 - Members can cancel a visit that hasn't happened, and the pastor is told.
 
 Pastors open the page on their own visits; the office sees everyone's, with a filter by pastor. Who can manage this is set in Settings & roles (the "Visits with a pastor" area: pastors and the church office to start with).
+
+## The church library and book reviews
+
+Members borrow books from **`/library`** (also on their account page):
+- **Finding a book:** search by title or author, or browse by category (Christian living, devotionals, Bible study, prayer, biographies, marriage and family, leadership, money and career, youth, children, fiction). Each book shows whether a copy is free, its rating, and where it's kept. Books without a cover photo get a drawn cover in colour.
+- **Reserving:** if a copy is free, it's set aside to collect at church within 7 days. If not, the member joins the waiting list and is told by email and on their phone when a copy is ready for them. They can cancel any time before collecting.
+- **Borrowing:** loans last 14 days. Members can renew once from the library page, unless the book is late or someone is waiting for it. A member can have up to 3 books at a time, counting reservations, and can't reserve more while a book is overdue.
+- **Reminders:** each morning (`library:remind`), members are reminded two days before a book is due, and weekly while it's late. Reservations not collected within 7 days are released and offered to the next person waiting.
+- **Tokens:** bringing a book back by its due date earns 5 tokens, and a member's first review of each book earns 2. The pastor in charge sets both amounts on the Token treasury page.
+
+**Book reviews** are in the community (`/community/book-reviews`) and on each book's page. A member gives 1 to 5 stars and says what they thought; writing again updates their review. The community home shows the latest reviews. Members can delete their own reviews, and moderators can take any review down. Members muted in the community can't post reviews.
+
+**The library desk** is admin › Library, for the librarian, pastors and the church office (the "Library" area; there's a **Librarian** role for this alone):
+- **Tabs:** books to hand over, on loan, overdue (with how many days late), the waiting list, and history, with a search by member, phone or book.
+- **Actions:** hand a book over (the 14 days start then), mark it returned (the next person waiting is told), give more time (1, 2 or 4 weeks), or cancel a reservation.
+- **Books:** add and edit books with the number of copies, the shelf, an ISBN and a cover photo. Turning a book off hides it without losing its history. Copies can't go below the number out on loan.
+
+The limits are in `config/church.php` under `library` (`loan_days`, `max_books`, `renewals`, `collect_days`).
 
 ## Testimonies
 
@@ -445,6 +465,8 @@ Bookings come from the demo members when they're there, so run `MemberDemoSeeder
 It's safe to run again, and it refuses to run when `APP_ENV=production`.
 
 **Demo market** (optional): `php artisan db:seed --class=MarketDemoSeeder` fills the Tribe Market with 8 shops and about 27 products and services. Each listing gets a generated picture and a realistic price, and some can also be bought with tokens. Plan prices, buyer enquiries and a coupon (`DEMO20`, 20% off a subscription) are included. One shop's subscription has lapsed, so it's hidden from the market, and one is waiting for an admin to approve it. The sellers sign in at `/vendor/login` as `seller1@demo.test` to `seller8@demo.test` with the password `demo-password`. It's safe to run again, and it refuses to run when `APP_ENV=production`.
+
+**Demo library** (optional): `php artisan db:seed --class=LibraryDemoSeeder` adds 14 books across the categories. With the demo members there (run `MemberDemoSeeder` first), four books are on loan (one overdue, one due in two days), two members are waiting for the same book, two are set aside to collect, and six members have written reviews. It's safe to run again, and it refuses to run when `APP_ENV=production`.
 
 **Trying it out:**
 - **Member side:** sign up at `/join`, then approve yourself in admin › Members (waiting for approval), and sign in at `/login`.
