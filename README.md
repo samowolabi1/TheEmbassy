@@ -430,6 +430,12 @@ Members sign in at `/login` as `member1@demo.test` to `member36@demo.test` with 
 
 Bookings come from the demo members when they're there, so run `MemberDemoSeeder` first. Paid bookings come with their payments, and a couple of bookings were never paid. Paid tickets can't be bought on a local copy until Paystack keys are set, but free bookings work. It's safe to run again, and it refuses to run when `APP_ENV=production`.
 
+**Demo blog** (optional): `php artisan db:seed --class=BlogDemoSeeder` adds 12 articles alongside the design's starter ones:
+- **Published:** ten articles across every topic (faith, relationships, career and money, campus life, mental wellness and purpose), by a pastor and three members, with headings, lists and scripture quotes. Seven have generated cover pictures; the rest use colours.
+- **Not yet public:** one draft, and one scheduled for next week, so admin › Blog shows those states too.
+
+It's safe to run again, and it refuses to run when `APP_ENV=production`.
+
 **Demo market** (optional): `php artisan db:seed --class=MarketDemoSeeder` fills the Tribe Market with 8 shops and about 27 products and services. Each listing gets a generated picture and a realistic price, and some can also be bought with tokens. Plan prices, buyer enquiries and a coupon (`DEMO20`, 20% off a subscription) are included. One shop's subscription has lapsed, so it's hidden from the market, and one is waiting for an admin to approve it. The sellers sign in at `/vendor/login` as `seller1@demo.test` to `seller8@demo.test` with the password `demo-password`. It's safe to run again, and it refuses to run when `APP_ENV=production`.
 
 **Trying it out:**
