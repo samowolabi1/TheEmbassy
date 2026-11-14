@@ -9,6 +9,7 @@ use App\Models\VendorSubscription;
 use App\Services\Payments\Payments;
 use App\Services\Tokens\Ledger;
 use App\Services\Tokens\TokenValue;
+use App\Support\TokenName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -70,7 +71,7 @@ class SubscriptionController extends Controller
         // Paying with tokens: the tokens are taken and the subscription starts straight away.
         if ($amount > 0 && ($data['pay_with'] ?? 'money') === 'tokens') {
             if (! $request->user()->canUseTokens()) {
-                throw ValidationException::withMessages(['pay_with' => 'Paying with tokens is for church members only.']);
+                throw ValidationException::withMessages(['pay_with' => 'Paying with '.TokenName::many().' is for church members only.']);
             }
             $tokens = TokenValue::tokensFor($amount);
             $subscription = DB::transaction(function () use ($coupon, $shop, $plan, $discount, $tokens, $request) {
@@ -92,7 +93,7 @@ class SubscriptionController extends Controller
             });
 
             return redirect()->route('vendor.subscription.index')
-                ->with('status', "Paid with {$tokens} tokens. Subscribed until {$subscription->ends_at->format('j F Y')}.");
+                ->with('status', "Paid with {$tokens} ".TokenName::many().". Subscribed until {$subscription->ends_at->format('j F Y')}.");
         }
 
         if ($amount > 0 && ! $payments->enabled()) {

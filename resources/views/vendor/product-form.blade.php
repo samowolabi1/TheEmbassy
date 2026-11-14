@@ -57,11 +57,11 @@
             </label>
             @if (auth()->user()->canUseTokens())
             <fieldset class="token-option">
-                <legend class="sr-only">Tokens</legend>
-                <label class="login__remember"><input type="checkbox" name="accepts_tokens" value="1" @checked(old('accepts_tokens', $product->acceptsTokens()))>Members can get this with tokens</label>
-                <label class="field">Price in tokens
+                <legend class="sr-only">{{ TokenName::title() }}</legend>
+                <label class="login__remember"><input type="checkbox" name="accepts_tokens" value="1" @checked(old('accepts_tokens', $product->acceptsTokens()))>Members can get this with {{ TokenName::many() }}</label>
+                <label class="field">Price in {{ TokenName::many() }}
                     <input type="number" name="token_price" value="{{ old('token_price', $product->token_price) }}" min="1" step="1" placeholder="e.g. {{ \App\Services\Tokens\TokenValue::tokensFor($product->price ?: 100000) }}">
-                    <span class="field__hint">Members earn tokens for taking part in church life. When one buys this with tokens, they come to you after you hand it over, and you can use them to pay your subscription (1 token = {{ \App\Services\Tokens\TokenValue::rateLabel() }}). It's up to you.</span>
+                    <span class="field__hint">Members earn {{ TokenName::many() }} for taking part in church life. When one buys this with {{ TokenName::many() }}, they come to you after you hand it over, and you can use them to pay your subscription (1 {{ TokenName::one() }} = {{ \App\Services\Tokens\TokenValue::rateLabel() }}). It's up to you.</span>
                     @error('token_price') <span class="field-error">{{ $message }}</span> @enderror
                 </label>
             </fieldset>

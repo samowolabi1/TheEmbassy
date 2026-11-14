@@ -48,7 +48,7 @@ class TestimoniesTest extends TestCase
         $this->put(route('admin.testimonies.update', $t), ['title' => 'God healed my mum', 'category' => 'healing', 'body' => $t->body, 'action' => 'publish'])->assertSessionHasNoErrors();
         $t->refresh();
         $this->assertSame(['published', 'God healed my mum'], [$t->status, $t->title]);
-        Mail::assertSent(TestimonyUpdate::class, fn ($m) => $m->hasTo($this->member->user->email) && str_contains($m->body, 'tokens'));
+        Mail::assertSent(TestimonyUpdate::class, fn ($m) => $m->hasTo($this->member->user->email) && str_contains($m->body, 'Crowns'));
         $this->assertSame(5, $this->member->user->tokenBalance());
 
         // On the website, under the first name only; people praise God for it once each.

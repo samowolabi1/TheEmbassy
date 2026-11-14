@@ -52,16 +52,16 @@
                     @php($tokensNeeded = \App\Services\Tokens\TokenValue::tokensFor($order->total))
                     @auth
                         @if (auth()->user()->member?->status === 'active')
-                            <form method="POST" action="{{ \Illuminate\Support\Facades\URL::signedRoute('tickets.tokens', $order) }}" onsubmit="return confirm('Pay with {{ $tokensNeeded }} tokens?')">
+                            <form method="POST" action="{{ \Illuminate\Support\Facades\URL::signedRoute('tickets.tokens', $order) }}" onsubmit="return confirm('Pay with {{ $tokensNeeded }} {{ TokenName::many() }}?')">
                                 @csrf
-                                <button type="submit" class="btn btn--outline btn--md" @disabled(auth()->user()->tokenBalance() < $tokensNeeded)>Pay 🪙 {{ number_format($tokensNeeded) }} tokens</button>
+                                <button type="submit" class="btn btn--outline btn--md" @disabled(auth()->user()->tokenBalance() < $tokensNeeded)>Pay {{ TokenName::icon() }} {{ number_format($tokensNeeded) }} {{ TokenName::many() }}</button>
                             </form>
                         @endif
                     @endauth
                 </div>
                 @auth
                     @if (auth()->user()->member?->status === 'active')
-                        <p class="field-hint" style="margin: 0">You have {{ number_format(auth()->user()->tokenBalance()) }} tokens.</p>
+                        <p class="field-hint" style="margin: 0">You have {{ number_format(auth()->user()->tokenBalance()) }} {{ TokenName::many() }}.</p>
                     @endif
                 @endauth
                 @error('tokens') <p class="field-error" role="alert" style="margin: 0">{{ $message }}</p> @enderror

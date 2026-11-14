@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Account;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Services\Attendance\CheckIn;
+use App\Support\TokenName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -53,7 +54,7 @@ class CheckInController extends Controller
         }
 
         if ($checkIn->tokensGiven) {
-            $message .= " +{$checkIn->tokensGiven} tokens.";
+            $message .= " +{$checkIn->tokensGiven} ".TokenName::many().'.';
         }
 
         return redirect()->route('check-in')->with('status', $message);

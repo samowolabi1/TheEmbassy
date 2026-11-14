@@ -19,7 +19,7 @@ return [
         'market' => 'Market',
         'content' => 'Content: announcements, blog and pages',
         'gallery' => 'Photo gallery',
-        'tokens' => 'Tokens: see the treasury and members\' tokens (only the pastor in charge creates or moves them)',
+        'tokens' => 'Rewards currency: see the treasury and members\' balances (only the pastor in charge creates or moves them)',
         'community' => 'Community: moderate chat, rooms and quizzes',
         'notices' => 'Notice board',
         'sermons' => 'Sermons & live',

@@ -5,7 +5,7 @@
         ['id' => 'products', 'label' => 'Products & services', 'route' => 'vendor.products.index'],
         ['id' => 'share', 'label' => 'Share', 'route' => 'vendor.share.index'],
         ['id' => 'enquiries', 'label' => 'Enquiries', 'route' => 'vendor.enquiries.index', 'badge' => $shop->enquiries()->whereNull('read_at')->count() ?: null],
-        ...($user->canUseTokens() ? [['id' => 'token-orders', 'label' => 'Token orders', 'route' => 'vendor.token-orders.index', 'badge' => \App\Models\TokenOrder::where('shop_id', $shop->id)->where('status', 'pending')->count() ?: null]] : []),
+        ...($user->canUseTokens() ? [['id' => 'token-orders', 'label' => TokenName::titleOne().' orders', 'route' => 'vendor.token-orders.index', 'badge' => \App\Models\TokenOrder::where('shop_id', $shop->id)->where('status', 'pending')->count() ?: null]] : []),
         ['id' => 'subscription', 'label' => 'Subscription', 'route' => 'vendor.subscription.index'],
         ['id' => 'shop', 'label' => 'Shop details', 'route' => 'vendor.shop.edit'],
     ];

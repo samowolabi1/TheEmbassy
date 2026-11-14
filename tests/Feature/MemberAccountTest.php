@@ -47,7 +47,7 @@ class MemberAccountTest extends TestCase
         $this->assertAuthenticatedAs($member->user);
         $this->assertNull($member->user->role);
 
-        $this->get(route('account'))->assertSee('Waiting for approval')->assertSee('Choir')->assertSee("Once your membership is confirmed you'll get welcome tokens", false);
+        $this->get(route('account'))->assertSee('Waiting for approval')->assertSee('Choir')->assertSee("Once your membership is confirmed you'll get welcome Crowns", false);
     }
 
     public function test_joining_needs_consent_and_a_free_email(): void

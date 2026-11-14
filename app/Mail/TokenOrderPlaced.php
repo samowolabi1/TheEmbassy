@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\TokenOrder;
+use App\Support\TokenName;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -20,7 +21,7 @@ class TokenOrderPlaced extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'New token order: '.$this->order->product_name);
+        return new Envelope(subject: 'New '.TokenName::one().' order: '.$this->order->product_name);
     }
 
     public function content(): Content

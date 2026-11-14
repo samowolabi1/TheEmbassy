@@ -33,7 +33,7 @@
                         <button type="button" role="tab" class="filter" aria-selected="false" data-filter="service">Services</button>
                     @endif
                     @if ($forTokens)
-                        <button type="button" role="tab" class="filter" aria-selected="false" data-filter="tokens">🪙 For tokens</button>
+                        <button type="button" role="tab" class="filter" aria-selected="false" data-filter="tokens">{{ TokenName::icon() }} For {{ TokenName::many() }}</button>
                     @endif
                 </div>
             @endif

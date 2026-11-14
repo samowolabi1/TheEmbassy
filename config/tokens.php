@@ -8,6 +8,13 @@
 
 return [
 
+    // What the currency is called. The pastor in charge can rename it in Settings & roles.
+    'name' => [
+        'one' => 'Crown',
+        'many' => 'Crowns',
+        'icon' => '👑',
+    ],
+
     'enabled' => true,
 
     // What a token is worth (naira per token), for subscriptions, tickets and showing values.

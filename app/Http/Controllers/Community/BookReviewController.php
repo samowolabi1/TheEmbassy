@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\BookReview;
 use App\Models\Member;
 use App\Services\Tokens\Rewards;
+use App\Support\TokenName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -44,7 +45,7 @@ class BookReviewController extends Controller
         $review->fill($data)->save();
         $earned = $rewards->bookReview($request->user(), $book);
 
-        return redirect()->to(route('library.show', $book).'#reviews')->with('status', 'Thanks for your review!'.($earned ? " You've earned {$earned} tokens." : ''));
+        return redirect()->to(route('library.show', $book).'#reviews')->with('status', 'Thanks for your review!'.($earned ? " You've earned {$earned} ".TokenName::many().'.' : ''));
     }
 
     /**

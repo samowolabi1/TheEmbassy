@@ -8,7 +8,7 @@
     <section class="container notices-hero stack" style="gap: 12px">
         <span class="eyebrow">THE CHURCH LIBRARY</span>
         <h1 class="display notices-hero__title">Take a good book home.</h1>
-        <p class="lede" style="max-width: 680px">Reserve a book here and collect it from the library at church. Keep it for {{ \App\Services\Library\Lending::loanDays() }} days, renew it once if nobody's waiting, and tell the Tribe what you thought in <a href="{{ route('community.reviews') }}" class="accent-bronze">book reviews</a>. @if ($returnTokens) Bring books back on time to earn {{ $returnTokens }} tokens each.@endif</p>
+        <p class="lede" style="max-width: 680px">Reserve a book here and collect it from the library at church. Keep it for {{ \App\Services\Library\Lending::loanDays() }} days, renew it once if nobody's waiting, and tell the Tribe what you thought in <a href="{{ route('community.reviews') }}" class="accent-bronze">book reviews</a>. @if ($returnTokens) Bring books back on time to earn {{ $returnTokens }} {{ TokenName::many() }} each.@endif</p>
     </section>
 
     <section class="container section--tight section--last stack" style="gap: 24px">

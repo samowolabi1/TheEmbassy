@@ -17,7 +17,7 @@ class SettingsAndRolesTest extends TestCase
     {
         $media = User::factory()->staff('media')->create();
 
-        $this->actingAs($media)->get('/admin')->assertOk()->assertSee('Content &amp; announcements', false)->assertDontSee('Giving &amp; tokens', false);
+        $this->actingAs($media)->get('/admin')->assertOk()->assertSee('Content &amp; announcements', false)->assertDontSee('Giving &amp; Crowns', false);
         $this->get(route('admin.content'))->assertOk();
         $this->get(route('admin.prayer-requests.index'))->assertForbidden();
         $this->get(route('admin.market.index'))->assertForbidden();

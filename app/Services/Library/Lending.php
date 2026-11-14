@@ -10,6 +10,7 @@ use App\Models\PushSubscription;
 use App\Models\User;
 use App\Services\Messaging\WebPush;
 use App\Services\Tokens\Rewards;
+use App\Support\TokenName;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -103,7 +104,7 @@ class Lending
         $this->offerNext($loan->book);
         $earned = $onTime && $loan->member->user ? $this->rewards->bookReturned($loan->member->user, $loan) : 0;
         $this->tell($loan->member, 'Thanks for returning '.$loan->book->title,
-            'We\'ve got "'.$loan->book->title.'" back'.($earned ? ", on time, so you've earned {$earned} tokens" : '').'. Enjoyed it? Tell others what you thought: write a review in the community.',
+            'We\'ve got "'.$loan->book->title.'" back'.($earned ? ", on time, so you've earned {$earned} ".TokenName::many() : '').'. Enjoyed it? Tell others what you thought: write a review in the community.',
             route('library.show', $loan->book).'#review');
     }
 

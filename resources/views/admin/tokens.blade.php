@@ -1,15 +1,15 @@
-@extends('layouts.admin', ['title' => 'Token treasury', 'active' => 'tokens'])
+@extends('layouts.admin', ['title' => TokenName::titleOne().' treasury', 'active' => 'tokens'])
 
 @php($n = fn (int $x) => number_format($x))
 
 @section('content')
     <header class="page-head">
         <div class="stack" style="gap: 4px">
-            <h1>Token treasury</h1>
+            <h1>{{ TokenName::titleOne() }} treasury</h1>
             <span class="page-head__sub">
-                Tokens are the app's own currency: 1 token = {{ $rate }}. The pastor in charge creates them into the treasury;
+                {{ TokenName::title() }} are the app's own currency: 1 {{ TokenName::one() }} = {{ $rate }}. The pastor in charge creates them into the treasury;
                 members earn them from it, spend them, and the subscriptions and tickets they pay for send them back.
-                @unless ($super) Only the pastor in charge can create, give or take tokens and change the amounts. @endunless
+                @unless ($super) Only the pastor in charge can create, give or take {{ TokenName::many() }} and change the amounts. @endunless
             </span>
         </div>
     </header>
@@ -20,16 +20,16 @@
         @endif
     @endforeach
     @if (! $books['ok'])
-        <p class="flash flash--error" role="alert">The token books don't add up: {{ implode(' ', $books['problems']) }}</p>
+        <p class="flash flash--error" role="alert">The {{ TokenName::one() }} books don't add up: {{ implode(' ', $books['problems']) }}</p>
     @endif
     @if ($treasuryShort && $books['treasury'] < 100)
-        <p class="flash flash--error" role="status">The treasury ran short, so some rewards weren't paid. {{ $super ? 'Create more tokens below.' : 'Ask the pastor in charge to create more.' }}</p>
+        <p class="flash flash--error" role="status">The treasury ran short, so some rewards weren't paid. {{ $super ? 'Create more '.TokenName::many().' below.' : 'Ask the pastor in charge to create more.' }}</p>
     @endif
 
     <div class="stats">
         <div class="stat-tile stat-tile--navy">
             <span class="stat-tile__label">In the treasury</span>
-            <span class="stat-tile__num">🪙 {{ $n($books['treasury']) }}</span>
+            <span class="stat-tile__num">{{ TokenName::icon() }} {{ $n($books['treasury']) }}</span>
             <span class="stat-tile__foot">Ready to pay out as rewards</span>
         </div>
         <div class="stat-tile">
@@ -52,7 +52,7 @@
     @if ($super)
         <div class="row">
             <section class="box form grow" id="award">
-                <h2>Give or take tokens</h2>
+                <h2>Give or take {{ TokenName::many() }}</h2>
                 <form method="POST" action="{{ route('admin.tokens.award') }}" class="form">
                     @csrf
                     <div class="form-row">
@@ -64,7 +64,7 @@
                                 @endforeach
                             </select>
                         </label>
-                        <label class="field">Tokens <input type="number" name="amount" value="{{ old('amount') }}" required min="1" step="1"></label>
+                        <label class="field">{{ TokenName::title() }} <input type="number" name="amount" value="{{ old('amount') }}" required min="1" step="1"></label>
                     </div>
                     <fieldset class="choice-group">
                         <legend class="sr-only">Give or take</legend>
@@ -81,25 +81,25 @@
             </section>
 
             <section class="box form side-col">
-                <h2>Create or destroy tokens</h2>
-                <span class="box__note">New tokens go into the treasury, ready to be earned. Destroying takes unused tokens out of the treasury for good.</span>
-                <form method="POST" action="{{ route('admin.tokens.mint') }}" class="form" data-confirm="Create these tokens in the treasury?">
+                <h2>Create or destroy {{ TokenName::many() }}</h2>
+                <span class="box__note">New {{ TokenName::many() }} go into the treasury, ready to be earned. Destroying takes unused {{ TokenName::many() }} out of the treasury for good.</span>
+                <form method="POST" action="{{ route('admin.tokens.mint') }}" class="form" data-confirm="Create these {{ TokenName::many() }} in the treasury?">
                     @csrf
                     <div class="form-row">
                         <label class="field">Create <input type="number" name="amount" required min="1" step="1" placeholder="e.g. 100000"></label>
                         <label class="field">Note <input type="text" name="note" required maxlength="150" placeholder="e.g. Rewards for December"></label>
                     </div>
-                    <div><button type="submit" class="btn btn--gold btn--xs">Create tokens</button></div>
+                    <div><button type="submit" class="btn btn--gold btn--xs">Create {{ TokenName::many() }}</button></div>
                 </form>
                 <details class="list-item--edit">
-                    <summary class="box__link" style="cursor: pointer">Destroy tokens</summary>
-                    <form method="POST" action="{{ route('admin.tokens.burn') }}" class="form" style="padding-top: 8px" data-confirm="Destroy these tokens for good?">
+                    <summary class="box__link" style="cursor: pointer">Destroy {{ TokenName::many() }}</summary>
+                    <form method="POST" action="{{ route('admin.tokens.burn') }}" class="form" style="padding-top: 8px" data-confirm="Destroy these {{ TokenName::many() }} for good?">
                         @csrf
                         <div class="form-row">
                             <label class="field">Destroy <input type="number" name="amount" required min="1" max="{{ $books['treasury'] }}" step="1"></label>
                             <label class="field">Note <input type="text" name="note" required maxlength="150"></label>
                         </div>
-                        <div><button type="submit" class="btn btn--danger btn--xs">Destroy tokens</button></div>
+                        <div><button type="submit" class="btn btn--danger btn--xs">Destroy {{ TokenName::many() }}</button></div>
                     </form>
                 </details>
             </section>
@@ -108,18 +108,32 @@
         <form method="POST" action="{{ route('admin.tokens.settings') }}" class="box form" id="settings">
             @csrf
             @method('PUT')
-            <h2>What earns tokens, and what a token is worth</h2>
+            <h2>What earns {{ TokenName::many() }}, and what a {{ TokenName::one() }} is worth</h2>
             <div class="form-row">
-                <label class="field">Value of 1 token (₦)
+                <label class="field">Name for one
+                    <input type="text" name="name_one" value="{{ old('name_one', TokenName::one()) }}" required maxlength="20">
+                    <span class="field__hint">e.g. Crown: "You earned 1 Crown".</span>
+                </label>
+                <label class="field">Name for more than one
+                    <input type="text" name="name_many" value="{{ old('name_many', TokenName::many()) }}" required maxlength="20">
+                    <span class="field__hint">e.g. Crowns: "My Crowns", "Crown treasury". Changes it everywhere.</span>
+                </label>
+                <label class="field">Icon
+                    <input type="text" name="name_icon" value="{{ old('name_icon', TokenName::icon()) }}" required maxlength="8">
+                    <span class="field__hint">One emoji, e.g. 👑, ⭐ or 💎.</span>
+                </label>
+            </div>
+            <div class="form-row">
+                <label class="field">Value of 1 {{ TokenName::one() }} (₦)
                     <input type="number" name="naira_per_token" value="{{ old('naira_per_token', config('tokens.naira_per_token')) }}" required min="0.01" step="0.01">
-                    <span class="field__hint">Prices subscriptions and tickets in tokens. Changing it doesn't change anyone's balance.</span>
+                    <span class="field__hint">Prices subscriptions and tickets in {{ TokenName::many() }}. Changing it doesn't change anyone's balance.</span>
                 </label>
                 <label class="field">Most a member can send in a day
                     <input type="number" name="daily_limit" value="{{ old('daily_limit', config('tokens.transfers.daily_limit')) }}" required min="1" step="1">
                 </label>
             </div>
-            <label class="login__remember"><input type="checkbox" name="enabled" value="1" @checked(config('tokens.enabled'))>Members earn tokens for activities</label>
-            <label class="login__remember"><input type="checkbox" name="transfers_enabled" value="1" @checked(config('tokens.transfers.enabled'))>Members can send tokens to each other</label>
+            <label class="login__remember"><input type="checkbox" name="enabled" value="1" @checked(config('tokens.enabled'))>Members earn {{ TokenName::many() }} for activities</label>
+            <label class="login__remember"><input type="checkbox" name="transfers_enabled" value="1" @checked(config('tokens.transfers.enabled'))>Members can send {{ TokenName::many() }} to each other</label>
             <div class="grid-auto" style="--min: 220px; --gap: 12px 16px">
                 @foreach ($rules as $key => $rule)
                     <label class="field">{{ $rule['label'] }}
@@ -132,7 +146,7 @@
         </form>
     @else
         <section class="box box--flush">
-            <div class="box__head"><h2>What earns tokens</h2><span class="box__note">Set by the pastor in charge</span></div>
+            <div class="box__head"><h2>What earns {{ TokenName::many() }}</h2><span class="box__note">Set by the pastor in charge</span></div>
             <div class="list-grid">
                 @foreach ($rules as $rule)
                     <div class="list-item"><span class="list-item__main"><span class="list-item__title">{{ $rule['label'] }}</span></span><strong>{{ $rule['amount'] ? '+'.$rule['amount'] : 'Off' }}</strong></div>
@@ -160,11 +174,11 @@
             @if ($member && $account)
                 <div class="list-item">
                     <span class="list-item__main">
-                        <span class="list-item__title">Balance 🪙 {{ $n($account->balance) }} @if ($account->isFrozen()) <span class="pill pill--warn">On hold</span> @endif</span>
+                        <span class="list-item__title">Balance {{ TokenName::icon() }} {{ $n($account->balance) }} @if ($account->isFrozen()) <span class="pill pill--warn">On hold</span> @endif</span>
                         @if ($account->frozen_reason) <span class="list-item__meta">{{ $account->frozen_reason }}</span> @endif
                     </span>
                     @if ($super)
-                        <form method="POST" action="{{ route('admin.tokens.freeze', $member) }}" style="display: flex; gap: 6px; flex-wrap: wrap" data-confirm="{{ $account->isFrozen() ? 'Release this wallet?' : 'Put this wallet on hold? They keep their tokens but can\'t spend or send them.' }}">
+                        <form method="POST" action="{{ route('admin.tokens.freeze', $member) }}" style="display: flex; gap: 6px; flex-wrap: wrap" data-confirm="{{ $account->isFrozen() ? 'Release this wallet?' : 'Put this wallet on hold? They keep their '.TokenName::many().' but can\'t spend or send them.' }}">
                             @csrf
                             @unless ($account->isFrozen()) <input type="text" name="reason" maxlength="200" placeholder="Reason" class="select-sm"> @endunless
                             <button type="submit" class="btn btn--ghost btn--xs">{{ $account->isFrozen() ? 'Release wallet' : 'Put on hold' }}</button>
@@ -181,7 +195,7 @@
                     <strong>{{ $n($t->amount) }}</strong>
                 </div>
             @empty
-                <p class="empty-state">No token movements yet.</p>
+                <p class="empty-state">No {{ TokenName::one() }} movements yet.</p>
             @endforelse
             @include('admin.partials.pager', ['paginator' => $recent])
         </section>
@@ -195,7 +209,7 @@
                         <strong>{{ $n($acc->balance) }}</strong>
                     </a>
                 @empty
-                    <p class="empty-state">No tokens with members yet.</p>
+                    <p class="empty-state">No {{ TokenName::many() }} with members yet.</p>
                 @endforelse
             </section>
             @if ($frozen->isNotEmpty())

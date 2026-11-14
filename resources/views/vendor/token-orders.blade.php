@@ -1,10 +1,10 @@
-@extends('layouts.vendor', ['title' => 'Token orders', 'active' => 'token-orders'])
+@extends('layouts.vendor', ['title' => TokenName::titleOne().' orders', 'active' => 'token-orders'])
 
 @section('content')
     <header class="page-head">
         <div class="stack" style="gap: 4px">
-            <h1>Token orders</h1>
-            <span class="page-head__sub">Members earn tokens for taking part in church life and can spend them on listings you set a token price for. Their tokens are held when they order and become yours when you hand it over.</span>
+            <h1>{{ TokenName::titleOne() }} orders</h1>
+            <span class="page-head__sub">Members earn {{ TokenName::many() }} for taking part in church life and can spend them on listings you set a {{ TokenName::one() }} price for. Their {{ TokenName::many() }} are held when they order and become yours when you hand it over.</span>
         </div>
     </header>
 
@@ -14,9 +14,9 @@
 
     <div class="stats">
         <div class="stat-tile stat-tile--navy">
-            <span class="stat-tile__label">Your tokens</span>
-            <span class="stat-tile__num">🪙 {{ number_format($balance) }}</span>
-            <span class="stat-tile__foot">Use them for your <a href="{{ route('vendor.subscription.index') }}" style="color: inherit; text-decoration: underline">subscription</a> (1 token = {{ \App\Services\Tokens\TokenValue::rateLabel() }})</span>
+            <span class="stat-tile__label">Your {{ TokenName::many() }}</span>
+            <span class="stat-tile__num">{{ TokenName::icon() }} {{ number_format($balance) }}</span>
+            <span class="stat-tile__foot">Use them for your <a href="{{ route('vendor.subscription.index') }}" style="color: inherit; text-decoration: underline">subscription</a> (1 {{ TokenName::one() }} = {{ \App\Services\Tokens\TokenValue::rateLabel() }})</span>
         </div>
         <div class="stat-tile">
             <span class="stat-tile__label">Waiting to hand over</span>
@@ -48,7 +48,7 @@
                     <span class="list-item__title">{{ $order->product_name }} <span class="box__note">{{ $order->code }}</span></span>
                     <span class="list-item__meta">
                         {{ $order->buyer?->communityName() }}@if ($order->buyer?->member?->phone) · {{ $order->buyer->member->phone }}@endif
-                        · 🪙 {{ number_format($order->tokens) }} · {{ $order->created_at->format('j M, g:i A') }}
+                        · {{ TokenName::icon() }} {{ number_format($order->tokens) }} · {{ $order->created_at->format('j M, g:i A') }}
                         @if ($order->note) · "{{ $order->note }}" @endif
                     </span>
                 </span>
@@ -59,7 +59,7 @@
                             <input type="hidden" name="code" value="{{ $order->code }}">
                             <button type="submit" class="btn btn--navy btn--xs">Handed over</button>
                         </form>
-                        <form method="POST" action="{{ route('vendor.token-orders.decline', $order) }}" data-confirm="Decline this order? The buyer gets their tokens back.">
+                        <form method="POST" action="{{ route('vendor.token-orders.decline', $order) }}" data-confirm="Decline this order? The buyer gets their {{ TokenName::many() }} back.">
                             @csrf
                             <button type="submit" class="btn btn--danger btn--xs">Decline</button>
                         </form>
@@ -69,7 +69,7 @@
                 @endif
             </div>
         @empty
-            <p class="empty-state">{{ $show === 'pending' ? 'No orders waiting.' : 'Nothing here yet.' }} Set a token price on a listing to accept tokens.</p>
+            <p class="empty-state">{{ $show === 'pending' ? 'No orders waiting.' : 'Nothing here yet.' }} Set a {{ TokenName::one() }} price on a listing to accept {{ TokenName::many() }}.</p>
         @endforelse
         @include('admin.partials.pager', ['paginator' => $orders])
     </section>

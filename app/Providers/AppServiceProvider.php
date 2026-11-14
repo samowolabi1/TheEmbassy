@@ -5,7 +5,9 @@ namespace App\Providers;
 use App\Models\Setting;
 use App\Models\Unit;
 use App\Models\User;
+use App\Support\TokenName;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Setting::applyToConfig();
+        // The reward currency's name in Blade: TokenName::many(), TokenName::count(5)…
+        AliasLoader::getInstance()->alias('TokenName', TokenName::class);
 
         Gate::define('access-admin', fn (User $user) => $user->isStaff());
         Gate::define('manage', fn (User $user, string $area) => $user->canManage($area));

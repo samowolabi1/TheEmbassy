@@ -11,6 +11,7 @@ use App\Models\TokenTransfer;
 use App\Services\Tokens\Ledger;
 use App\Services\Tokens\Rewards;
 use App\Services\Tokens\TokenValue;
+use App\Support\TokenName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -68,7 +69,7 @@ class TokenController extends Controller
         $ledger->mint((int) $data['amount'], $request->user(), $data['note']);
         cache()->forget('tokens.treasury_short');
 
-        return back()->with('status', number_format($data['amount']).' tokens created in the treasury.');
+        return back()->with('status', number_format($data['amount']).' '.TokenName::many().' created in the treasury.');
     }
 
     public function burn(Request $request, Ledger $ledger): RedirectResponse
@@ -83,7 +84,7 @@ class TokenController extends Controller
             throw $e->errorBag('burn');
         }
 
-        return back()->with('status', number_format($data['amount']).' tokens destroyed from the treasury.');
+        return back()->with('status', number_format($data['amount']).' '.TokenName::many().' destroyed from the treasury.');
     }
 
     /**
@@ -108,7 +109,7 @@ class TokenController extends Controller
             throw $e->errorBag('award'); // shown beside the form
         }
 
-        return back()->with('status', ($data['direction'] === 'give' ? "Gave {$amount} tokens to " : "Took {$amount} tokens back from ").$member->name.'.');
+        return back()->with('status', ($data['direction'] === 'give' ? "Gave {$amount} ".TokenName::many().' to ' : "Took {$amount} ".TokenName::many().' back from ').$member->name.'.');
     }
 
     /**
@@ -133,6 +134,9 @@ class TokenController extends Controller
         $rules = [
             'naira_per_token' => ['required', 'numeric', 'between:0.01,100000'],
             'daily_limit' => ['required', 'integer', 'between:1,10000000'],
+            'name_one' => ['nullable', 'string', 'max:20'],
+            'name_many' => ['nullable', 'string', 'max:20'],
+            'name_icon' => ['nullable', 'string', 'max:8'],
         ];
         foreach (array_keys(Rewards::RULES) as $key) {
             $rules["rules.{$key}"] = ['required', 'integer', 'between:0,100000'];
@@ -145,11 +149,18 @@ class TokenController extends Controller
             'tokens.transfers.enabled' => $request->boolean('transfers_enabled') ? '1' : '0',
             'tokens.transfers.daily_limit' => (string) $data['daily_limit'],
         ];
+        foreach (['one', 'many', 'icon'] as $part) {
+            if (filled($data["name_{$part}"] ?? null)) {
+                $values["tokens.name.{$part}"] = trim($data["name_{$part}"]);
+            }
+        }
         foreach ($data['rules'] as $key => $amount) {
             $values["tokens.rules.{$key}"] = (string) $amount;
         }
         DB::transaction(fn () => Setting::putMany($values));
 
-        return back()->with('status', 'Token settings saved.');
+        config(collect($values)->only(['tokens.name.one', 'tokens.name.many'])->all());
+
+        return back()->with('status', TokenName::titleOne().' settings saved.');
     }
 }

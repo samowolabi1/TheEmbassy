@@ -38,7 +38,7 @@
                         <strong>{{ $myLoan->label() }}</strong>
                         <span>
                             @switch($myLoan->status)
-                                @case('on_loan') {{ $myLoan->isOverdue() ? 'It was due back' : 'Due back' }} {{ $myLoan->due_on->format('l j M') }}. @if (! $myLoan->isOverdue() && $returnTokens) Bring it back by then to earn {{ $returnTokens }} tokens.@endif @break
+                                @case('on_loan') {{ $myLoan->isOverdue() ? 'It was due back' : 'Due back' }} {{ $myLoan->due_on->format('l j M') }}. @if (! $myLoan->isOverdue() && $returnTokens) Bring it back by then to earn {{ $returnTokens }} {{ TokenName::many() }}.@endif @break
                                 @case('requested') A copy is set aside for you. Collect it from the library at church within {{ config('church.library.collect_days', 7) }} days. @break
                                 @case('waiting') You're number {{ $myLoan->queuePosition() }} on the waiting list. We'll tell you when a copy is free. @break
                             @endswitch
@@ -75,7 +75,7 @@
                         @error('body') <span class="field-error">{{ $message }}</span> @enderror
                     </label>
                     <button type="submit" class="btn btn--navy" style="align-self: flex-start">{{ $myReview ? 'Update review' : 'Post review' }}</button>
-                    <span class="field-hint">Reviews show here and in the community's Book reviews. @if (! $myReview && $reviewTokens) Your first review of a book earns {{ $reviewTokens }} tokens.@endif</span>
+                    <span class="field-hint">Reviews show here and in the community's Book reviews. @if (! $myReview && $reviewTokens) Your first review of a book earns {{ $reviewTokens }} {{ TokenName::many() }}.@endif</span>
                 </fieldset>
             </form>
         @endif

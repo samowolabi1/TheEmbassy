@@ -22,6 +22,7 @@ use App\Models\VendorPlan;
 use App\Services\Tokens\Ledger;
 use App\Services\Tokens\Rewards;
 use App\Services\Tokens\TokenValue;
+use App\Support\TokenName;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -75,7 +76,7 @@ class TokensTest extends TestCase
     public function test_nobody_pays_dues_any_more(): void
     {
         $member = $this->member();
-        $this->actingAs($member->user)->get(route('account.tokens'))->assertOk()->assertSee('MY TOKENS')->assertDontSee('Pay tokens');
+        $this->actingAs($member->user)->get(route('account.tokens'))->assertOk()->assertSee('MY TOKENS')->assertDontSee('Pay Crowns');
         $this->post('/account/tokens')->assertStatus(405);
         $this->assertFalse(\Schema::hasTable('token_plans'));
     }
@@ -141,11 +142,11 @@ class TokensTest extends TestCase
 
         Declaration::create(['week_of' => Declaration::weekStarting(today()), 'lines' => ['I am chosen.', '', '', '']]);
         $this->get(route('account.tokens'))->assertSee('I declare it');
-        $this->post(route('account.declare'))->assertSessionHas('status', 'Amen! +2 tokens.');
+        $this->post(route('account.declare'))->assertSessionHas('status', 'Amen! +2 Crowns.');
         $this->post(route('account.declare'))->assertSessionHas('status', fn ($s) => str_contains($s, 'declared it this week'));
 
         $this->put(route('account.update'), ['phone' => '0803', 'birthday' => $member->birthday->toDateString(), 'address' => 'Yaba', 'unit_id' => Unit::factory()->create()->id, 'fellowship_id' => Fellowship::create(['name' => 'Yaba'])->id])
-            ->assertSessionHas('status', fn ($s) => str_contains($s, '+10 tokens'));
+            ->assertSessionHas('status', fn ($s) => str_contains($s, '+10 Crowns'));
 
         $this->artisan('tokens:daily')->assertSuccessful();
         $this->artisan('tokens:daily')->assertSuccessful(); // once a year
@@ -181,7 +182,7 @@ class TokensTest extends TestCase
         $this->assertSame(100, $this->balance($buyer));
 
         $this->give($buyer, 100);
-        $this->get(route('market.index'))->assertSee('For tokens')->assertSee('150 tokens');
+        $this->get(route('market.index'))->assertSee('For Crowns')->assertSee('150 Crowns');
         $this->post(route('market.tokens', $product), ['note' => 'Size L'])->assertRedirect(route('account.tokens'));
         $order = TokenOrder::sole();
         $this->assertSame([50, 0, 'pending'], [$this->balance($buyer), $product->fresh()->stock, $order->status]);
@@ -274,7 +275,7 @@ class TokensTest extends TestCase
         // Other staff, even administrators and pastors, can look but not touch.
         foreach (['admin', 'pastor', 'secretary'] as $role) {
             $this->actingAs(User::factory()->staff($role)->create());
-            $this->get(route('admin.tokens.index'))->assertOk()->assertDontSee('Create tokens');
+            $this->get(route('admin.tokens.index'))->assertOk()->assertDontSee('Create Crowns');
             $this->post(route('admin.tokens.mint'), ['amount' => 500, 'note' => 'x'])->assertForbidden();
             $this->post(route('admin.tokens.award'), ['member_id' => $member->id, 'direction' => 'give', 'amount' => 50, 'reason' => 'x'])->assertForbidden();
             $this->put(route('admin.tokens.settings'), [])->assertForbidden();
@@ -282,7 +283,7 @@ class TokensTest extends TestCase
         $this->actingAs(User::factory()->staff('finance')->create())->get(route('admin.tokens.index'))->assertForbidden();
 
         $this->actingAs(User::factory()->superAdmin()->create());
-        $this->get(route('admin.tokens.index'))->assertOk()->assertSee('Create tokens')->assertSee('books balance');
+        $this->get(route('admin.tokens.index'))->assertOk()->assertSee('Create Crowns')->assertSee('books balance');
         $this->post(route('admin.tokens.mint'), ['amount' => 5000, 'note' => 'December rewards'])->assertSessionHasNoErrors();
         $this->post(route('admin.tokens.award'), ['member_id' => $member->id, 'direction' => 'give', 'amount' => 50, 'reason' => 'Outreach volunteer'])->assertSessionHasNoErrors();
         $this->post(route('admin.tokens.award'), ['member_id' => $member->id, 'direction' => 'take', 'amount' => 80, 'reason' => 'Correction'])->assertSessionHasErrorsIn('award', 'amount');
@@ -373,7 +374,7 @@ class TokensTest extends TestCase
 
         $this->actingAs($member->user)->post(route('events.book', $event), ['name' => 'Ada', 'email' => 'a@example.com', 'quantities' => [$type->id => 1]]);
         $order = TicketOrder::sole();
-        $this->get(URL::signedRoute('tickets.show', $order))->assertSee('Pay 🪙 1,000 tokens');
+        $this->get(URL::signedRoute('tickets.show', $order))->assertSee('Pay 👑 1,000 Crowns');
         $this->post(URL::signedRoute('tickets.tokens', $order))->assertRedirect($order->url());
 
         $this->assertTrue($order->fresh()->isConfirmed());
@@ -424,7 +425,7 @@ class TokensTest extends TestCase
         $this->assertSame(0, app(Rewards::class)->welcome($outsider));
         $this->assertSame(0, $this->balance($outsider));
         $this->post(route('market.tokens', $this->product(['token_price' => 10])))->assertSessionHasErrors('tokens');
-        $this->get(route('account.tokens'))->assertOk()->assertSee('Tokens are for church members.');
+        $this->get(route('account.tokens'))->assertOk()->assertSee('Crowns are for church members.');
         $this->assertThrows(fn () => app(Ledger::class)->payOut($outsider, 5, 'grant', 'Gift'), ValidationException::class);
 
         // A member seller's listing stops taking tokens if they're no longer a member.
@@ -432,5 +433,23 @@ class TokensTest extends TestCase
         $this->assertTrue($product->acceptsTokens());
         $product->shop->user->member->forceFill(['status' => Member::INACTIVE])->save();
         $this->assertFalse($product->fresh()->acceptsTokens());
+    }
+
+    public function test_the_pastor_in_charge_renames_the_currency(): void
+    {
+        $member = Member::factory()->active()->create();
+        $this->actingAs($member->user)->get(route('account.tokens'))->assertOk()->assertSee('My Crowns')->assertSee('👑');
+
+        $this->actingAs(User::factory()->admin()->create())->get(route('admin.tokens.index'))->assertOk()->assertDontSee('Name for more than one');
+        $super = User::factory()->superAdmin()->create();
+        $this->actingAs($super)->get(route('admin.tokens.index'))->assertOk()->assertSee('Name for more than one')->assertSee('value="Crowns"', false);
+        $this->put(route('admin.tokens.settings'), ['naira_per_token' => 2, 'daily_limit' => 1000, 'enabled' => '1', 'transfers_enabled' => '1', 'rules' => config('tokens.rules'),
+            'name_one' => 'Star', 'name_many' => 'Stars', 'name_icon' => '⭐'])->assertSessionHasNoErrors()->assertSessionHas('status', 'Star settings saved.');
+        config(['tokens.name.one' => 'x', 'tokens.name.many' => 'x', 'tokens.name.icon' => 'x']);
+        Setting::applyToConfig(); // as on the next page load
+
+        $this->get(route('admin.tokens.index'))->assertOk()->assertSee('Star treasury')->assertSee('Give or take Stars')->assertDontSee('Crown treasury</h1>', false);
+        $this->actingAs($member->user)->get(route('account.tokens'))->assertOk()->assertSee('My Stars')->assertSee('⭐')->assertDontSee('Crowns');
+        $this->assertSame(['1 Star', '5 Stars'], [TokenName::count(1), TokenName::count(5)]);
     }
 }

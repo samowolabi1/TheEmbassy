@@ -13,7 +13,7 @@
         <span class="product__price">{{ $product->priceLabel() }}</span>
     </span>
     @if ($product->acceptsTokens())
-        <span class="token-chip">🪙 {{ number_format($product->token_price) }} tokens</span>
+        <span class="token-chip">{{ TokenName::icon() }} {{ number_format($product->token_price) }} {{ TokenName::many() }}</span>
     @endif
     @if ($product->isService() && $product->imageUrl())
         <span class="field-hint">Service</span>

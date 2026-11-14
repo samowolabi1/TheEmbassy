@@ -20,6 +20,7 @@ use App\Services\Content\Images;
 use App\Services\Messaging\Inbox;
 use App\Services\Tokens\Ledger;
 use App\Services\Tokens\Rewards;
+use App\Support\TokenName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -72,7 +73,7 @@ class AccountController extends Controller
         $member->update([...$data, 'notify_sms' => $request->boolean('notify_sms')]);
         $tokens = app(Rewards::class)->profile($member->fresh('user'));
 
-        return back()->with('status', 'Your details are saved.'.($tokens ? " Your profile is complete: +{$tokens} tokens!" : ''));
+        return back()->with('status', 'Your details are saved.'.($tokens ? " Your profile is complete: +{$tokens} ".TokenName::many().'!' : ''));
     }
 
     /**
@@ -153,7 +154,7 @@ class AccountController extends Controller
     public function sendTokens(Request $request, Ledger $ledger): RedirectResponse
     {
         $user = $request->user();
-        abort_unless(config('tokens.transfers.enabled') && $user->member?->status === Member::ACTIVE, 403, 'Sending tokens isn\'t switched on.');
+        abort_unless(config('tokens.transfers.enabled') && $user->member?->status === Member::ACTIVE, 403, 'Sending '.TokenName::many().' isn\'t switched on.');
         $data = $request->validate([
             'to' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'integer', 'min:1', 'max:10000000'],
@@ -171,14 +172,14 @@ class AccountController extends Controller
         $account = $ledger->account($user);
         $limit = (int) config('tokens.transfers.daily_limit', 1000);
         if ($this->sentToday($account->id) + $data['amount'] > $limit) {
-            throw ValidationException::withMessages(['amount' => "You can send up to {$limit} tokens a day; you've sent ".$this->sentToday($account->id).' today.']);
+            throw ValidationException::withMessages(['amount' => "You can send up to {$limit} ".TokenName::many()." a day; you've sent ".$this->sentToday($account->id).' today.']);
         }
 
         $note = filled($data['note'] ?? null) ? ': '.$data['note'] : '';
         $ledger->move($account, $ledger->account($recipient->user), (int) $data['amount'], 'send',
             $user->communityName().' → '.$recipient->name.$note, null, $user, 'amount');
 
-        return back()->with('status', "Sent {$data['amount']} tokens to {$recipient->name}.");
+        return back()->with('status', "Sent {$data['amount']} ".TokenName::many()." to {$recipient->name}.");
     }
 
     /**
@@ -191,7 +192,7 @@ class AccountController extends Controller
         $declaration = Declaration::current() ?? abort(404);
         $tokens = $rewards->declared($request->user(), $declaration->week_of);
 
-        return back()->with('status', $tokens ? "Amen! +{$tokens} tokens." : 'You\'ve declared it this week. Amen!');
+        return back()->with('status', $tokens ? "Amen! +{$tokens} ".TokenName::many().'.' : 'You\'ve declared it this week. Amen!');
     }
 
     private function sentToday(int $accountId): int

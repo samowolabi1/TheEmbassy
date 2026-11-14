@@ -5,6 +5,7 @@ namespace App\Services\Tokens;
 use App\Models\TokenAccount;
 use App\Models\TokenTransfer;
 use App\Models\User;
+use App\Support\TokenName;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -37,7 +38,7 @@ class Ledger
     public function account(User $user, string $field = 'tokens', bool $settling = false): TokenAccount
     {
         if (! $user->canUseTokens() && ! ($settling && TokenAccount::where('user_id', $user->id)->exists())) {
-            throw ValidationException::withMessages([$field => 'Tokens are for church members only.']);
+            throw ValidationException::withMessages([$field => TokenName::title().' are for church members only.']);
         }
 
         return $this->fresh(TokenAccount::firstOrCreate(['user_id' => $user->id], ['kind' => TokenAccount::MEMBER]));
@@ -64,10 +65,10 @@ class Ledger
     public function move(?TokenAccount $from, ?TokenAccount $to, int $amount, string $kind, string $description, ?string $key = null, ?User $by = null, string $field = 'tokens'): bool
     {
         if ($amount <= 0) {
-            throw ValidationException::withMessages([$field => 'Enter a number of tokens above zero.']);
+            throw ValidationException::withMessages([$field => 'Enter a number of '.TokenName::many().' above zero.']);
         }
         if ($from === null && $kind !== 'mint') {
-            throw new \LogicException('Only minting creates tokens.');
+            throw new \LogicException('Only minting creates '.TokenName::many().'.');
         }
 
         try {
@@ -86,8 +87,8 @@ class Ledger
                         $fresh = $from->fresh();
                         throw ValidationException::withMessages([$field => match (true) {
                             $fresh->isFrozen() && in_array($kind, self::SPENDING, true) => 'This wallet is on hold. Please speak to the church office.',
-                            $fresh->kind === TokenAccount::TREASURY => "The church treasury has {$fresh->balance} tokens; {$amount} are needed. The pastor in charge can create more.",
-                            default => "You need {$amount} tokens and have {$fresh->balance}.",
+                            $fresh->kind === TokenAccount::TREASURY => "The church treasury has {$fresh->balance} ".TokenName::many()."; {$amount} are needed. The pastor in charge can create more.",
+                            default => "You need {$amount} ".TokenName::many()." and have {$fresh->balance}.",
                         }]);
                     }
                 }

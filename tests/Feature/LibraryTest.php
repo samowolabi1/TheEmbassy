@@ -65,7 +65,7 @@ class LibraryTest extends TestCase
         $this->actingAs($this->librarian)->post(route('admin.library.lend', $waiting))->assertSessionHasErrors('loan');
         $this->get(route('admin.library.desk', ['tab' => 'out']))->assertOk()->assertSee('The Purpose of Prayer');
 
-        $this->actingAs($this->member->user)->get(route('library.show', $this->book))->assertOk()->assertSee('Bring it back by then to earn 5 tokens');
+        $this->actingAs($this->member->user)->get(route('library.show', $this->book))->assertOk()->assertSee('Bring it back by then to earn 5 Crowns');
 
         // Someone is waiting, so the member can't renew.
         $this->actingAs($this->member->user)->post(route('library.renew', $loan))->assertSessionHasErrors('loan');
@@ -75,7 +75,7 @@ class LibraryTest extends TestCase
         $this->assertSame(BookLoan::RETURNED, $loan->fresh()->status);
         $this->assertSame(BookLoan::REQUESTED, $waiting->fresh()->status);
         Mail::assertSent(LibraryNotice::class, fn ($m) => $m->hasTo($friend->user->email) && str_contains($m->headline, 'Ready for you'));
-        Mail::assertSent(LibraryNotice::class, fn ($m) => $m->hasTo($this->member->user->email) && str_contains($m->body, 'review') && str_contains($m->body, 'earned 5 tokens'));
+        Mail::assertSent(LibraryNotice::class, fn ($m) => $m->hasTo($this->member->user->email) && str_contains($m->body, 'review') && str_contains($m->body, 'earned 5 Crowns'));
         $this->assertSame(5, $this->member->user->tokenBalance());
         $this->get(route('admin.library.desk', ['tab' => 'history']))->assertOk()->assertSee('returned');
     }

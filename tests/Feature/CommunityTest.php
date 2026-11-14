@@ -210,7 +210,7 @@ class CommunityTest extends TestCase
         $this->post(route('community.quiz.start', $quiz))->assertRedirect();
         $this->get(route('community.quiz', $quiz))->assertSee('Who built the ark?')->assertDontSee('"answer"', false);
 
-        $this->post(route('community.quiz.submit', $quiz), ['answers' => [$q1->id => 1, $q2->id => 1]])->assertSessionHas('status', 'You scored 1 out of 2. +6 tokens.');
+        $this->post(route('community.quiz.submit', $quiz), ['answers' => [$q1->id => 1, $q2->id => 1]])->assertSessionHas('status', 'You scored 1 out of 2. +6 Crowns.');
         // One go only.
         $this->post(route('community.quiz.submit', $quiz), ['answers' => [$q1->id => 1, $q2->id => 0]]);
         $this->assertSame(1, $quiz->attempts()->first()->score);

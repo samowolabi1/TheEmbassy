@@ -8,6 +8,7 @@ use App\Models\Member;
 use App\Models\Unit;
 use App\Models\UnitMeeting;
 use App\Services\Tokens\Rewards;
+use App\Support\TokenName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -124,7 +125,7 @@ class MeetingController extends Controller
         $meeting->attendees()->syncWithoutDetaching([$member->id => ['mode' => 'code', 'checked_in_at' => now()]]);
         $tokens = app(Rewards::class)->meeting($member, $meeting);
 
-        return back()->with('status', 'You\'re checked in to '.$meeting->title.'.'.($tokens ? " +{$tokens} tokens." : ''));
+        return back()->with('status', 'You\'re checked in to '.$meeting->title.'.'.($tokens ? " +{$tokens} ".TokenName::many().'.' : ''));
     }
 
     /**

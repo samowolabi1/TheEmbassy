@@ -9,6 +9,7 @@ use App\Models\TicketType;
 use App\Services\Payments\Payments;
 use App\Services\Tokens\Ledger;
 use App\Services\Tokens\TokenValue;
+use App\Support\TokenName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -100,7 +101,7 @@ class TicketOrderController extends Controller
     public function payWithTokens(Request $request, TicketOrder $order, Ledger $ledger): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user?->member?->status === Member::ACTIVE, 403, 'Paying with tokens is for members.');
+        abort_unless($user?->member?->status === Member::ACTIVE, 403, 'Paying with '.TokenName::many().' is for members.');
         if ($order->isConfirmed()) {
             return redirect()->to($order->url());
         }

@@ -6,6 +6,7 @@ use App\Mail\TestimonyUpdate;
 use App\Models\Testimony;
 use App\Models\User;
 use App\Services\Tokens\Rewards;
+use App\Support\TokenName;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
@@ -31,7 +32,7 @@ class Testimonies
         $user = $testimony->member->user;
         $tokens = $user ? $this->rewards->testimony($user) : 0;
         $where = $testimony->share_publicly ? ' It\'s now on the testimonies page for everyone to read.' : '';
-        $this->tell($testimony, 'Your testimony is published', 'Thank you for sharing what God has done!'.$where.($tokens ? " You've earned {$tokens} tokens." : ''));
+        $this->tell($testimony, 'Your testimony is published', 'Thank you for sharing what God has done!'.$where.($tokens ? " You've earned {$tokens} ".TokenName::many().'.' : ''));
     }
 
     public function decline(Testimony $testimony, User $by, string $note): void

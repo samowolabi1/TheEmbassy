@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Support\TokenName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -84,7 +85,7 @@ class ProductController extends Controller
             'is_active' => ['nullable', 'boolean'],
             'accepts_tokens' => ['nullable', 'boolean'],
             'token_price' => ['nullable', 'required_if_accepted:accepts_tokens', 'integer', 'min:1', 'max:10000000'],
-        ], ['price.min' => 'The lowest price is ₦100.', 'token_price.required_if_accepted' => 'Set how many tokens it costs.']);
+        ], ['price.min' => 'The lowest price is ₦100.', 'token_price.required_if_accepted' => 'Set how many '.TokenName::many().' it costs.']);
 
         $service = $data['type'] === Product::SERVICE;
 

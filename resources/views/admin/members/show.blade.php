@@ -49,12 +49,12 @@
                     <li @class(['is-done' => $member->{$field}])>{{ $member->{$field} ? '✓' : '○' }} {{ $label }}</li>
                 @endforeach
             </ul>
-            <h2>Tokens</h2>
+            <h2>{{ TokenName::title() }}</h2>
             <p class="box__note" style="margin: 0">
                 @if ($member->user)
-                    <strong>🪙 {{ number_format($member->user->tokenBalance()) }}</strong> in their wallet
+                    <strong>{{ TokenName::icon() }} {{ number_format($member->user->tokenBalance()) }}</strong> in their wallet
                 @else
-                    No login yet, so no token wallet.
+                    No login yet, so no {{ TokenName::one() }} wallet.
                 @endif
             </p>
             @foreach ($tokenHistory as $t)
@@ -62,7 +62,7 @@
                 <span class="box__note" style="margin: 0">{{ $t->created_at->format('j M') }} · {{ $t->description }} · <strong>{{ $n > 0 ? '+' : '−' }}{{ number_format(abs($n)) }}</strong></span>
             @endforeach
             @if ($member->user && auth()->user()->canManage('tokens'))
-                <a href="{{ route('admin.tokens.index', ['member' => $member->id]) }}" class="btn btn--ghost btn--xs" style="align-self: flex-start">{{ auth()->user()->isSuperAdmin() ? 'Give or take tokens' : 'Token history' }}</a>
+                <a href="{{ route('admin.tokens.index', ['member' => $member->id]) }}" class="btn btn--ghost btn--xs" style="align-self: flex-start">{{ auth()->user()->isSuperAdmin() ? 'Give or take '.TokenName::many() : TokenName::titleOne().' history' }}</a>
             @endif
             <h2>Attendance</h2>
             @php($sundays = $member->recentSundays())

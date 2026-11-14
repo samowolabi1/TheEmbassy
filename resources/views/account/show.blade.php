@@ -58,7 +58,7 @@
                 </a>
                 <a href="{{ route('community.index') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">💬</span>Community</a>
                 @if ($user->canUseTokens())
-                <a href="{{ route('account.tokens') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🪙</span>Tokens
+                <a href="{{ route('account.tokens') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">{{ TokenName::icon() }}</span>{{ TokenName::title() }}
                     <span class="app-tile__badge app-tile__badge--soft">{{ number_format($user->tokenBalance()) }}</span>
                 </a>
                 @endif
@@ -123,13 +123,13 @@
                 </div>
 
                 <div class="card">
-                    <h2>Tokens</h2>
+                    <h2>{{ TokenName::title() }}</h2>
                     @if ($member->status !== 'active')
-                        <p class="lede" style="margin: 0">Once your membership is confirmed you'll get welcome tokens, and earn more by coming to church, joining online, the Bible quiz and more.</p>
+                        <p class="lede" style="margin: 0">Once your membership is confirmed you'll get welcome {{ TokenName::many() }}, and earn more by coming to church, joining online, the Bible quiz and more.</p>
                     @else
-                        <span class="token-balance"><span class="token-balance__coin" aria-hidden="true">🪙</span>{{ number_format($user->tokenBalance()) }} <span>{{ \Illuminate\Support\Str::plural('token', $user->tokenBalance()) }}</span></span>
+                        <span class="token-balance"><span class="token-balance__coin" aria-hidden="true">{{ TokenName::icon() }}</span>{{ number_format($user->tokenBalance()) }} <span>{{ $user->tokenBalance() === 1 ? TokenName::one() : TokenName::many() }}</span></span>
                         <p class="lede" style="margin: 0">Free rewards for taking part. Spend them in the {{ config('church.brand.market_name') }} with sellers who accept them.</p>
-                        <a href="{{ route('account.tokens') }}" class="btn btn--gold" style="align-self: flex-start">My tokens</a>
+                        <a href="{{ route('account.tokens') }}" class="btn btn--gold" style="align-self: flex-start">My {{ TokenName::many() }}</a>
                     @endif
                 </div>
 

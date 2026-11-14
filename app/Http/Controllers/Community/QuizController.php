@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
 use App\Services\Tokens\Rewards;
+use App\Support\TokenName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -74,6 +75,6 @@ class QuizController extends Controller
         }
         $tokens = app(Rewards::class)->quiz($request->user(), $quiz, $score);
 
-        return redirect()->route('community.quiz', $quiz)->with('status', "You scored {$score} out of {$quiz->questions->count()}.".($tokens ? " +{$tokens} tokens." : ''));
+        return redirect()->route('community.quiz', $quiz)->with('status', "You scored {$score} out of {$quiz->questions->count()}.".($tokens ? " +{$tokens} ".TokenName::many().'.' : ''));
     }
 }

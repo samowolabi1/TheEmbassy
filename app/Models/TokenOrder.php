@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\TokenName;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -75,9 +76,9 @@ class TokenOrder extends Model
             self::PENDING => 'Waiting for the seller',
             self::COMPLETED => 'Received',
             default => match ($this->cancelled_by) {
-                'vendor' => 'Declined by the seller · tokens returned',
-                'expired' => 'Expired · tokens returned',
-                default => 'Cancelled · tokens returned',
+                'vendor' => 'Declined by the seller · '.TokenName::many().' returned',
+                'expired' => 'Expired · '.TokenName::many().' returned',
+                default => 'Cancelled · '.TokenName::many().' returned',
             },
         };
     }

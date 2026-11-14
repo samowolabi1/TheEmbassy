@@ -72,6 +72,9 @@ return [
         'title' => 'Tokens',
         'super' => true,
         'fields' => [
+            'tokens.name.one' => ['label' => 'Name for one', 'type' => 'text', 'rules' => ['string', 'max:20']],
+            'tokens.name.many' => ['label' => 'Name for more than one', 'type' => 'text', 'rules' => ['string', 'max:20']],
+            'tokens.name.icon' => ['label' => 'Icon', 'type' => 'text', 'rules' => ['string', 'max:8']],
             'tokens.enabled' => ['label' => 'Members earn tokens for activities', 'type' => 'checkbox'],
             'tokens.naira_per_token' => ['label' => 'Value of 1 token (₦)', 'type' => 'number', 'rules' => ['numeric', 'between:0.01,100000']],
             'tokens.transfers.enabled' => ['label' => 'Members can send tokens to each other', 'type' => 'checkbox'],
@@ -89,6 +92,8 @@ return [
             'tokens.rules.welcome' => ['label' => 'Welcome gift when membership is confirmed', 'type' => 'number', 'rules' => ['integer', 'between:0,100000']],
             'tokens.rules.birthday' => ['label' => 'Birthday gift', 'type' => 'number', 'rules' => ['integer', 'between:0,100000']],
             'tokens.rules.testimony' => ['label' => 'Testimony published (once a month)', 'type' => 'number', 'rules' => ['integer', 'between:0,100000']],
+            'tokens.rules.book_returned' => ['label' => 'Library book returned on time', 'type' => 'number', 'rules' => ['integer', 'between:0,100000']],
+            'tokens.rules.book_review' => ['label' => 'First review of a library book', 'type' => 'number', 'rules' => ['integer', 'between:0,100000']],
         ],
     ],
 

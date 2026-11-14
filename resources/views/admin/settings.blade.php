@@ -13,7 +13,7 @@
     <section class="box box--flush">
         <div class="box__head">
             <h2>Staff</h2>
-            <span class="box__note">Each role only sees its own areas. Administrators see everything, including this page, except giving and the token treasury, which are for the pastor in charge (super admin).</span>
+            <span class="box__note">Each role only sees its own areas. Administrators see everything, including this page, except giving and the {{ TokenName::one() }} treasury, which are for the pastor in charge (super admin).</span>
         </div>
         @error('staff') <p class="flash flash--error" role="alert" style="margin: 0 20px">{{ $message }}</p> @enderror
         @foreach ($staff as $person)

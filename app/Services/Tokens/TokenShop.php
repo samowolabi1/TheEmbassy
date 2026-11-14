@@ -6,6 +6,7 @@ use App\Mail\TokenOrderPlaced;
 use App\Models\Product;
 use App\Models\TokenOrder;
 use App\Models\User;
+use App\Support\TokenName;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -24,10 +25,10 @@ class TokenShop
     {
         $product->loadMissing('shop');
         if (! $product->acceptsTokens() || ! $product->is_active || ! $product->shop?->isApproved() || ! $product->shop->isSubscribed()) {
-            throw ValidationException::withMessages(['tokens' => 'This listing can\'t be bought with tokens.']);
+            throw ValidationException::withMessages(['tokens' => 'This listing can\'t be bought with '.TokenName::many().'.']);
         }
         if (! $buyer->canUseTokens()) {
-            throw ValidationException::withMessages(['tokens' => 'Tokens are for church members only.']);
+            throw ValidationException::withMessages(['tokens' => TokenName::title().' are for church members only.']);
         }
         if ($product->shop->user_id === $buyer->id) {
             throw ValidationException::withMessages(['tokens' => 'That\'s your own listing.']);
