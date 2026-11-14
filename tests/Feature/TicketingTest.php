@@ -265,7 +265,7 @@ class TicketingTest extends TestCase
         $event = $this->event();
         $this->book($event, [$event->ticketTypes->first()->id => 1], ['name' => '=HYPERLINK("x")']);
 
-        $this->get(route('admin.events.show', $event))->assertSee('HYPERLINK');
+        $this->get(route('admin.events.show', $event))->assertOk()->assertSee('HYPERLINK');
         $csv = $this->get(route('admin.events.export', $event))->streamedContent();
         $this->assertStringContainsString("'=HYPERLINK", $csv);
     }

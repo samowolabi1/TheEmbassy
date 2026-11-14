@@ -419,6 +419,17 @@ php artisan schedule:work # the timed jobs: birthdays, reminders, sending announ
 
 Members sign in at `/login` as `member1@demo.test` to `member36@demo.test` with the password `demo-password`. It's safe to run again, and it refuses to run when `APP_ENV=production`.
 
+**Demo events** (optional): `php artisan db:seed --class=EventDemoSeeder` adds 10 events, dated from today so they stay current:
+- **Tribe Fest**, a featured convention with paid ticket tiers (an early bird that has sold out, regular, VIP and a group ticket).
+- **A couples' dinner** with paid seats.
+- **A career masterclass** whose early bird has sold out.
+- **Free events with limited places:** a campus Bible study, a worship night and a children's Christmas party.
+- **The crossover service**, which needs no booking.
+- **Two past events** with door check-ins.
+- **A draft** that isn't on the website yet.
+
+Bookings come from the demo members when they're there, so run `MemberDemoSeeder` first. Paid bookings come with their payments, and a couple of bookings were never paid. Paid tickets can't be bought on a local copy until Paystack keys are set, but free bookings work. It's safe to run again, and it refuses to run when `APP_ENV=production`.
+
 **Demo market** (optional): `php artisan db:seed --class=MarketDemoSeeder` fills the Tribe Market with 8 shops and about 27 products and services. Each listing gets a generated picture and a realistic price, and some can also be bought with tokens. Plan prices, buyer enquiries and a coupon (`DEMO20`, 20% off a subscription) are included. One shop's subscription has lapsed, so it's hidden from the market, and one is waiting for an admin to approve it. The sellers sign in at `/vendor/login` as `seller1@demo.test` to `seller8@demo.test` with the password `demo-password`. It's safe to run again, and it refuses to run when `APP_ENV=production`.
 
 **Trying it out:**
