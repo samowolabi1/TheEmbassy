@@ -410,6 +410,15 @@ npm run dev               # live reload while you change CSS or JavaScript
 php artisan schedule:work # the timed jobs: birthdays, reminders, sending announcements, YouTube sync…
 ```
 
+**Demo members** (optional): `php artisan db:seed --class=MemberDemoSeeder` adds 36 members:
+- **Who:** 30 approved, 4 waiting for approval and 2 inactive. Each has a full profile (phone, address, birthday, milestones, some wedding anniversaries), and most are in units and house fellowships.
+- **Unit heads:** each unit gets a head and an assistant.
+- **Attendance:** the last 8 Sundays and 4 midweek services, with check-ins and the tokens they earn. A few members haven't been seen for three weeks, so the care list has follow-ups.
+- **Birthdays:** member1 has a birthday today (run `php artisan birthdays:celebrate` to see the celebration), and a few more fall this week and this month.
+- **Activity:** first-timers, prayer requests (some on the prayer wall), testimonies (two published, one to review), feedback on last Sunday and three suggestions.
+
+Members sign in at `/login` as `member1@demo.test` to `member36@demo.test` with the password `demo-password`. It's safe to run again, and it refuses to run when `APP_ENV=production`.
+
 **Demo market** (optional): `php artisan db:seed --class=MarketDemoSeeder` fills the Tribe Market with 8 shops and about 27 products and services. Each listing gets a generated picture and a realistic price, and some can also be bought with tokens. Plan prices, buyer enquiries and a coupon (`DEMO20`, 20% off a subscription) are included. One shop's subscription has lapsed, so it's hidden from the market, and one is waiting for an admin to approve it. The sellers sign in at `/vendor/login` as `seller1@demo.test` to `seller8@demo.test` with the password `demo-password`. It's safe to run again, and it refuses to run when `APP_ENV=production`.
 
 **Trying it out:**
