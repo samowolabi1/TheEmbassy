@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Community;
 
 use App\Http\Controllers\Controller;
+use App\Models\BookReview;
 use App\Models\CommunityMessage;
 use App\Models\CommunityRead;
 use App\Models\CommunityRoom;
@@ -28,6 +29,7 @@ class RoomController extends Controller
         return view('community.index', [
             'rooms' => $feed->rooms($user),
             'birthdays' => $feed->birthdays(),
+            'bookReviews' => BookReview::visible()->with('book', 'member')->latest()->take(3)->get(),
             'quiz' => $quiz,
             'quizAttempt' => $quiz ? QuizAttempt::where('quiz_id', $quiz->id)->where('user_id', $user->id)->first() : null,
         ]);

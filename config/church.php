@@ -76,6 +76,15 @@ return [
         'community' => true, // post the card in the community on the day
     ],
 
+    // The church library: how long a loan lasts, how many books a member can have (counting
+    // reservations), how often they can renew, and how long a reserved copy is held for them.
+    'library' => [
+        'loan_days' => 14,
+        'max_books' => 3,
+        'renewals' => 1,
+        'collect_days' => 7,
+    ],
+
     // Visits with a pastor: how much notice members must give when booking.
     'appointments' => [
         'notice_hours' => 12,

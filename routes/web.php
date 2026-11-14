@@ -9,6 +9,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\GiveController;
+use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\MarketController;
 use App\Http\Controllers\MediaFileController;
 use App\Http\Controllers\MediaRequestController;
@@ -174,9 +175,21 @@ Route::middleware('auth')->group(function () {
     Route::post('/account/tokens/send', [Account\AccountController::class, 'sendTokens'])->middleware('throttle:10,1')->name('account.tokens.send');
 });
 
+// The church library (approved members and staff look; members borrow).
+Route::middleware(['auth', 'can:join-community'])->prefix('library')->name('library.')->group(function () {
+    Route::get('/', [LibraryController::class, 'index'])->name('index');
+    Route::get('/{book}', [LibraryController::class, 'show'])->name('show');
+    Route::post('/{book}/reserve', [LibraryController::class, 'reserve'])->middleware('throttle:10,1')->name('reserve');
+    Route::post('/loans/{loan}/cancel', [LibraryController::class, 'cancel'])->name('cancel');
+    Route::post('/loans/{loan}/renew', [LibraryController::class, 'renew'])->name('renew');
+});
+
 // The members' community: chat rooms and the Bible quiz (approved members and staff).
 Route::middleware(['auth', 'can:join-community'])->prefix('community')->name('community.')->group(function () {
     Route::get('/', [Community\RoomController::class, 'index'])->name('index');
+    Route::get('/book-reviews', [Community\BookReviewController::class, 'index'])->name('reviews');
+    Route::post('/book-reviews/{book}', [Community\BookReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store');
+    Route::delete('/book-reviews/{review}', [Community\BookReviewController::class, 'destroy'])->name('reviews.destroy');
     Route::get('/quiz/{quiz}', [Community\QuizController::class, 'show'])->name('quiz');
     Route::post('/quiz/{quiz}/start', [Community\QuizController::class, 'start'])->name('quiz.start');
     Route::post('/quiz/{quiz}', [Community\QuizController::class, 'submit'])->name('quiz.submit');
@@ -427,6 +440,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/{appointment}/confirm', [Admin\AppointmentController::class, 'confirm'])->name('confirm');
             Route::post('/{appointment}/decline', [Admin\AppointmentController::class, 'decline'])->name('decline');
             Route::post('/{appointment}/finish', [Admin\AppointmentController::class, 'finish'])->name('finish');
+        });
+        Route::middleware('can:manage,"library"')->prefix('library')->name('library.')->group(function () {
+            Route::get('/', [Admin\LibraryController::class, 'desk'])->name('desk');
+            Route::get('/books', [Admin\LibraryController::class, 'books'])->name('books');
+            Route::get('/books/new', [Admin\LibraryController::class, 'create'])->name('books.create');
+            Route::post('/books', [Admin\LibraryController::class, 'store'])->name('books.store');
+            Route::get('/books/{book}/edit', [Admin\LibraryController::class, 'edit'])->name('books.edit');
+            Route::put('/books/{book}', [Admin\LibraryController::class, 'update'])->name('books.update');
+            Route::post('/loans/{loan}/lend', [Admin\LibraryController::class, 'lend'])->name('lend');
+            Route::post('/loans/{loan}/receive', [Admin\LibraryController::class, 'receive'])->name('receive');
+            Route::post('/loans/{loan}/extend', [Admin\LibraryController::class, 'extend'])->name('extend');
+            Route::post('/loans/{loan}/cancel', [Admin\LibraryController::class, 'cancel'])->name('cancel');
         });
         Route::middleware('can:manage,"feedback"')->prefix('feedback')->name('feedback.')->group(function () {
             Route::get('/', [Admin\FeedbackController::class, 'index'])->name('index');

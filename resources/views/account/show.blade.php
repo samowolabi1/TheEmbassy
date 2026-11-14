@@ -65,6 +65,7 @@
                 <a href="{{ route('account.prayer') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🙏</span>Prayer</a>
                 <a href="{{ route('account.appointments') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🗓️</span>See a pastor</a>
                 <a href="{{ route('account.testimonies') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🙌</span>Testimony</a>
+                <a href="{{ route('library.index') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">📚</span>Library</a>
                 <a href="{{ route('account.feedback') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">💡</span>Feedback</a>
                 <a href="{{ route('give') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🎁</span>Give</a>
             </nav>

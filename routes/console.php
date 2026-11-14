@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\Care\FollowUps;
 use App\Services\Celebrations\Birthdays;
 use App\Services\Content\InlineImages;
+use App\Services\Library\Lending;
 use App\Services\Market\SubscriptionReminders;
 use App\Services\Messaging\Broadcaster;
 use App\Services\Messaging\Newsletter;
@@ -142,6 +143,11 @@ Artisan::command('tokens:daily', function (Rewards $rewards, TokenShop $shop, Le
 })->purpose('Give birthday tokens, return tokens for orders never handed over, and check the token books balance');
 
 // Run `php artisan schedule:run` every minute from cron (see the README).
+Artisan::command('library:remind', function (Lending $lending) {
+    $r = $lending->remind();
+    $this->info("Library: {$r['due']} due-soon reminders, {$r['overdue']} overdue reminders, {$r['released']} uncollected reservations released.");
+})->purpose('Remind members about library books due soon or overdue, and release reservations nobody collected');
+
 Artisan::command('appointments:remind', function (Appointments $appointments) {
     $this->info('Reminded '.$appointments->remind().' members of tomorrow\'s visits.');
 })->purpose('Remind members of tomorrow\'s visits with a pastor, and send each pastor their day');
@@ -161,4 +167,5 @@ Schedule::command('newsletter:queue')->weeklyOn(1, (string) config('church.newsl
 Schedule::command('tokens:daily')->dailyAt('06:30')->timezone('Africa/Lagos');
 Schedule::command('birthdays:celebrate')->dailyAt('06:45')->timezone('Africa/Lagos');
 Schedule::command('appointments:remind')->dailyAt('17:00')->timezone('Africa/Lagos');
+Schedule::command('library:remind')->dailyAt('10:00')->timezone('Africa/Lagos');
 Schedule::command('blog:prune-images')->weeklyOn(0, '03:00')->timezone('Africa/Lagos');

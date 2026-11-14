@@ -34,6 +34,25 @@
                 @endif
 
                 <div class="card community-card">
+                    <span class="eyebrow">📚 BOOK REVIEWS</span>
+                    @forelse ($bookReviews as $r)
+                        <a href="{{ route('library.show', $r->book) }}" class="review-card__book">
+                            @include('library.cover', ['book' => $r->book])
+                            <span class="stack" style="gap: 2px">
+                                <strong>{{ $r->book->title }}</strong>
+                                <span class="field-hint"><span class="stars">{{ $r->stars() }}</span> · {{ \App\Models\Member::firstNameOf($r->member->name) }}</span>
+                            </span>
+                        </a>
+                    @empty
+                        <p class="community-card__text" style="color: var(--slate)">No reviews yet. Borrow a book from the library and tell the Tribe what you thought.</p>
+                    @endforelse
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                        <a href="{{ route('community.reviews') }}" class="btn btn--outline btn--sm">All reviews</a>
+                        <a href="{{ route('library.index') }}" class="btn btn--outline btn--sm">The library</a>
+                    </div>
+                </div>
+
+                <div class="card community-card">
                     <span class="eyebrow">🎂 BIRTHDAYS THIS WEEK</span>
                     @forelse ($birthdays as $b)
                         <div class="birthday">

@@ -28,6 +28,7 @@ return [
         'appointments' => 'Visits with a pastor: hours and bookings',
         'testimonies' => 'Testimonies: read and publish',
         'feedback' => 'Feedback on services, and members\' suggestions',
+        'library' => 'Library: books, lending and returns',
         'messages' => 'Contact messages',
         'settings' => 'Settings & roles',
     ],
@@ -35,11 +36,12 @@ return [
     'roles' => [
         'super' => ['name' => 'Pastor in charge (super admin)', 'areas' => ['*']],
         'admin' => ['name' => 'Administrator', 'areas' => ['*']],
-        'pastor' => ['name' => 'Pastor', 'areas' => ['members', 'attendance', 'care', 'welfare', 'units', 'subscribers', 'finance', 'expenses', 'market', 'content', 'gallery', 'community', 'tokens', 'notices', 'sermons', 'events', 'prayer', 'messages', 'appointments', 'testimonies', 'feedback']],
+        'pastor' => ['name' => 'Pastor', 'areas' => ['members', 'attendance', 'care', 'welfare', 'units', 'subscribers', 'finance', 'expenses', 'market', 'content', 'gallery', 'community', 'tokens', 'notices', 'sermons', 'events', 'prayer', 'messages', 'appointments', 'testimonies', 'feedback', 'library']],
         'finance' => ['name' => 'Finance', 'areas' => ['finance', 'expenses', 'market']],
-        'secretary' => ['name' => 'Church office', 'areas' => ['members', 'attendance', 'care', 'units', 'subscribers', 'market', 'content', 'gallery', 'community', 'tokens', 'notices', 'events', 'prayer', 'messages', 'appointments', 'testimonies', 'feedback']],
+        'secretary' => ['name' => 'Church office', 'areas' => ['members', 'attendance', 'care', 'units', 'subscribers', 'market', 'content', 'gallery', 'community', 'tokens', 'notices', 'events', 'prayer', 'messages', 'appointments', 'testimonies', 'feedback', 'library']],
         'media' => ['name' => 'Media', 'areas' => ['content', 'gallery', 'community', 'notices', 'sermons', 'events', 'testimonies']],
         'usher' => ['name' => 'Ushering', 'areas' => ['attendance', 'events']],
+        'librarian' => ['name' => 'Librarian', 'areas' => ['library']],
     ],
 
 ];

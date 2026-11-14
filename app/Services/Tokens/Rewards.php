@@ -2,6 +2,8 @@
 
 namespace App\Services\Tokens;
 
+use App\Models\Book;
+use App\Models\BookLoan;
 use App\Models\Duty;
 use App\Models\Member;
 use App\Models\Quiz;
@@ -32,6 +34,8 @@ class Rewards
         'welcome' => ['Welcome gift', 'When your membership is confirmed (once)'],
         'birthday' => ['Birthday gift', 'On your birthday each year'],
         'testimony' => ['Share a testimony', 'When your testimony is published (once a month)'],
+        'book_returned' => ['Return library books on time', 'For each book you bring back by its due date'],
+        'book_review' => ['Review a book', 'Your first review of each library book'],
     ];
 
     public function __construct(private Ledger $ledger) {}
@@ -135,6 +139,22 @@ class Rewards
     public function testimony(User $user): int
     {
         return $this->give($user, 'testimony', now()->format('Y-m'), 'Thank you for sharing your testimony');
+    }
+
+    /**
+     * A library book brought back by its due date.
+     */
+    public function bookReturned(User $user, BookLoan $loan): int
+    {
+        return $this->give($user, 'book_returned', 'loan:'.$loan->id, 'Returned "'.$loan->book->title.'" on time');
+    }
+
+    /**
+     * The first review of each book (editing it later earns nothing more).
+     */
+    public function bookReview(User $user, Book $book): int
+    {
+        return $this->give($user, 'book_review', 'book:'.$book->id, 'Reviewed "'.$book->title.'"');
     }
 
     public function birthday(User $user): int

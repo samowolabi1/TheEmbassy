@@ -35,6 +35,8 @@ return [
         'welcome' => 20,
         'birthday' => 10,
         'testimony' => 5,
+        'book_returned' => 5,
+        'book_review' => 2,
     ],
 
 ];
