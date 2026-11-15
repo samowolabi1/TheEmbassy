@@ -11,7 +11,7 @@
                 <span class="eyebrow">TESTIMONIES</span>
                 <h1 class="display blog-hero__title">God is <span class="accent-bronze">still moving.</span></h1>
             </div>
-            <p class="lede" style="max-width: 420px">Stories of healing, provision and breakthrough from our members. Has God done something for you? @auth<a href="{{ route('account.testimonies') }}" class="accent-bronze">Share your testimony</a>.@else<a href="{{ route('login') }}" class="accent-bronze">Sign in to share yours</a>.@endauth</p>
+            <p class="lede" style="max-width: 420px">Stories of healing, provision and breakthrough from our members. Has God done something for you? @if (auth()->user()?->member?->status === 'active')<a href="{{ route('account.testimonies') }}" class="accent-bronze">Share your testimony</a>.@elseif (auth()->guest())<a href="{{ route('login') }}" class="accent-bronze">Sign in to share yours</a>.@else Church members can share theirs from their account.@endif</p>
         </div>
 
         <nav class="filters" aria-label="Kinds of testimony">

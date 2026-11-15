@@ -29,7 +29,7 @@
                             <span class="list-item__meta" style="color: var(--ink)"><strong>How to fix:</strong> {{ $c['fix'] }}</span>
                         @endif
                     </span>
-                    <span @class(['pill', 'pill--ok' => $c['status'] === 'ok', 'pill--warn' => $c['status'] !== 'ok'])>{{ ['ok' => 'OK', 'warn' => 'Worth doing', 'fail' => 'Fix this'][$c['status']] }}</span>
+                    <span @class(['pill', 'pill--ok' => $c['status'] === 'ok', 'pill--warn' => $c['status'] === 'warn']) @if ($c['status'] === 'fail') style="background: #fde2dc; color: #a3361f" @endif>{{ ['ok' => 'OK', 'warn' => 'Worth doing', 'fail' => 'Fix this'][$c['status']] }}</span>
                 </div>
             @endforeach
         </section>
