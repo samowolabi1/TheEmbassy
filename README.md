@@ -253,6 +253,17 @@ Anyone can send a prayer request from the form on the home page, as before. Memb
 - **Answered:** members tell the church when God answers, with what happened, and are invited to share it as a testimony (the testimony form starts with their request and answer).
 - **The prayer wall** is for approved members only. It shows shared requests from the last 60 days (first name, or no name), and members tap "I prayed" once each so the person knows how many prayed. Staff can take a request off the wall. Members can remove their own requests.
 
+## Message centre (simple CRM)
+
+Admin › **Message centre**, for the pastors and the church office (the "Message centre" area):
+- **Contacts:** everyone the church can reach in one searchable list: members (every status), approved sellers and staff. It shows each person's email, phone and WhatsApp link (or "WhatsApp off" if they turned it off), and how many messages they've had.
+- **New message:**
+  - **Who it's for:** members (narrowed by approval status, unit, house fellowship, gender or birthday month), sellers (all approved, listed now, or lapsed), staff, or everyone. A live count shows how many people it reaches, and how many each way. Each person gets it once, even if they're both a member and a seller.
+  - **The message:** a subject and message with fill-ins `{first_name}`, `{name}` and `{church}`.
+  - **Send by:** email (ticked to start), WhatsApp and/or app notification, whichever are switched on in Settings & roles › Notifications.
+  - **When:** send now, schedule for later, send yourself a test, or save a draft.
+- **After sending:** messages go out in batches of 80 a minute through the cron job, so a big list never times out on shared hosting. Members also find them in Messages in the app. Each message's page shows progress, how many were reached each way, and who couldn't be reached and why (no email, WhatsApp number or app), so the office can call them. A scheduled message, or one still going out, can be stopped.
+
 ## Reminders and greetings
 
 The app sends these by itself. Staff with the "Reminders & greetings" area (pastors and the church office to start with) manage them on **admin › Reminders & greetings**:

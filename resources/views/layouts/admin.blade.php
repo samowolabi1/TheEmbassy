@@ -58,6 +58,7 @@
                 'badge' => \App\Models\Testimony::where('status', 'pending')->count() ?: null],
             ['id' => 'prayer', 'area' => 'prayer', 'label' => 'Prayer requests', 'route' => 'admin.prayer-requests.index',
                 'badge' => $count('prayer', fn () => \App\Models\PrayerRequest::unread()->count())],
+            ['id' => 'outreach', 'area' => 'outreach', 'label' => 'Message centre', 'route' => 'admin.outreach.index'],
             ['id' => 'reminders', 'area' => 'reminders', 'label' => 'Reminders & greetings', 'route' => 'admin.reminders.index'],
             ['id' => 'messages', 'area' => 'messages', 'label' => 'Contact messages', 'route' => 'admin.messages.index',
                 'badge' => $count('messages', fn () => \App\Models\ContactMessage::whereNull('read_at')->count())],

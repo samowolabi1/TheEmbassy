@@ -9,6 +9,7 @@ use App\Services\Content\InlineImages;
 use App\Services\Library\Lending;
 use App\Services\Market\SubscriptionReminders;
 use App\Services\Messaging\Broadcaster;
+use App\Services\Messaging\Campaigns;
 use App\Services\Messaging\Newsletter;
 use App\Services\Messaging\Reminders;
 use App\Services\Pastoral\Appointments;
@@ -100,11 +101,12 @@ Artisan::command('newsletter:queue', function (Newsletter $newsletter) {
     $this->info($newsletter->queue() ? 'This week\'s email is queued; messages:send sends it.' : 'This week\'s email has already gone out.');
 })->purpose('Queue this week\'s email to subscribers');
 
-Artisan::command('messages:send', function (Newsletter $newsletter, Broadcaster $broadcaster) {
+Artisan::command('messages:send', function (Newsletter $newsletter, Broadcaster $broadcaster, Campaigns $campaigns) {
     $emails = $newsletter->sendBatch();
     $busy = $broadcaster->sendBatch();
-    $this->info("Sent {$emails} weekly emails".($busy ? ' and worked on an announcement broadcast.' : '.'));
-})->purpose('Send the next batch of the weekly email and of announcement texts and notifications');
+    $campaign = $campaigns->sendBatch();
+    $this->info("Sent {$emails} weekly emails".($busy ? ' and worked on an announcement broadcast' : '').($campaign ? ' and on a Message centre message' : '').'.');
+})->purpose('Send the next batch of the weekly email, announcements and Message centre messages');
 
 Artisan::command('push:keys {--force : Replace keys that already exist (everyone has to allow notifications again)}', function () {
     if (config('services.webpush.public_key') && ! $this->option('force')) {

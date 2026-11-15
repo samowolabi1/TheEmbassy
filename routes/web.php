@@ -432,6 +432,19 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/money/income', [Admin\MoneyController::class, 'storeIncome'])->middleware('throttle:30,1')->name('money.income.store');
         Route::post('/expenses', [Admin\ExpenseController::class, 'store'])->middleware('throttle:30,1')->name('expenses.store');
 
+        Route::middleware('can:manage,"outreach"')->prefix('outreach')->name('outreach.')->group(function () {
+            Route::get('/', [Admin\OutreachController::class, 'index'])->name('index');
+            Route::get('/contacts', [Admin\OutreachController::class, 'contacts'])->name('contacts');
+            Route::get('/reach', [Admin\OutreachController::class, 'reach'])->middleware('throttle:120,1')->name('reach');
+            Route::get('/new', [Admin\OutreachController::class, 'create'])->name('create');
+            Route::post('/', [Admin\OutreachController::class, 'store'])->middleware('throttle:30,1')->name('store');
+            Route::get('/{campaign}', [Admin\OutreachController::class, 'show'])->name('show');
+            Route::get('/{campaign}/edit', [Admin\OutreachController::class, 'edit'])->name('edit');
+            Route::put('/{campaign}', [Admin\OutreachController::class, 'update'])->middleware('throttle:30,1')->name('update');
+            Route::post('/{campaign}/cancel', [Admin\OutreachController::class, 'cancel'])->name('cancel');
+            Route::delete('/{campaign}', [Admin\OutreachController::class, 'destroy'])->name('destroy');
+        });
+
         Route::middleware('can:manage,"reminders"')->prefix('reminders')->name('reminders.')->group(function () {
             Route::get('/', [Admin\ReminderController::class, 'index'])->name('index');
             Route::put('/{kind}', [Admin\ReminderController::class, 'update'])->name('update');

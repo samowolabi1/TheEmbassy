@@ -2155,3 +2155,26 @@ input[type='file'] {
     padding: 8px 8px 8px 14px;
   }
 }
+
+/* ---------- Message centre ---------- */
+.outreach-reach {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--wash);
+  color: var(--midnight);
+}
+.outreach-reach strong {
+  font-family: var(--font-display);
+  font-size: 26px;
+}
+.outreach-reach__ways {
+  font-size: 14px;
+  color: var(--slate);
+}
+.outreach-reach.is-loading {
+  opacity: 0.6;
+}

@@ -316,6 +316,20 @@ return [
             ],
         ],
 
+        'outreach' => [
+            'title' => 'Message centre',
+            'area' => 'outreach',
+            'about' => 'Send a message to members, sellers, staff or everyone, by email, WhatsApp or app notification, and see everyone you can reach in Contacts.',
+            'faqs' => [
+                ['How do I message just one unit or fellowship?', 'Choose Members under "Who it\'s for", then pick the unit or house fellowship. You can also narrow it by gender, birthday month, or approval status.'],
+                ['Will someone get it twice if they\'re a member and a seller?', 'No. Each person gets each message once.'],
+                ['How do I greet people by name?', 'Write {first_name} where the name should go, e.g. "Hi {first_name},". It\'s filled in for each person.'],
+                ['Can I check it before it goes out?', 'Yes: "Send me a test" sends it only to you, and the live count shows how many people it will reach.'],
+                ['Can I stop a message?', 'Yes, while it\'s scheduled or still going out: open it and press Stop. People who already got it keep it.'],
+                ['Who can\'t be reached?', 'People with no email, WhatsApp number or app. The message\'s page lists them under "Couldn\'t reach" so the office can call them.'],
+            ],
+        ],
+
         'reminders' => [
             'title' => 'Reminders & greetings',
             'area' => 'reminders',
@@ -523,6 +537,20 @@ return [
             ['.box--flush', 'Reply', 'Reply to encourage members; they get it by email and on their phone.'],
         ],
 
+        'admin.outreach.index' => [
+            ['.page-head .actions', 'Write or find people', 'Start a new message, or open Contacts to see everyone you can reach.'],
+            ['.stats', 'Quick start', 'Tap a group to write to them straight away.'],
+            ['.box--flush', 'Your messages', 'Drafts, scheduled ones and what went out, with how many people each reached.'],
+        ],
+
+        'admin.outreach.create' => [
+            ['box:Who it', 'Who it\'s for', 'Members (narrowed by unit, fellowship, gender, birthday month or status), sellers, staff or everyone.'],
+            ['[data-reach]', 'How many', 'Counts the people as you change the choices, and how many each way reaches.'],
+            ['box:The message', 'The message', 'Write it. {first_name} greets each person by name.'],
+            ['box:Send by', 'Send by', 'Email, WhatsApp and/or app notification.'],
+            ['box:When', 'When', 'Send now, schedule it, send yourself a test, or save it as a draft.'],
+        ],
+
         'admin.reminders.index' => [
             ['.stats', 'What went out', 'How many people each kind of message reached in the last 30 days.'],
             ['#service', 'Each message', 'Switch it on or off, choose when it goes and how it\'s sent, and write the words. "How it reads" previews it.'],
@@ -542,6 +570,17 @@ return [
     ],
 
     'guides' => [
+        'message-everyone' => [
+            'title' => 'Send a message to all members or sellers',
+            'area' => 'outreach',
+            'route' => 'admin.outreach.create',
+            'steps' => [
+                'Open Message centre and press New message.',
+                'Under "Who it\'s for", choose Members, Sellers, Staff or Everyone. Narrow members by unit, fellowship or birthday month if you like; the count shows how many it reaches.',
+                'Write the subject and message. Start with "Hi {first_name}," to greet each person by name.',
+                'Tick email (and WhatsApp or app notification if you want), press "Send me a test" to check it, then Send now or Schedule.',
+            ],
+        ],
         'approve-member' => [
             'title' => 'Approve someone who joined online',
             'area' => 'members',

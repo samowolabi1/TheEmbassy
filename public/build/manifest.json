@@ -4,7 +4,7 @@
     "name": "check-in"
   },
   "resources/css/admin.css": {
-    "file": "assets/admin-D2hvr76r.css",
+    "file": "assets/admin-CX7z_yHp.css",
     "name": "admin",
     "names": [
       "admin.css"
@@ -22,7 +22,7 @@
     "isEntry": true
   },
   "resources/js/admin.js": {
-    "file": "assets/admin-DusWyY7Q.js",
+    "file": "assets/admin-4QIkApf5.js",
     "name": "admin",
     "src": "resources/js/admin.js",
     "isEntry": true,

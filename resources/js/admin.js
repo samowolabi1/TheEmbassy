@@ -106,3 +106,45 @@ for (const toggle of document.querySelectorAll('.switch input')) {
         });
     }
 }
+
+// Message centre: show only the choices for who it's for, and count the people as they change.
+const outreach = document.querySelector('[data-outreach-form]');
+if (outreach) {
+    const reach = outreach.querySelector('[data-reach]');
+    const syncSections = () => {
+        const type = outreach.querySelector('[data-audience-type]:checked')?.value;
+        for (const el of outreach.querySelectorAll('[data-for-audience]')) el.hidden = el.dataset.forAudience !== type;
+    };
+    let timer;
+    const count = () => {
+        clearTimeout(timer);
+        timer = setTimeout(async () => {
+            const params = new URLSearchParams();
+            for (const [k, v] of new FormData(outreach)) {
+                const m = k.match(/^audience\[(\w+)\]$/);
+                if (m) params.set(m[1], v);
+            }
+            reach.classList.add('is-loading');
+            try {
+                const r = await fetch(`${outreach.dataset.reachUrl}?${params}`, { headers: { Accept: 'application/json' } });
+                const d = await r.json();
+                reach.querySelector('[data-reach-people]').textContent = d.people.toLocaleString();
+                reach.querySelector('[data-reach-email]').textContent = d.email.toLocaleString();
+                reach.querySelector('[data-reach-whatsapp]').textContent = d.whatsapp.toLocaleString();
+                reach.querySelector('[data-reach-app]').textContent = d.app.toLocaleString();
+            } catch { /* the count updates on the next change */ }
+            reach.classList.remove('is-loading');
+        }, 250);
+    };
+    outreach.addEventListener('change', (e) => {
+        if (e.target.name?.startsWith('audience')) {
+            syncSections();
+            count();
+        }
+    });
+    outreach.querySelector('[data-confirm-send]')?.addEventListener('click', (e) => {
+        const people = reach.querySelector('[data-reach-people]').textContent;
+        if (!window.confirm(`Send this to ${people} people now?`)) e.preventDefault();
+    });
+    syncSections();
+}

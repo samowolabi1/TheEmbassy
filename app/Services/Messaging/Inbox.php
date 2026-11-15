@@ -5,6 +5,8 @@ namespace App\Services\Messaging;
 use App\Models\Announcement;
 use App\Models\BirthdayCelebration;
 use App\Models\Broadcast;
+use App\Models\CampaignRecipient;
+use App\Models\Member;
 use App\Models\ReminderLog;
 use App\Models\UnitMessage;
 use App\Models\User;
@@ -64,7 +66,17 @@ class Inbox
                 'body' => $r->body, 'url' => $r->url, 'at' => $r->created_at, 'key' => 'r'.$r->id,
             ]);
 
-        return $broadcasts->concat($announcements)->concat($unit)->concat($birthdays)->concat($reminders)->sortByDesc(fn ($i) => $i['at']->timestamp)->values();
+        // Messages from the Message centre sent to them.
+        $campaigns = CampaignRecipient::with('campaign')->where('user_id', $user->id)->where('kind', '!=', 'seller')->where('status', 'sent')
+            ->where('sent_at', '>=', $since)->latest('sent_at')->take(50)->get()
+            ->map(fn (CampaignRecipient $r) => [
+                'kind' => 'broadcast', 'from' => config('church.short_name'),
+                'title' => Reminders::render($r->campaign->subject, ['first_name' => Member::firstNameOf($r->name), 'name' => $r->name, 'church' => config('church.short_name')]),
+                'body' => Reminders::render($r->campaign->body, ['first_name' => Member::firstNameOf($r->name), 'name' => $r->name, 'church' => config('church.short_name')]),
+                'url' => null, 'at' => $r->sent_at, 'key' => 'm'.$r->id,
+            ]);
+
+        return $broadcasts->concat($announcements)->concat($unit)->concat($birthdays)->concat($reminders)->concat($campaigns)->sortByDesc(fn ($i) => $i['at']->timestamp)->values();
     }
 
     public function unread(User $user): int
