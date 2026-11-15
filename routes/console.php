@@ -18,6 +18,7 @@ use App\Services\Tokens\Rewards;
 use App\Services\Tokens\TokenShop;
 use App\Services\Units\DutyReminders;
 use App\Services\YouTube\YouTubeBroadcasts;
+use App\Support\ServerCheck;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
@@ -149,6 +150,17 @@ Artisan::command('library:remind', function (Lending $lending) {
     $this->info("Library: {$r['due']} due-soon reminders, {$r['overdue']} overdue reminders, {$r['released']} uncollected reservations released.");
 })->purpose('Remind members about library books due soon or overdue, and release reservations nobody collected');
 
+Artisan::command('app:check', function (ServerCheck $check) {
+    $results = $check->run();
+    $this->table(['', 'Check', 'Result', 'How to fix'], collect($results)->map(fn ($c) => [
+        ['ok' => 'OK', 'warn' => 'WARN', 'fail' => 'FIX'][$c['status']], $c['label'], $c['detail'], $c['status'] === 'ok' ? '' : (string) $c['fix'],
+    ])->all());
+    $failed = collect($results)->where('status', 'fail')->count();
+    $failed ? $this->error("{$failed} problem(s) to fix.") : $this->info('Everything needed is in place.');
+
+    return $failed ? 1 : 0;
+})->purpose('Check the server has what the app needs (PHP, extensions, folders, cron, email, settings)');
+
 Artisan::command('reminders:send', function (Reminders $reminders) {
     $r = $reminders->run();
     $this->info("Service reminders reached {$r['service']}, thank-you greetings {$r['greeting']}, feedback requests {$r['feedback']}.");
@@ -162,6 +174,8 @@ Artisan::command('birthdays:celebrate', function (Birthdays $birthdays) {
     $this->info('Celebrated '.$birthdays->run().' birthdays.');
 })->purpose('Make today\'s birthday cards, post them in the community and send birthday wishes');
 
+// Lets the server check show the cron job is running.
+Schedule::call(fn () => ServerCheck::beat())->everyMinute()->name('heartbeat');
 Schedule::command('youtube:sync')->everyMinute()->withoutOverlapping();
 Schedule::command('social:publish')->everyMinute()->withoutOverlapping();
 Schedule::command('units:remind')->dailyAt('09:00')->timezone('Africa/Lagos');

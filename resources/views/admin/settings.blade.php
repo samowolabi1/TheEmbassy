@@ -8,6 +8,7 @@
             <h1>Settings &amp; roles</h1>
             <span class="page-head__sub">Church details shown on the website, and who can use this dashboard</span>
         </div>
+        <div class="actions"><a href="{{ route('admin.server') }}" class="btn btn--ghost">Server check</a></div>
     </header>
 
     <section class="box box--flush">

@@ -274,7 +274,7 @@ class PageContentController extends Controller
 
     private function thumbOf(string $path): string
     {
-        return preg_replace('/\.webp$/', '-thumb.webp', $path);
+        return Images::thumbPath($path);
     }
 
     /**

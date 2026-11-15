@@ -1,0 +1,13 @@
+# For shared hosting where the whole project sits in public_html and the web root can't be
+# pointed at public/: every request goes into public/, so nothing outside it (the .env file,
+# app code, storage, vendor) can ever be downloaded. Not used when the web root is public/.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Without mod_rewrite, refuse everything rather than expose the project's files.
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>

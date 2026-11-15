@@ -18,6 +18,7 @@ use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrayerRequestController;
+use App\Http\Controllers\PublicFileController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StudioOverlayController;
 use App\Http\Controllers\TestimonyController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\TokenOrderController;
 use App\Http\Controllers\Unit;
 use App\Http\Controllers\Vendor;
 use App\Http\Controllers\WelcomeController;
+use App\Support\ServerCheck;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
@@ -46,6 +48,9 @@ Route::get('/give/thanks/{gift}', [GiveController::class, 'thanks'])->middleware
 
 Route::get('/testimonies', [TestimonyController::class, 'index'])->name('testimonies.index');
 Route::get('/testimonies/{testimony}', [TestimonyController::class, 'show'])->name('testimonies.show');
+// Uploaded pictures when the public/storage shortcut can't be made (shared hosting).
+Route::get('/storage/{path}', PublicFileController::class)->where('path', '.*')->name('public-file');
+
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/feed', [BlogController::class, 'feed'])->name('blog.feed');
 Route::get('/blog/{slug}/share/{format}.png', [BlogController::class, 'shareImage'])->where('slug', '[a-z0-9-]+')->whereIn('format', ['square', 'story', 'wide'])->middleware('throttle:60,1')->name('blog.share-image');
@@ -591,6 +596,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::middleware('can:manage,"settings"')->group(function () {
             Route::get('/settings', [Admin\SettingsController::class, 'edit'])->name('settings.edit');
             Route::put('/settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
+            Route::get('/settings/server', fn (ServerCheck $check) => view('admin.server', ['checks' => collect($check->run())]))->name('server');
             Route::post('/staff', [Admin\StaffController::class, 'store'])->name('staff.store');
             Route::patch('/staff/{user}', [Admin\StaffController::class, 'update'])->name('staff.update');
             Route::delete('/staff/{user}', [Admin\StaffController::class, 'destroy'])->name('staff.destroy');

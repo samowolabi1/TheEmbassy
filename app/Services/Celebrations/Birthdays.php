@@ -8,6 +8,7 @@ use App\Models\CommunityMessage;
 use App\Models\CommunityRoom;
 use App\Models\Member;
 use App\Models\PushSubscription;
+use App\Services\Content\Images;
 use App\Services\Messaging\Reminders;
 use App\Services\Messaging\WebPush;
 use App\Services\Messaging\WhatsApp;
@@ -131,8 +132,9 @@ class Birthdays
             return $path;
         }
         ob_start();
-        imagewebp($thumb, null, 80);
-        $thumbPath = Str::beforeLast($path, '.').'-thumb.webp';
+        $webp = Images::webp();
+        $webp ? imagewebp($thumb, null, 80) : imagejpeg($thumb, null, 84);
+        $thumbPath = Str::beforeLast($path, '.').'-thumb.'.($webp ? 'webp' : 'jpg');
         Storage::disk('public')->put($thumbPath, (string) ob_get_clean());
 
         return $thumbPath;
