@@ -32,19 +32,25 @@
                 <dd>
                     <span @class(['pill', 'pill--live' => $member->rank === 'minister', 'pill--ok' => $member->rank === 'worker', 'pill--draft' => $member->rank === 'member'])>{{ $member->rankLabel() }}</span>
                     @if ($member->rank_changed_at) <span class="box__note" style="margin: 0">since {{ $member->rank_changed_at->format('j M Y') }}</span> @endif
-                    @if ($member->status === 'active')
-                        @php($ranks = app(\App\Services\People\Ranks::class))
-                        <span style="display: inline-flex; gap: 6px; flex-wrap: wrap; margin-top: 6px">
-                            @foreach (['member' => 'Make a member', 'worker' => 'Make a worker', 'minister' => 'Make a minister'] as $to => $label)
-                                @if ($to !== $member->rank && $ranks->canChange(auth()->user(), $member, $to) && ! ($to === 'minister' && $member->rank === 'member') && ! ($to === 'worker' && ! $member->unit_id))
-                                    <form method="POST" action="{{ route('admin.members.rank', $member) }}" @if ($to !== 'minister') data-confirm="{{ $label }}: {{ $member->name }}?" @endif>
-                                        @csrf
-                                        <input type="hidden" name="rank" value="{{ $to }}">
-                                        <button type="submit" @class(['btn', 'btn--xs', 'btn--gold' => $to === 'minister', 'btn--ghost' => $to !== 'minister'])>{{ $label }}</button>
-                                    </form>
-                                @endif
-                            @endforeach
-                        </span>
+                    @if ($member->status === 'active' && auth()->user()->isPastor())
+                        @if ($member->rank === 'worker')
+                            <details class="training-edit" @if ($errors->has('training') || $errors->has('training.*') || $errors->has('rank')) open @endif>
+                                <summary class="btn btn--gold btn--xs">Make a minister</summary>
+                                <form method="POST" action="{{ route('admin.members.rank', $member) }}" class="form" style="gap: 10px; margin-top: 8px; max-width: 520px">
+                                    @csrf
+                                    <input type="hidden" name="rank" value="minister">
+                                    <x-training-questions rank="minister" :member="$member" />
+                                    @error('rank') <span class="field-error">{{ $message }}</span> @enderror
+                                    <button type="submit" class="btn btn--navy btn--xs" style="align-self: flex-start">Make {{ $member->firstName() }} a minister</button>
+                                </form>
+                            </details>
+                        @elseif ($member->rank === 'minister')
+                            <form method="POST" action="{{ route('admin.members.rank', $member) }}" style="display: inline" data-confirm="{{ $member->name }} will no longer be a minister{{ $member->unit_id ? ' (they stay a worker in '.$member->unit->name.')' : '' }}. Continue?">
+                                @csrf
+                                <input type="hidden" name="rank" value="worker">
+                                <button type="submit" class="btn btn--ghost btn--xs">No longer a minister</button>
+                            </form>
+                        @endif
                     @endif
                 </dd>
                 <dt>Fellowship</dt><dd>{{ $member->fellowship?->name ?? '—' }}</dd>
@@ -62,10 +68,11 @@
         </section>
 
         <section class="box side-col">
-            <h2>Milestones</h2>
+            <h2>Training</h2>
+            <p style="margin: 0">@include('unit.partials.training-status', ['m' => $member])</p>
             <ul class="check-list">
                 @foreach (\App\Models\Member::MILESTONES as $field => $label)
-                    <li @class(['is-done' => $member->{$field}])>{{ $member->{$field} ? '✓' : '○' }} {{ $label }}</li>
+                    <li @class(['is-done' => $member->{$field}])>{{ $member->{$field} ? '✓' : '○' }} {{ $label }}@if (in_array($field, \App\Models\Member::REQUIREMENTS['worker'], true)) <span class="box__note" style="margin: 0">· workers</span>@elseif (in_array($field, \App\Models\Member::REQUIREMENTS['minister'], true)) <span class="box__note" style="margin: 0">· ministers</span>@endif</li>
                 @endforeach
             </ul>
             <h2>{{ TokenName::title() }}</h2>

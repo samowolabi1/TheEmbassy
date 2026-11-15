@@ -50,38 +50,72 @@ class UnitController extends Controller
         ]);
     }
 
-    public function addMember(Request $request, Unit $unit): RedirectResponse
+    /**
+     * Add someone to the unit, which makes them a worker, with the answers to the workers'
+     * training questions.
+     */
+    public function addMember(Request $request, Unit $unit, Ranks $ranks): RedirectResponse
     {
-        $data = $request->validate(['member_id' => ['required', Rule::exists('members', 'id')->where('status', Member::ACTIVE)]]);
+        $data = $request->validate([
+            'member_id' => ['required', Rule::exists('members', 'id')->where('status', Member::ACTIVE)],
+            ...$this->trainingRules('worker'),
+        ], $this->trainingMessages());
         $member = Member::findOrFail($data['member_id']);
-        $member->update(['unit_id' => $unit->id]);
+        $from = $member->rank;
+        $member->unit_id = $unit->id;
+        $member->answerTraining($data['training'], $member->rank === 'minister' ? 'minister' : 'worker');
+        $member->save();
+        if ($from === 'member') {
+            $ranks->tell($member->fresh('unit', 'user'), $from);
+        }
+        $missing = $member->missingRequirements();
 
-        return back()->with('status', "{$member->name} added to {$unit->name}.");
+        return back()->with('status', "{$member->name} added to {$unit->name}".($from === 'member' ? ' and is now a worker' : '').'.'.($missing ? ' Still to do: '.implode(', ', $missing).'.' : ''));
     }
 
     /**
-     * Make a member of the unit a worker, or a member again.
+     * Update which training classes a member of the unit has done.
      */
-    public function rank(Request $request, Unit $unit, Member $member, Ranks $ranks): RedirectResponse
+    public function training(Request $request, Unit $unit, Member $member): RedirectResponse
     {
         abort_unless($member->unit_id === $unit->id, 404);
-        $to = $request->validate(['rank' => ['required', Rule::in(['member', 'worker'])]])['rank'];
-        $ranks->change($member, $to, $request->user());
+        $rank = $member->rank === 'minister' ? 'minister' : 'worker';
+        $data = $request->validate($this->trainingRules($rank), $this->trainingMessages());
+        $member->answerTraining($data['training'], $rank);
+        $member->save();
 
-        return back()->with('status', $to === 'worker' ? "{$member->name} is now a worker in {$unit->name}." : "{$member->name} is a member again.");
+        return back()->with('status', "Training saved for {$member->name}.");
     }
 
     public function removeMember(Unit $unit, Member $member): RedirectResponse
     {
         abort_unless($member->unit_id === $unit->id, 404);
         abort_if($unit->isLedBy($member), 422, 'Change the HOD or assistant in church admin first.');
+        // Leaving the unit makes a worker a member again (ministers stay ministers): see Member.
         $member->update(['unit_id' => null]);
-        // Workers serve in a unit; leaving it makes them a member again (ministers stay ministers).
-        if ($member->rank === 'worker') {
-            $member->forceFill(['rank' => 'member', 'rank_changed_at' => now(), 'rank_changed_by' => auth()->id()])->save();
-        }
 
         return back()->with('status', "{$member->name} removed from {$unit->name}.");
+    }
+
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    private function trainingRules(string $rank): array
+    {
+        $rules = ['training' => ['required', 'array']];
+        foreach (Member::REQUIREMENTS[$rank] as $field) {
+            $rules["training.{$field}"] = ['required', Rule::in(['0', '1'])];
+        }
+
+        return $rules;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function trainingMessages(): array
+    {
+        return ['training.required' => 'Answer the training questions.', 'training.*.required' => 'Answer each training question: done or not yet.'];
     }
 
     /**

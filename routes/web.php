@@ -160,6 +160,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/services/{service}/watching', [Account\JoinController::class, 'watching'])->middleware('throttle:10,1')->name('services.watching');
     Route::post('/check-in', [Account\CheckInController::class, 'store'])->middleware('throttle:10,1')->name('check-in.store');
     Route::post('/account/declare', [Account\AccountController::class, 'declare'])->middleware('throttle:10,1')->name('account.declare');
+    Route::post('/account/training', [Account\AccountController::class, 'training'])->name('account.training');
     Route::put('/account/birthday', [Account\AccountController::class, 'birthday'])->name('account.birthday');
     Route::get('/account/birthday-card.png', [Account\AccountController::class, 'birthdayCard'])->middleware('throttle:20,1')->name('account.birthday-card');
     Route::get('/account/feedback', [Account\FeedbackController::class, 'index'])->name('account.feedback');
@@ -221,7 +222,7 @@ Route::middleware(['auth', 'can:lead-unit,unit'])->prefix('units/{unit}')->name(
     Route::get('/members', [Unit\UnitController::class, 'members'])->name('members');
     Route::post('/members', [Unit\UnitController::class, 'addMember'])->name('members.add');
     Route::delete('/members/{member}', [Unit\UnitController::class, 'removeMember'])->name('members.remove');
-    Route::post('/members/{member}/rank', [Unit\UnitController::class, 'rank'])->name('members.rank');
+    Route::post('/members/{member}/training', [Unit\UnitController::class, 'training'])->name('members.training');
     Route::get('/attendance', [Unit\UnitController::class, 'attendance'])->name('attendance');
     Route::get('/messages', [Unit\UnitController::class, 'messages'])->name('messages');
     Route::post('/messages', [Unit\UnitController::class, 'sendMessage'])->middleware('throttle:10,1')->name('messages.send');

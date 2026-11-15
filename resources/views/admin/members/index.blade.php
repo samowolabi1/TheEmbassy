@@ -46,6 +46,12 @@
                     <option value="{{ $key }}" @selected(($filters['rank'] ?? '') === $key)>{{ \Illuminate\Support\Str::plural($label) }}</option>
                 @endforeach
             </select>
+            <label class="sr-only" for="filter-training">Training</label>
+            <select id="filter-training" name="training" class="select-sm">
+                <option value="">Any training</option>
+                <option value="unanswered" @selected(($filters['training'] ?? '') === 'unanswered')>Training not answered</option>
+                <option value="missing" @selected(($filters['training'] ?? '') === 'missing')>Classes still to do</option>
+            </select>
             <button type="submit" class="btn btn--ghost btn--xs">Filter</button>
         </form>
         <div class="table-wrap">

@@ -48,7 +48,7 @@ class MembersAdminTest extends TestCase
         $this->assertTrue($member->baptised);
         $this->assertFalse($member->workers_training);
 
-        $this->get(route('admin.members.show', $member))->assertOk()->assertSee('House 4')->assertSee('Baptised');
+        $this->get(route('admin.members.show', $member))->assertOk()->assertSee('House 4')->assertSee('Baptismal class');
 
         $this->put(route('admin.members.update', $member), ['name' => 'David Musa', 'status' => 'inactive', 'workers_training' => '1'])->assertRedirect();
         $member->refresh();

@@ -107,6 +107,17 @@
                 <a href="{{ route('join') }}" class="btn btn--gold" style="align-self: flex-start">Join the family</a>
             </div>
         @else
+            @if ($member->needsTrainingAnswers())
+                <div class="card training-card" id="training">
+                    <h2>You're now a {{ strtolower($member->rankLabel()) }}{{ $member->rank === 'worker' && $member->unit ? ' in '.$member->unit->name : '' }} 🎉</h2>
+                    <p class="lede" style="margin: 0">{{ $member->rank === 'minister' ? 'Ministers need these classes.' : 'Workers need these classes.' }} Tell us which you've done so your unit head and the pastors can help with the rest.</p>
+                    <form method="POST" action="{{ route('account.training') }}" class="form" style="gap: 12px; max-width: 560px">
+                        @csrf
+                        <x-training-questions :rank="$member->rank" :member="$member" />
+                        <button type="submit" class="btn btn--gold" style="align-self: flex-start">Save my answers</button>
+                    </form>
+                </div>
+            @endif
             <div class="account-grid">
                 <div class="card">
                     <h2>Membership</h2>
@@ -118,11 +129,30 @@
                         @if ($member->joined_on)<dt>Member since</dt><dd>{{ $member->joined_on->format('F Y') }}</dd>@endif
                         @if ($member->last_attended_on)<dt>Last at church</dt><dd>{{ $member->last_attended_on->format('j M Y') }}</dd>@endif
                     </dl>
-                    <ul class="mini-list" aria-label="Milestones">
-                        @foreach (\App\Models\Member::MILESTONES as $field => $label)
-                            <li><span>{{ $label }}</span><strong>{{ $member->{$field} ? '✓ Done' : 'Not yet' }}</strong></li>
-                        @endforeach
-                    </ul>
+                    @if (in_array($member->rank, ['worker', 'minister'], true))
+                        <ul class="mini-list" aria-label="Training">
+                            @foreach ($member->requirements() as $field => $label)
+                                <li><span>{{ $label }}</span><strong>{{ $member->training_answered_at || $member->{$field} ? ($member->{$field} ? '✓ Done' : 'Not yet') : '?' }}</strong></li>
+                            @endforeach
+                        </ul>
+                        @unless ($member->needsTrainingAnswers())
+                            <details class="training-edit">
+                                <summary class="btn btn--ghost btn--xs">Update my training</summary>
+                                <form method="POST" action="{{ route('account.training') }}" class="form" style="gap: 10px; margin-top: 8px">
+                                    @csrf
+                                    <x-training-questions :rank="$member->rank" :member="$member" />
+                                    <button type="submit" class="btn btn--navy btn--xs" style="align-self: flex-start">Save</button>
+                                </form>
+                            </details>
+                        @endunless
+                    @else
+                        <ul class="mini-list" aria-label="Milestones">
+                            @foreach (\App\Models\Member::MILESTONES as $field => $label)
+                                @continue(! $member->{$field} && in_array($field, ['sod', 'bible_college'], true))
+                                <li><span>{{ $label }}</span><strong>{{ $member->{$field} ? '✓ Done' : 'Not yet' }}</strong></li>
+                            @endforeach
+                        </ul>
+                    @endif
                 </div>
 
                 <div class="card">

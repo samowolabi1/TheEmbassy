@@ -109,6 +109,25 @@ class AccountController extends Controller
     /**
      * Their own card, to preview before the day or download on it.
      */
+    /**
+     * A worker or minister tells us which of the classes their role needs they've done.
+     */
+    public function training(Request $request): RedirectResponse
+    {
+        $member = $this->member($request);
+        abort_unless(in_array($member->rank, ['worker', 'minister'], true), 404);
+        $rules = ['training' => ['required', 'array']];
+        foreach (Member::REQUIREMENTS[$member->rank] as $field) {
+            $rules["training.{$field}"] = ['required', Rule::in(['0', '1'])];
+        }
+        $data = $request->validate($rules, ['training.required' => 'Answer the questions.', 'training.*.required' => 'Answer each question: done or not yet.']);
+        $member->answerTraining($data['training']);
+        $member->save();
+        $missing = $member->missingRequirements();
+
+        return redirect()->route('account')->with('status', $missing ? 'Thank you. Still to do: '.implode(', ', $missing).'. Ask your unit head about the next class.' : 'Thank you. You\'ve done all the classes your role needs.');
+    }
+
     public function birthdayCard(Request $request, BirthdayCard $cards): Response
     {
         $member = $this->member($request);

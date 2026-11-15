@@ -18,13 +18,22 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Someone in the church family. They may have a login (user) or be on the register only.
  */
-#[Fillable(['name', 'phone', 'email', 'gender', 'birthday', 'anniversary', 'address', 'unit_id', 'fellowship_id', 'joined_on', 'baptised', 'believers_class', 'workers_training', 'notes', 'notify_sms', 'celebrate_birthday'])]
+#[Fillable(['name', 'phone', 'email', 'gender', 'birthday', 'anniversary', 'address', 'unit_id', 'fellowship_id', 'joined_on', 'baptised', 'believers_class', 'workers_training', 'sod', 'bible_college', 'notes', 'notify_sms', 'celebrate_birthday'])]
 class Member extends Model
 {
     use HasFactory;
 
-    /** Ranks: every member; workers serve in a unit (made by its head); ministers work closely with the pastors (made by a pastor). */
+    /**
+     * Ranks, in order: every member; workers (everyone serving in a unit); ministers, who work
+     * closely with the pastors and are made by a pastor. Pastors are staff accounts above these.
+     */
     public const RANKS = ['member' => 'Member', 'worker' => 'Worker', 'minister' => 'Minister'];
+
+    /** The classes each rank needs. */
+    public const REQUIREMENTS = [
+        'worker' => ['baptised', 'believers_class', 'workers_training'],
+        'minister' => ['baptised', 'believers_class', 'workers_training', 'sod', 'bible_college'],
+    ];
 
     public const PENDING = 'pending';
 
@@ -33,9 +42,11 @@ class Member extends Model
     public const INACTIVE = 'inactive';
 
     public const MILESTONES = [
-        'baptised' => 'Baptised',
+        'baptised' => 'Baptismal class',
         'believers_class' => 'Believers\' class',
-        'workers_training' => 'Workers\' training',
+        'workers_training' => 'Workers\' in training class',
+        'sod' => 'School of Disciples (SOD)',
+        'bible_college' => 'Bible college',
     ];
 
     /**
@@ -54,9 +65,37 @@ class Member extends Model
             'baptised' => 'boolean',
             'believers_class' => 'boolean',
             'workers_training' => 'boolean',
+            'sod' => 'boolean',
+            'bible_college' => 'boolean',
+            'training_answered_at' => 'datetime',
             'notify_sms' => 'boolean',
             'rank_changed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Everyone serving in a unit is a worker: joining a unit makes an approved member a worker,
+     * and leaving it makes a worker a member again (ministers keep their rank). A new worker or
+     * minister is asked about their training.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (Member $m) {
+            if ($m->status === self::ACTIVE && ($m->isDirty('unit_id') || $m->isDirty('status'))) {
+                if ($m->unit_id && ($m->rank ?? 'member') === 'member') {
+                    $m->rank = 'worker';
+                } elseif (! $m->unit_id && $m->rank === 'worker') {
+                    $m->rank = 'member';
+                }
+            }
+            if ($m->isDirty('rank')) {
+                $m->rank_changed_at = now();
+                $m->rank_changed_by = auth()->id() ?? $m->rank_changed_by;
+                if ($m->rank !== 'member' && ! $m->isDirty('training_answered_at')) {
+                    $m->training_answered_at = null;
+                }
+            }
+        });
     }
 
     /**
@@ -276,5 +315,48 @@ class Member extends Model
             'minister' => 'Minister',
             default => 'Member',
         };
+    }
+
+    /**
+     * The classes their rank needs, as field => label.
+     *
+     * @return array<string, string>
+     */
+    public function requirements(?string $rank = null): array
+    {
+        return array_intersect_key(self::MILESTONES, array_flip(self::REQUIREMENTS[$rank ?? $this->rank] ?? []));
+    }
+
+    /**
+     * Required classes they haven't done, as field => label.
+     *
+     * @return array<string, string>
+     */
+    public function missingRequirements(?string $rank = null): array
+    {
+        return array_filter($this->requirements($rank), fn ($label, $field) => ! $this->{$field}, ARRAY_FILTER_USE_BOTH);
+    }
+
+    /**
+     * A worker or minister whose training hasn't been answered yet.
+     */
+    public function needsTrainingAnswers(): bool
+    {
+        return in_array($this->rank, ['worker', 'minister'], true) && ! $this->training_answered_at;
+    }
+
+    /**
+     * Record which of their rank's classes are done.
+     *
+     * @param  array<string, mixed>  $answers  field => '1' (done) or '0' (not yet)
+     */
+    public function answerTraining(array $answers, ?string $rank = null): void
+    {
+        foreach (array_keys($this->requirements($rank)) as $field) {
+            if (array_key_exists($field, $answers)) {
+                $this->{$field} = (bool) $answers[$field];
+            }
+        }
+        $this->training_answered_at = now();
     }
 }

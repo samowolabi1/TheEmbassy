@@ -76,7 +76,7 @@ class UnitLeadersTest extends TestCase
         $this->actingAs($hod->user);
 
         $this->get(route('unit.members', $unit))->assertSee('Ada Obi')->assertSee('HOD');
-        $this->post(route('unit.members.add', $unit), ['member_id' => $tolu->id])->assertRedirect();
+        $this->post(route('unit.members.add', $unit), ['member_id' => $tolu->id, 'training' => ['baptised' => '1', 'believers_class' => '1', 'workers_training' => '1']])->assertRedirect();
         $this->assertSame($unit->id, $tolu->fresh()->unit_id);
 
         $this->delete(route('unit.members.remove', [$unit, $ada]))->assertRedirect();

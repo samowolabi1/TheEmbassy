@@ -75,24 +75,32 @@ class MemberDemoSeeder extends Seeder
     }
 
     /**
-     * Workers and ministers: every unit head and assistant is a worker, as are about half the
-     * other members who finished workers' training; two long-serving workers are ministers.
-     * Only done once (when nobody has a rank yet), so it never undoes changes made in the app.
+     * Workers and ministers: everyone in a unit is a worker (see Member). Most have answered the
+     * training questions, a few haven't yet; two long-serving workers are ministers, one with
+     * every class done and one still at Bible college. Only done once, so it never undoes changes
+     * made in the app.
      */
     private function ranks(): void
     {
-        $demo = Member::where('status', Member::ACTIVE)->whereHas('user', fn ($u) => $u->where('email', 'like', 'member%@demo.test'))->whereNotNull('unit_id')->orderBy('id')->get();
-        if ($demo->isEmpty() || Member::where('rank', '!=', 'member')->exists()) {
+        $demo = Member::where('status', Member::ACTIVE)->whereHas('user', fn ($u) => $u->where('email', 'like', 'member%@demo.test'))->orderBy('id')->get();
+        if ($demo->isEmpty() || $demo->contains(fn ($m) => $m->training_answered_at)) {
             return;
         }
-        $leaders = Unit::query()->pluck('hod_member_id')->merge(Unit::query()->pluck('assistant_member_id'))->filter()->all();
         foreach ($demo as $i => $m) {
-            if (in_array($m->id, $leaders, true) || ($m->workers_training && $i % 2 === 0)) {
-                $m->forceFill(['rank' => 'worker', 'rank_changed_at' => now()->subMonths(mt_rand(2, 30))])->save();
+            if ($m->unit_id && $m->rank === 'member') {
+                $m->rank = 'worker';
             }
+            if ($m->rank === 'worker' && $i % 6 !== 3) {
+                $m->training_answered_at = now()->subDays(mt_rand(5, 200));
+            }
+            $m->rank_changed_at = now()->subMonths(mt_rand(2, 30));
+            $m->save();
         }
-        foreach (['member5@demo.test', 'member16@demo.test'] as $email) {
-            Member::whereHas('user', fn ($u) => $u->where('email', $email))->update(['rank' => 'minister', 'rank_changed_at' => now()->subMonths(8)]);
+        foreach (['member5@demo.test' => true, 'member16@demo.test' => false] as $email => $college) {
+            $m = Member::whereHas('user', fn ($u) => $u->where('email', $email))->first();
+            $m?->forceFill(['rank' => 'minister', 'baptised' => true, 'believers_class' => true, 'workers_training' => true, 'sod' => true, 'bible_college' => $college,
+                'training_answered_at' => now()->subMonths(8)])->save();
+            $m?->forceFill(['rank_changed_at' => now()->subMonths(8)])->save();
         }
     }
 

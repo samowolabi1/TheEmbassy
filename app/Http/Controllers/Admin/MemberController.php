@@ -36,7 +36,7 @@ class MemberController extends Controller
             'tabs' => collect(self::TABS)->map(fn ($label, $key) => ['label' => $label, 'count' => Member::where('status', $key)->count()]),
             'units' => Unit::orderBy('name')->get(),
             'fellowships' => Fellowship::orderBy('name')->get(),
-            'filters' => $request->only(['q', 'unit', 'fellowship', 'rank']),
+            'filters' => $request->only(['q', 'unit', 'fellowship', 'rank', 'training']),
             'totals' => [
                 'members' => Member::active()->count(),
                 'units' => Unit::count(),
@@ -65,6 +65,7 @@ class MemberController extends Controller
     {
         $member = new Member($this->validated($request));
         $member->status = Member::ACTIVE;
+        $member->training_answered_at = now(); // the training ticks on the form are the answers
         $member->save();
         $member->approve();
 
@@ -80,9 +81,14 @@ class MemberController extends Controller
     {
         $data = $this->validated($request, $member);
         $wasPending = $member->status === Member::PENDING;
+        $rankBefore = $member->rank;
         $member->fill($data);
         $member->status = $request->validate(['status' => ['required', Rule::in(array_keys(self::TABS))]])['status'];
+        $member->training_answered_at = now(); // the training ticks on the form are the answers
         $member->save();
+        if ($rankBefore === 'member' && $member->rank === 'worker' && ! $wasPending) {
+            app(Ranks::class)->tell($member->fresh('unit', 'user'), 'member');
+        }
 
         if ($member->status === Member::ACTIVE) {
             $member->approve(); // and their welcome tokens
@@ -114,12 +120,12 @@ class MemberController extends Controller
         $query = $this->filtered($request, $tab)->with('unit', 'fellowship', 'user.tokenAccount')->orderBy('name');
 
         return Csv::download('members-'.now()->format('Y-m-d').'.csv',
-            ['name', 'phone', 'email', 'gender', 'birthday', 'address', 'unit', 'fellowship', 'status', 'joined_on', 'tokens', 'baptised', 'believers_class', 'workers_training', 'last_attended_on'],
+            ['name', 'phone', 'email', 'gender', 'birthday', 'address', 'unit', 'fellowship', 'status', 'joined_on', 'tokens', 'role', 'baptised', 'believers_class', 'workers_training', 'sod', 'bible_college', 'last_attended_on'],
             function ($write) use ($query) {
                 $query->each(fn (Member $m) => $write([
                     $m->name, $m->phone, $m->email, $m->gender, $m->birthday?->toDateString(), $m->address, $m->unit?->name, $m->fellowship?->name,
                     $m->status, $m->joined_on?->toDateString(), (int) $m->user?->tokenBalance(),
-                    $m->baptised ? 'yes' : 'no', $m->believers_class ? 'yes' : 'no', $m->workers_training ? 'yes' : 'no', $m->last_attended_on?->toDateString(),
+                    $m->rankLabel(), $m->baptised ? 'yes' : 'no', $m->believers_class ? 'yes' : 'no', $m->workers_training ? 'yes' : 'no', $m->sod ? 'yes' : 'no', $m->bible_college ? 'yes' : 'no', $m->last_attended_on?->toDateString(),
                 ]));
             });
     }
@@ -180,14 +186,25 @@ class MemberController extends Controller
     }
 
     /**
-     * Member, worker or minister (see Ranks for who may change what).
+     * A pastor makes a worker a minister, answering the minister's training questions, or makes
+     * a minister not one. Workers come from units (see Member).
      */
     public function rank(Request $request, Member $member, Ranks $ranks): RedirectResponse
     {
-        $to = $request->validate(['rank' => ['required', Rule::in(array_keys(Member::RANKS))]])['rank'];
-        $ranks->change($member, $to, $request->user());
+        $to = $request->validate(['rank' => ['required', Rule::in(['minister', 'worker'])]])['rank'];
+        $rules = [];
+        if ($to === 'minister') {
+            $rules['training'] = ['required', 'array'];
+            foreach (Member::REQUIREMENTS['minister'] as $field) {
+                $rules["training.{$field}"] = ['required', Rule::in(['0', '1'])];
+            }
+        }
+        $answers = $request->validate($rules, ['training.required' => 'Answer the training questions.', 'training.*.required' => 'Answer each training question: done or not yet.'])['training'] ?? [];
+        $ranks->change($member, $to, $request->user(), $answers);
+        $member->refresh();
+        $missing = $member->missingRequirements();
 
-        return back()->with('status', "{$member->name} is now: ".$member->fresh('unit')->rankLine().'.');
+        return back()->with('status', "{$member->name} is now: ".$member->rankLine().'.'.($missing ? ' Still to do: '.implode(', ', $missing).'.' : ''));
     }
 
     private function filtered(Request $request, string $tab)
@@ -197,7 +214,13 @@ class MemberController extends Controller
             ->search($request->query('q'))
             ->when($request->filled('unit'), fn ($q) => $q->where('unit_id', $request->integer('unit')))
             ->when($request->filled('fellowship'), fn ($q) => $q->where('fellowship_id', $request->integer('fellowship')))
-            ->when(array_key_exists((string) $request->query('rank'), Member::RANKS), fn ($q) => $q->where('rank', $request->query('rank')));
+            ->when(array_key_exists((string) $request->query('rank'), Member::RANKS), fn ($q) => $q->where('rank', $request->query('rank')))
+            ->when($request->query('training') === 'unanswered', fn ($q) => $q->whereIn('rank', ['worker', 'minister'])->whereNull('training_answered_at'))
+            ->when($request->query('training') === 'missing', fn ($q) => $q->where(function ($q) {
+                foreach (Member::REQUIREMENTS as $rank => $fields) {
+                    $q->orWhere(fn ($r) => $r->where('rank', $rank)->where(fn ($f) => collect($fields)->each(fn ($field) => $f->orWhere($field, false))));
+                }
+            }));
     }
 
     /**

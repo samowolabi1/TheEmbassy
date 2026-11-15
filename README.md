@@ -210,11 +210,13 @@ Staff who manage units (church office, pastors, administrators) can open any uni
 
 ### Workers and ministers
 
-Every member has a role: **member**, **worker** or **minister**.
-- **Workers** serve in a unit. The unit's head or assistant (or staff who manage units) makes a unit member a worker, or a member again, on the unit's Members page. Someone must be in a unit first. A worker who leaves the unit becomes a member again.
-- **Ministers** work closely with the pastors. Only a pastor (or the pastor in charge) makes a worker a minister, or takes it away, from the member's profile in admin.
-- The member is told by email (and WhatsApp, if it's on) when their role changes. Their role shows on their profile, on their account page and in the members list, which can be filtered by role.
-- In the Message centre, messages to members can go to workers, ministers, both, or members only, and Contacts has a "Workers & ministers" tab.
+The order is **member**, then **worker**, then **minister**, then the pastors. Someone must be an approved member before anything else.
+- **Workers:** everyone serving in a unit is a worker. Joining a unit (added by its head or assistant, by the office, or approved with a unit) makes a member a worker; leaving the unit makes them a member again. Workers need the **baptismal class**, **believers' class** and **workers' in training class**.
+- **Ministers** work closely with the pastors. Only a pastor (or the pastor in charge) makes a worker a minister, or takes it away, from the member's profile in admin. Ministers need the workers' classes plus **School of Disciples (SOD)** and **Bible college**. A minister who leaves their unit stays a minister.
+- **Training questions:** whoever adds someone to a unit, or makes them a minister, answers each required class: done or not yet. Someone who became a worker another way (approved with a unit, or already in a unit when this was added) is asked on their account page until they answer. The unit's Members page shows each person's training ("All done", "Still to do: …" or "Not answered yet") with an Update button; members can update their own answers; the office edits them on the profile.
+- **Telling them:** the member is emailed (and WhatsApp'd, if it's on) when they become a worker or minister, with any classes still to do.
+- **Finding them:** the members list filters by role and by training ("Training not answered", "Classes still to do"), and the export includes role and every class.
+- **Message centre:** messages to members can go to workers, ministers, both, or members only, and Contacts has a "Workers & ministers" tab.
 
 ### Welfare
 

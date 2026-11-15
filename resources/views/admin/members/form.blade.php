@@ -86,7 +86,7 @@
                 </select>
             </label>
             <fieldset class="field" style="border: 0; padding: 0; margin: 0">
-                <legend style="margin-bottom: 6px">Milestones</legend>
+                <legend style="margin-bottom: 6px">Training done <x-tip text="Everyone in a unit is a worker. Workers need the baptismal class, believers' class and workers' in training class; ministers also need School of Disciples (SOD) and Bible college." /></legend>
                 @foreach (\App\Models\Member::MILESTONES as $field => $label)
                     <label class="login__remember"><input type="checkbox" name="{{ $field }}" value="1" @checked(old($field, $member->{$field}))>{{ $label }}</label>
                 @endforeach
