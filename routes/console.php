@@ -174,19 +174,23 @@ Artisan::command('birthdays:celebrate', function (Birthdays $birthdays) {
     $this->info('Celebrated '.$birthdays->run().' birthdays.');
 })->purpose('Make today\'s birthday cards, post them in the community and send birthday wishes');
 
+// Each job runs inside the scheduler's own PHP process rather than a new one, because shared
+// hosts often switch off proc_open, which starting a new process needs.
+$task = fn (string $command) => Schedule::call(fn () => Artisan::call($command))->name($command);
+
 // Lets the server check show the cron job is running.
 Schedule::call(fn () => ServerCheck::beat())->everyMinute()->name('heartbeat');
-Schedule::command('youtube:sync')->everyMinute()->withoutOverlapping();
-Schedule::command('social:publish')->everyMinute()->withoutOverlapping();
-Schedule::command('units:remind')->dailyAt('09:00')->timezone('Africa/Lagos');
-Schedule::command('care:scan')->dailyAt('07:00')->timezone('Africa/Lagos');
-Schedule::command('market:remind')->dailyAt('08:00')->timezone('Africa/Lagos');
-Schedule::command('messages:send')->everyMinute()->withoutOverlapping(30);
-Schedule::command('newsletter:queue')->weeklyOn(1, (string) config('church.newsletter.send_at', '07:00'))->timezone('Africa/Lagos')
+$task('youtube:sync')->everyMinute()->withoutOverlapping();
+$task('social:publish')->everyMinute()->withoutOverlapping();
+$task('units:remind')->dailyAt('09:00')->timezone('Africa/Lagos');
+$task('care:scan')->dailyAt('07:00')->timezone('Africa/Lagos');
+$task('market:remind')->dailyAt('08:00')->timezone('Africa/Lagos');
+$task('messages:send')->everyMinute()->withoutOverlapping(30);
+$task('newsletter:queue')->weeklyOn(1, (string) config('church.newsletter.send_at', '07:00'))->timezone('Africa/Lagos')
     ->when(fn () => (bool) config('church.newsletter.enabled'));
-Schedule::command('tokens:daily')->dailyAt('06:30')->timezone('Africa/Lagos');
-Schedule::command('birthdays:celebrate')->dailyAt('06:45')->timezone('Africa/Lagos');
-Schedule::command('appointments:remind')->dailyAt('17:00')->timezone('Africa/Lagos');
-Schedule::command('reminders:send')->everyFiveMinutes()->withoutOverlapping(10);
-Schedule::command('library:remind')->dailyAt('10:00')->timezone('Africa/Lagos');
-Schedule::command('blog:prune-images')->weeklyOn(0, '03:00')->timezone('Africa/Lagos');
+$task('tokens:daily')->dailyAt('06:30')->timezone('Africa/Lagos');
+$task('birthdays:celebrate')->dailyAt('06:45')->timezone('Africa/Lagos');
+$task('appointments:remind')->dailyAt('17:00')->timezone('Africa/Lagos');
+$task('reminders:send')->everyFiveMinutes()->withoutOverlapping(10);
+$task('library:remind')->dailyAt('10:00')->timezone('Africa/Lagos');
+$task('blog:prune-images')->weeklyOn(0, '03:00')->timezone('Africa/Lagos');

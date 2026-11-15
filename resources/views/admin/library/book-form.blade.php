@@ -45,7 +45,7 @@
                 <img src="{{ $book->thumbUrl() }}" alt="" style="width: 90px; border-radius: 6px">
                 <label class="login__remember"><input type="checkbox" name="remove_cover" value="1">Remove the cover</label>
             @endif
-            <input type="file" name="cover" accept="image/jpeg,image/png,image/webp" class="file-input">
+            <input type="file" name="cover" accept="image/jpeg,image/png,image/webp" class="file-input" aria-label="Cover photo">
             <span class="field__hint">Without one, a cover is drawn in colour with the title and author.</span>
             @error('cover') <span class="field-error">{{ $message }}</span> @enderror
         </div>

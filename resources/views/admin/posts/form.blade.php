@@ -122,7 +122,7 @@ A paragraph. **Bold**, *italic* and [a link](https://example.com).
                         <img src="{{ $post->thumbUrl() }}" alt="" class="cover-preview">
                         <label class="login__remember"><input type="checkbox" name="remove_cover" value="1">Remove this photo</label>
                     @endif
-                    <input type="file" name="cover" accept="image/jpeg,image/png,image/webp" class="file-input">
+                    <input type="file" name="cover" accept="image/jpeg,image/png,image/webp" class="file-input" aria-label="Cover photo">
                     <span class="field__hint">JPG, PNG or WebP up to 15 MB. Without one, the card uses the colour below.</span>
                     @error('cover') <span class="field-error">{{ $message }}</span> @enderror
                 </div>

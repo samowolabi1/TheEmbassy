@@ -111,7 +111,7 @@ class BirthdayCard
      */
     public function enabled(): array
     {
-        $uploads = BirthdayDesign::pluck('id')->map(fn ($id) => 'upload-'.$id)->all();
+        $uploads = once(fn () => BirthdayDesign::pluck('id')->map(fn ($id) => 'upload-'.$id)->all());
         $chosen = collect(explode(',', (string) config('church.birthday.design')))
             ->map(fn ($d) => $this->normalise(trim($d)))
             ->filter(fn ($d) => isset(self::DESIGNS[$d]) || in_array($d, $uploads, true))

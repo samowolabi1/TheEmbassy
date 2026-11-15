@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\TicketTypeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -56,7 +57,21 @@ class TicketType extends Model
      */
     public function taken(): int
     {
+        // Pages that list ticket types load the count up front (withTaken), so it isn't asked
+        // again for every type; buying always counts afresh.
+        if (array_key_exists('taken_count', $this->attributes)) {
+            return (int) $this->attributes['taken_count'];
+        }
+
         return $this->tickets()->whereHas('order', fn ($q) => $q->holdingPlaces())->count();
+    }
+
+    /**
+     * @param  Builder<TicketType>  $query
+     */
+    public function scopeWithTaken($query): void
+    {
+        $query->withCount(['tickets as taken_count' => fn ($q) => $q->whereHas('order', fn ($o) => $o->holdingPlaces())]);
     }
 
     /**

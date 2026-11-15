@@ -16,7 +16,7 @@
         @endif
 
         <div class="tokens-hero bg-navy on-dark">
-            <span class="eyebrow">MY {{ mb_strtoupper(TokenName::many()) }}</span>
+            <h1 class="eyebrow" style="margin: 0">MY {{ mb_strtoupper(TokenName::many()) }}</h1>
             <span class="tokens-hero__balance"><span aria-hidden="true">{{ TokenName::icon() }}</span> {{ number_format($balance) }}</span>
             <span class="tokens-hero__text">Worth {{ \App\Services\Tokens\TokenValue::nairaLabel($balance) }} in the app (1 {{ TokenName::one() }} = {{ \App\Services\Tokens\TokenValue::rateLabel() }}). {{ number_format($earnedThisMonth) }} earned this month.
                 Spend them in the {{ config('church.brand.market_name') }}, on event tickets{{ $canSend ? ', or send some to another member' : '' }}. {{ TokenName::title() }} can't be bought or cashed out.</span>

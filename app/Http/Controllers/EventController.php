@@ -16,7 +16,7 @@ class EventController extends Controller
      */
     public function index(): View
     {
-        $events = Event::upcoming()->with('ticketTypes')->get();
+        $events = Event::upcoming()->with(['ticketTypes' => fn ($q) => $q->withTaken()])->get();
         $featured = $events->firstWhere('is_featured', true) ?? $events->first();
 
         return view('pages.events', [
@@ -34,7 +34,7 @@ class EventController extends Controller
     public function show(Event $event, Payments $payments): View
     {
         abort_unless($event->is_published, 404);
-        $event->load('ticketTypes');
+        $event->load(['ticketTypes' => fn ($q) => $q->withTaken()]);
 
         return view('events.show', [
             'event' => $event,

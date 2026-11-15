@@ -64,6 +64,7 @@ class BirthdayDesign extends Model
      */
     public static function stamp(): string
     {
-        return static::count().':'.static::max('updated_at');
+        // Asked for every card on a page; worked out once per request.
+        return once(fn () => static::count().':'.static::max('updated_at'));
     }
 }

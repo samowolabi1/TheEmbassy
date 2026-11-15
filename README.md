@@ -371,33 +371,43 @@ Emails (receipts, tickets, reminders, welcome links) use Laravel's mailer: set `
 
 What the church or Donaitech needs to do; none of it can be done from the code.
 
-**1. A server.** Any host that runs PHP 8.3+ with a MySQL or PostgreSQL database (a VPS, Laravel Forge, Ploi, or shared hosting with SSH). Point the domain at it and turn on HTTPS (Let's Encrypt is free).
+**1. A server.** Shared hosting (cPanel, DirectAdmin, Hostinger, Namecheap, Whogohost, Truehost and the like) is fine, as is a VPS. It needs PHP 8.3 or newer and a MySQL/MariaDB database. Turn on free SSL (AutoSSL / Let's Encrypt) for the domain.
 
-**2. Install.**
+**2. Install on shared hosting (cPanel).** No Node.js is needed on the server: the built CSS and JavaScript are already in `public/build`.
+
+1. **PHP:** in *Select PHP Version* (or *MultiPHP Manager*), choose **PHP 8.3+** and tick the extensions `mbstring`, `openssl`, `pdo_mysql`, `curl`, `gd`, `fileinfo`, `xml`, `dom`, `ctype`, `tokenizer` (and `exif`, `intl`, `gmp` if offered). Under *Options*, set `memory_limit = 256M`, `upload_max_filesize = 16M`, `post_max_size = 200M`, `max_file_uploads = 40`, `max_execution_time = 60`.
+2. **Database:** in *MySQL Databases*, create a database and a user, and give the user all privileges on it.
+3. **Upload the code.** Either use *Git Version Control* to clone the repository, or upload a zip and extract it. Then, if your host has *Terminal* or SSH, run `composer install --no-dev --optimize-autoloader` in the project folder. Without SSH, run that on your own computer and upload the `vendor` folder too.
+4. **Point the domain at `public/`.** Best: in *Domains*, set the domain's document root to the project's `public` folder (e.g. `/home/you/theembassy/public`). If your host can't change it and serves `public_html`, put the whole project in `public_html`: the included `.htaccess` sends every request into `public/`, so nothing else can be downloaded.
+5. **Settings:** copy `.env.shared-hosting.example` to `.env` (File Manager › Copy; it has the live-site defaults) and fill in `APP_URL=https://your-domain`, `APP_ENV=production`, `APP_DEBUG=false`, the `DB_*` details, `MAIL_*` (step 4 below), and the `CHURCH_*` and `PAYSTACK_*` values.
+6. **Set up**, in *Terminal* (or ask the host to run these once):
 
 ```sh
-git clone <repo> && cd <repo>
-composer install --no-dev --optimize-autoloader
-npm ci && npm run build
-cp .env.example .env && php artisan key:generate
-# edit .env: APP_URL, APP_ENV=production, APP_DEBUG=false, DB_*, MAIL_*, PAYSTACK_*, CHURCH_*, PLATFORM_FEE_*
+php artisan key:generate
 php artisan migrate --force
 php artisan db:seed --force          # starting units, funds and market periods
-php artisan storage:link
+php artisan storage:link             # optional: if it fails, pictures are served through the app instead
 php artisan admin:create you@church.org --name="Your name"
 php artisan admin:create pastor@church.org --name="Pastor's name" --super   # the pastor in charge
 php artisan config:cache && php artisan route:cache && php artisan view:cache
+php artisan app:check                # lists anything the server is still missing
 ```
 
-The web server's document root is `public/`, and `storage/` and `bootstrap/cache/` must be writable.
+`storage/` and `bootstrap/cache/` must be writable (755 or 775). After changing `.env` later, run `php artisan config:cache` again. **Admin › Settings & roles › Server check** shows the same checklist in the browser, with how to fix each item in cPanel.
 
-**3. The scheduler.** Social posts, YouTube syncing, and the weekly email, texts and notifications (sent in batches) run every minute; absence follow-ups, rota reminders and seller renewal reminders run each morning; the weekly email is queued on Monday morning; unused article pictures are cleared out on Sundays. Add one cron entry:
+**Updating** after new code is pushed: pull it (Git Version Control › *Update from Remote*), then run `composer install --no-dev --optimize-autoloader`, `php artisan migrate --force` and `php artisan optimize`.
+
+**On a VPS** it's the same, plus `npm ci && npm run build` only if you change the CSS or JavaScript.
+
+**3. The scheduler (cron job).** Reminders, the weekly email, announcements sent in batches, YouTube syncing, social posts, birthday wishes and the daily follow-ups all run from one cron job. In cPanel › *Cron Jobs*, add one set to **once per minute** (`* * * * *`):
 
 ```
-* * * * * cd /path/to/site && php artisan schedule:run >> /dev/null 2>&1
+cd /home/YOUR-USER/PATH-TO-SITE && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-**4. Email.** Set `MAIL_MAILER`, `MAIL_HOST`, `MAIL_USERNAME`, `MAIL_PASSWORD` and `MAIL_FROM_ADDRESS` for a sending service (Mailgun, Postmark, Amazon SES, Zoho or the church's own mailbox). Until then nothing is emailed: receipts, password links and reminders.
+Use the full path to PHP if the host asks for it (e.g. `/usr/local/bin/php` or `/opt/cpanel/ea-php83/root/usr/bin/php`). If your host only allows every 5 or 15 minutes, that's fine: everything still runs, a little later (all the daily times fall on the quarter hour). The jobs run inside that one PHP process, so hosts that switch off `proc_open` are fine too. The Server check page shows when the cron job last ran.
+
+**4. Email.** On shared hosting, create a mailbox in cPanel › *Email Accounts* (e.g. `no-reply@your-domain`) and use its details: `MAIL_MAILER=smtp`, `MAIL_HOST=mail.your-domain`, `MAIL_PORT=465`, `MAIL_SCHEME=smtps`, `MAIL_USERNAME` (the full address), `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS` (the same address). A sending service (Zoho, Brevo, Mailgun, Postmark, Amazon SES) works the same way and lands in inboxes more reliably for large lists. Until then nothing is emailed: receipts, password links and reminders.
 
 **5. Paystack.** In the Paystack dashboard: create the church's subaccount and put its code in `PAYSTACK_SUBACCOUNT`; copy the live secret and public keys into `PAYSTACK_SECRET_KEY` and `PAYSTACK_PUBLIC_KEY`; set the webhook URL to `https://<site>/webhooks/paystack`. Until the keys are set, the site shows bank transfer details instead of taking payments. Paystack is only used for donations, tokens, tickets, the market and the notice board; tithes and offerings are never taken through it.
 
@@ -418,7 +428,7 @@ The web server's document root is `public/`, and `storage/` and `bootstrap/cache
 - WhatsApp: create a WhatsApp Business account and app on Meta for Developers, add the church's number, and create a message template in WhatsApp Manager (category Utility, e.g. named `church_notice`) whose body is just `{{1}}`. Once Meta approves it, put a permanent access token, the phone number ID, the template name and its language code in Settings & roles › Notifications, and switch WhatsApp on. Meta charges per message the church starts, much less than SMS. Members can turn WhatsApp off in their account.
 - App notifications: run `php artisan push:keys` once on the server (it saves the keys in Settings). Installing PHP's `gmp` extension makes sending them much faster. Notifications need HTTPS.
 
-**9. Uploads.** Gallery uploads send several photos at once, so raise PHP's limits to match: `upload_max_filesize = 16M`, `post_max_size = 200M`, `max_file_uploads = 40`, and `memory_limit = 256M` for resizing large photos (plus `client_max_body_size 200m;` on nginx). The upload page tells staff to send fewer photos if a limit is hit.
+**9. Uploads.** Gallery uploads send several photos at once, so raise PHP's limits to match (step 2): `upload_max_filesize = 16M`, `post_max_size = 200M`, `max_file_uploads = 40`, and `memory_limit = 256M` for resizing large photos (plus `client_max_body_size 200m;` on nginx). The upload page tells staff to send fewer photos if a limit is hit. Photos too big for the server's memory are refused with a clear message, and where the host's image library can't make WebP files, pictures are saved as JPEG.
 
 **10. Search engines.** Submit `https://<site>/sitemap.xml` in Google Search Console.
 
@@ -515,7 +525,7 @@ Four demo staff record and check them, signing in at `/admin/login` with the pas
 **Starting over:** `php artisan migrate:fresh --seed`, then `admin:create` again. **Updating** after pulling new code: `composer install && npm install && npm run build && php artisan migrate`.
 
 **If something's wrong:**
-- **Photos don't show:** run `php artisan storage:link`.
+- **Photos don't show:** check `APP_URL` matches the site's address exactly (https, with or without www), then run `php artisan config:cache`. `php artisan storage:link` makes them load a little faster, but they show without it.
 - **Unstyled page, or "Vite manifest not found":** run `npm run build`.
 - **`could not find driver`:** the PHP `pdo_sqlite` extension is missing.
 - **Birthday cards or share pictures fail:** PHP's `gd` needs FreeType and WebP.

@@ -62,7 +62,7 @@
                             <img src="{{ \App\Models\PageContent::photoUrl($content['story_photo']) }}" alt="" class="cover-preview">
                             <label class="login__remember"><input type="checkbox" name="remove_story_photo" value="1">Remove this photo</label>
                         @endif
-                        <input type="file" name="story_photo" accept="image/jpeg,image/png,image/webp" class="file-input">
+                        <input type="file" name="story_photo" accept="image/jpeg,image/png,image/webp" class="file-input" aria-label="Story photo">
                         @error('story_photo') <span class="field-error">{{ $message }}</span> @enderror
                     </div>
                     <label class="field">Describe the photo
@@ -111,7 +111,7 @@
                             </label>
                             <div class="field">
                                 <span>Photo</span>
-                                <input type="file" name="leaders[{{ $i }}][photo]" accept="image/jpeg,image/png,image/webp" class="file-input">
+                                <input type="file" name="leaders[{{ $i }}][photo]" accept="image/jpeg,image/png,image/webp" class="file-input" aria-label="Photo of leader {{ $i + 1 }}">
                                 @if ($photo)
                                     <label class="login__remember"><input type="checkbox" name="leaders[{{ $i }}][remove_photo]" value="1">Remove photo</label>
                                 @endif
@@ -217,7 +217,7 @@
                                         <img src="{{ \App\Models\PageContent::photoUrl($photo) }}" alt="" class="cover-preview">
                                         <label class="login__remember"><input type="checkbox" name="slides[{{ $i }}][remove_photo]" value="1">Remove this picture</label>
                                     @endif
-                                    <input type="file" name="slides[{{ $i }}][photo]" accept="image/jpeg,image/png,image/webp" class="file-input">
+                                    <input type="file" name="slides[{{ $i }}][photo]" accept="image/jpeg,image/png,image/webp" class="file-input" aria-label="Photo for slide {{ $i + 1 }}">
                                     @error("slides.{$i}.photo") <span class="field-error">{{ $message }}</span> @enderror
                                 </div>
                                 <label class="field">Describe the picture <input type="text" name="slides[{{ $i }}][photo_alt]" value="{{ $sl['photo_alt'] ?? '' }}" maxlength="150" placeholder="e.g. The Tribe worshipping on Sunday"></label>
@@ -274,7 +274,7 @@
                         <img src="{{ \App\Models\PageContent::photoUrl($t['photo']) }}" alt="" class="repeat-row__photo">
                         <label class="login__remember"><input type="checkbox" name="remove_photo" value="1">Remove photo</label>
                     @endif
-                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="file-input">
+                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="file-input" aria-label="Photo">
                     @error('photo') <span class="field-error">{{ $message }}</span> @enderror
                 </div>
             </section>

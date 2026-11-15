@@ -12,6 +12,7 @@ use Illuminate\Foundation\AliasLoader;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -30,6 +31,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Setting::applyToConfig();
+
+        // On an https site, links and redirects are always https, even behind a hosting proxy
+        // (such as Cloudflare) that talks to the server over plain http.
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
         // The reward currency's name in Blade: TokenName::many(), TokenName::count(5)…
         AliasLoader::getInstance()->alias('TokenName', TokenName::class);
 
