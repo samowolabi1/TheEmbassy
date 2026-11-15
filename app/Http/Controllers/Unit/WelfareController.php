@@ -89,7 +89,7 @@ class WelfareController extends Controller
     public function update(Request $request, Unit $unit, WelfareCase $case): RedirectResponse
     {
         $data = $request->validate([
-            'assigned_member_id' => ['nullable', Rule::exists('members', 'id')->where('unit_id', $unit->id)],
+            'assigned_member_id' => ['nullable', Rule::exists('member_unit', 'member_id')->where('unit_id', $unit->id)],
             'next_check_on' => ['nullable', 'date'],
             'urgency' => ['required', Rule::in(['normal', 'urgent'])],
         ], ['assigned_member_id.exists' => 'Case workers come from the welfare unit.']);

@@ -27,7 +27,7 @@
             <dl class="detail-list">
                 <dt>Phone</dt><dd>{{ $member->phone ?? '—' }}</dd>
                 <dt>Email</dt><dd>{{ $member->email ?? '—' }}</dd>
-                <dt>Unit</dt><dd>{{ $member->unit?->name ?? '—' }}</dd>
+                <dt>{{ $member->units->count() > 1 ? 'Units' : 'Unit' }}</dt><dd>{{ $member->unitNames() ?? '—' }}@foreach ($member->units as $u)@if ($u->isLedBy($member)) <span class="pill pill--info">{{ $u->hod_member_id === $member->id ? 'HOD' : 'Assistant' }} of {{ $u->name }}</span>@endif @endforeach</dd>
                 <dt>Role</dt>
                 <dd>
                     <span @class(['pill', 'pill--live' => $member->rank === 'minister', 'pill--ok' => $member->rank === 'worker', 'pill--draft' => $member->rank === 'member'])>{{ $member->rankLabel() }}</span>

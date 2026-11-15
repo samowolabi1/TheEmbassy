@@ -75,8 +75,9 @@ class Member extends Model
 
     /**
      * Everyone serving in a unit is a worker: joining a unit makes an approved member a worker,
-     * and leaving it makes a worker a member again (ministers keep their rank). A new worker or
-     * minister is asked about their training.
+     * and leaving their last unit makes a worker a member again (ministers keep their rank). A
+     * new worker or minister is asked about their training. unit_id is their main unit, always
+     * one of their units (see joinUnit, leaveUnit and syncUnits).
      */
     protected static function booted(): void
     {
@@ -96,6 +97,85 @@ class Member extends Model
                 }
             }
         });
+        // Setting a main unit directly (joining, importing) puts them in that unit too.
+        static::saved(function (Member $m) {
+            if ($m->unit_id && $m->wasChanged('unit_id') || ($m->wasRecentlyCreated && $m->unit_id)) {
+                $m->units()->syncWithoutDetaching([$m->unit_id]);
+            }
+        });
+    }
+
+    /**
+     * Every unit they serve in.
+     *
+     * @return BelongsToMany<Unit, $this>
+     */
+    public function units(): BelongsToMany
+    {
+        return $this->belongsToMany(Unit::class, 'member_unit')->withTimestamps()->orderBy('units.name');
+    }
+
+    public function inUnit(Unit|int $unit): bool
+    {
+        $id = $unit instanceof Unit ? $unit->id : $unit;
+
+        return $this->relationLoaded('units') ? $this->units->contains('id', $id) : $this->units()->whereKey($id)->exists();
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function unitIds(): array
+    {
+        return $this->relationLoaded('units') ? $this->units->pluck('id')->all() : $this->units()->pluck('units.id')->all();
+    }
+
+    /**
+     * "Choir, Ushering", or null when they're in no unit.
+     */
+    public function unitNames(): ?string
+    {
+        $names = $this->relationLoaded('units') ? $this->units->pluck('name') : $this->units()->pluck('name');
+
+        return $names->isEmpty() ? null : $names->join(', ');
+    }
+
+    /**
+     * Join a unit (and become a worker, if they were a member).
+     */
+    public function joinUnit(Unit $unit): void
+    {
+        $this->units()->syncWithoutDetaching([$unit->id]);
+        $this->unit_id ??= $unit->id;
+        $this->save();
+        $this->unsetRelation('units');
+    }
+
+    /**
+     * Leave a unit; leaving the last one makes a worker a member again.
+     */
+    public function leaveUnit(Unit $unit): void
+    {
+        $this->units()->detach($unit->id);
+        $this->unsetRelation('units');
+        if ($this->unit_id === $unit->id) {
+            $this->unit_id = $this->units()->value('units.id');
+        }
+        $this->save();
+    }
+
+    /**
+     * Set exactly which units they're in, keeping their main unit if it's still one of them.
+     *
+     * @param  array<int, int|string>  $ids
+     */
+    public function syncUnits(array $ids): void
+    {
+        $ids = array_values(array_unique(array_map('intval', array_filter($ids))));
+        $this->units()->sync($ids);
+        $this->unsetRelation('units');
+        $this->unit_id = in_array($this->unit_id, $ids, true) ? $this->unit_id : ($ids[0] ?? null);
+        $this->save();
     }
 
     /**
@@ -311,7 +391,7 @@ class Member extends Model
     public function rankLine(): string
     {
         return match ($this->rank) {
-            'worker' => 'Worker'.($this->unit ? ' · '.$this->unit->name : ''),
+            'worker' => 'Worker'.(($names = $this->unitNames()) ? ' · '.$names : ''),
             'minister' => 'Minister',
             default => 'Member',
         };

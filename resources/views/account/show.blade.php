@@ -73,8 +73,12 @@
             </nav>
         @endif
         <div style="display: flex; flex-wrap: wrap; gap: 10px">
-            @if ($member?->status === 'active' && $member->unit?->isMedia() && ! $member->unit->isLedBy($member))
-                <a href="{{ route('unit.setup.index', $member->unit) }}" class="btn btn--navy btn--sm">Media team</a>
+            @if ($member?->status === 'active')
+                @foreach ($member->units as $serving)
+                    @if ($serving->isMedia() && ! $serving->isLedBy($member))
+                        <a href="{{ route('unit.setup.index', $serving) }}" class="btn btn--navy btn--sm">Media team</a>
+                    @endif
+                @endforeach
             @endif
             @foreach ($ledUnits as $led)
                 <a href="{{ route('unit.show', $led) }}" class="btn btn--navy btn--sm">Lead {{ $led->name }}</a>
@@ -109,7 +113,7 @@
         @else
             @if ($member->needsTrainingAnswers())
                 <div class="card training-card" id="training">
-                    <h2>You're now a {{ strtolower($member->rankLabel()) }}{{ $member->rank === 'worker' && $member->unit ? ' in '.$member->unit->name : '' }} 🎉</h2>
+                    <h2>You're now a {{ strtolower($member->rankLabel()) }}{{ $member->rank === 'worker' && $member->unitNames() ? ' in '.$member->unitNames() : '' }} 🎉</h2>
                     <p class="lede" style="margin: 0">{{ $member->rank === 'minister' ? 'Ministers need these classes.' : 'Workers need these classes.' }} Tell us which you've done so your unit head and the pastors can help with the rest.</p>
                     <form method="POST" action="{{ route('account.training') }}" class="form" style="gap: 12px; max-width: 560px">
                         @csrf
@@ -123,8 +127,8 @@
                     <h2>Membership</h2>
                     <span class="status-chip {{ $member->status === 'active' ? 'status-chip--ok' : '' }}">{{ $member->statusLabel() }}</span>
                     <dl class="facts">
-                        <dt>Unit</dt><dd>{{ $member->unit?->name ?? 'Not yet' }}</dd>
-                        @if ($member->rank !== 'member')<dt>Role</dt><dd>{{ $member->rankLine() }}</dd>@endif
+                        <dt>{{ $member->units->count() > 1 ? 'Units' : 'Unit' }}</dt><dd>{{ $member->unitNames() ?? 'Not yet' }}</dd>
+                        @if ($member->rank !== 'member')<dt>Role</dt><dd>{{ $member->rankLabel() }}</dd>@endif
                         <dt>Fellowship</dt><dd>{{ $member->fellowship?->name ?? 'Not yet' }}</dd>
                         @if ($member->joined_on)<dt>Member since</dt><dd>{{ $member->joined_on->format('F Y') }}</dd>@endif
                         @if ($member->last_attended_on)<dt>Last at church</dt><dd>{{ $member->last_attended_on->format('j M Y') }}</dd>@endif
@@ -137,11 +141,11 @@
                         </ul>
                         @unless ($member->needsTrainingAnswers())
                             <details class="training-edit">
-                                <summary class="btn btn--ghost btn--xs">Update my training</summary>
+                                <summary class="btn btn--outline btn--sm">Update my training</summary>
                                 <form method="POST" action="{{ route('account.training') }}" class="form" style="gap: 10px; margin-top: 8px">
                                     @csrf
                                     <x-training-questions :rank="$member->rank" :member="$member" />
-                                    <button type="submit" class="btn btn--navy btn--xs" style="align-self: flex-start">Save</button>
+                                    <button type="submit" class="btn btn--navy btn--sm" style="align-self: flex-start">Save</button>
                                 </form>
                             </details>
                         @endunless
@@ -176,12 +180,12 @@
             @if ($member->unit && ($meetings->isNotEmpty() || $duties->isNotEmpty() || $unitMessages->isNotEmpty()))
                 <div class="account-grid">
                     <div class="card">
-                        <h2>{{ $member->unit->name }}</h2>
+                        <h2>{{ $member->units->count() > 1 ? 'My units' : $member->unitNames() }}</h2>
                         @if ($errors->has('meeting'))<p class="notice-alert" role="alert" style="margin: 0; background: #fdecea; color: #8a1c12">{{ $errors->first('meeting') }}</p>@endif
                         @forelse ($meetings as $meeting)
                             <div class="stack" style="gap: 6px">
                                 <strong>{{ $meeting->title }}</strong>
-                                <span class="field-hint">{{ $meeting->starts_at->format('D j M, g:i A') }}{{ $meeting->location ? ' · '.$meeting->location : '' }}</span>
+                                <span class="field-hint">@if ($member->units->count() > 1){{ $meeting->unit->name }} · @endif{{ $meeting->starts_at->format('D j M, g:i A') }}{{ $meeting->location ? ' · '.$meeting->location : '' }}</span>
                                 @if ($meeting->online_url)<a href="{{ $meeting->online_url }}" class="btn btn--outline btn--sm" style="align-self: flex-start" target="_blank" rel="noopener">Join online</a>@endif
                                 @if (in_array($meeting->id, $checkedInMeetings, true))
                                     <span class="status-chip status-chip--ok">✓ Checked in</span>
@@ -236,14 +240,12 @@
                         <label class="field">Wedding anniversary (optional)
                             <input type="date" name="anniversary" value="{{ old('anniversary', $member->anniversary?->toDateString()) }}" max="{{ today()->toDateString() }}">
                         </label>
-                        <label class="field">Unit
-                            <select name="unit_id">
-                                <option value="">None</option>
-                                @foreach ($units as $unit)
-                                    <option value="{{ $unit->id }}" @selected((int) old('unit_id', $member->unit_id) === $unit->id)>{{ $unit->name }}</option>
-                                @endforeach
-                            </select>
-                        </label>
+                        <fieldset class="field" style="border: 0; padding: 0; margin: 0">
+                            <legend style="margin-bottom: 6px">Units you serve in <span style="font-weight: 500; color: var(--slate)">(everyone in a unit is a worker)</span></legend>
+                            @foreach ($units as $unit)
+                                <label class="login__remember"><input type="checkbox" name="units[]" value="{{ $unit->id }}" @checked(in_array($unit->id, array_map('intval', old('units', $member->unitIds())), true)) @disabled($unit->isLedBy($member))>{{ $unit->name }}@if ($unit->isLedBy($member)) (you lead it)@endif</label>
+                            @endforeach
+                        </fieldset>
                         <label class="field">House fellowship
                             <select name="fellowship_id">
                                 <option value="">None</option>

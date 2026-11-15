@@ -45,8 +45,8 @@ class UnitController extends Controller
     {
         return view('unit.members', [
             'unit' => $unit,
-            'members' => $unit->members()->active()->with('fellowship')->orderByRaw("case rank when 'minister' then 0 when 'worker' then 1 else 2 end")->orderBy('name')->get(),
-            'others' => Member::active()->where(fn ($q) => $q->whereNull('unit_id')->orWhere('unit_id', '!=', $unit->id))->orderBy('name')->get(['id', 'name', 'unit_id']),
+            'members' => $unit->members()->active()->with('fellowship', 'units:id,name')->orderByRaw("case rank when 'minister' then 0 when 'worker' then 1 else 2 end")->orderBy('name')->get(),
+            'others' => Member::active()->whereDoesntHave('units', fn ($q) => $q->whereKey($unit->id))->with('units:id,name')->orderBy('name')->get(['id', 'name', 'unit_id']),
         ]);
     }
 
@@ -62,9 +62,8 @@ class UnitController extends Controller
         ], $this->trainingMessages());
         $member = Member::findOrFail($data['member_id']);
         $from = $member->rank;
-        $member->unit_id = $unit->id;
         $member->answerTraining($data['training'], $member->rank === 'minister' ? 'minister' : 'worker');
-        $member->save();
+        $member->joinUnit($unit);
         if ($from === 'member') {
             $ranks->tell($member->fresh('unit', 'user'), $from);
         }
@@ -78,7 +77,7 @@ class UnitController extends Controller
      */
     public function training(Request $request, Unit $unit, Member $member): RedirectResponse
     {
-        abort_unless($member->unit_id === $unit->id, 404);
+        abort_unless($member->inUnit($unit), 404);
         $rank = $member->rank === 'minister' ? 'minister' : 'worker';
         $data = $request->validate($this->trainingRules($rank), $this->trainingMessages());
         $member->answerTraining($data['training'], $rank);
@@ -89,10 +88,10 @@ class UnitController extends Controller
 
     public function removeMember(Unit $unit, Member $member): RedirectResponse
     {
-        abort_unless($member->unit_id === $unit->id, 404);
+        abort_unless($member->inUnit($unit), 404);
         abort_if($unit->isLedBy($member), 422, 'Change the HOD or assistant in church admin first.');
-        // Leaving the unit makes a worker a member again (ministers stay ministers): see Member.
-        $member->update(['unit_id' => null]);
+        // Leaving their last unit makes a worker a member again (ministers stay ministers): see Member.
+        $member->leaveUnit($unit);
 
         return back()->with('status', "{$member->name} removed from {$unit->name}.");
     }

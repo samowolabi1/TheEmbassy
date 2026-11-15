@@ -89,7 +89,8 @@ return [
             'faqs' => [
                 ['How do I make someone head of a unit?', 'Pick a head and an assistant for the unit. They then get the unit leaders\' area for their unit: members, meetings, rota and messages.'],
                 ['Can I rename or remove a unit?', 'Yes. Renaming keeps its members. Remove only units nobody belongs to.'],
-                ['Who can make someone a worker?', 'Everyone in a unit is a worker, so the unit\'s head or assistant makes someone a worker by adding them to the unit, answering which workers\' classes they\'ve done. Someone who leaves the unit becomes a member again (ministers stay ministers). Only a pastor makes a worker a minister.'],
+                ['Who can make someone a worker?', 'Everyone in a unit is a worker, so the unit\'s head or assistant makes someone a worker by adding them to the unit, answering which workers\' classes they\'ve done. A worker can serve in several units. Someone who leaves their last unit becomes a member again (ministers stay ministers). Only a pastor makes a worker a minister.'],
+                ['Can someone head two units?', 'No: someone can head one unit only. A worker or minister can serve in several units, and a minister can head a unit. The head and assistant are added to the unit they lead.'],
             ],
         ],
 

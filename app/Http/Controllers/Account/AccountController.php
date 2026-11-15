@@ -44,10 +44,10 @@ class AccountController extends Controller
             'units' => Unit::orderBy('name')->get(),
             'fellowships' => Fellowship::orderBy('name')->get(),
             'ledUnits' => $member?->ledUnits() ?? collect(),
-            'meetings' => $member?->unit_id ? UnitMeeting::where('unit_id', $member->unit_id)->where('starts_at', '>=', now()->subHours(3))->orderBy('starts_at')->take(3)->get() : collect(),
+            'meetings' => $member?->unit_id ? UnitMeeting::with('unit')->whereIn('unit_id', $member->unitIds())->where('starts_at', '>=', now()->subHours(3))->orderBy('starts_at')->take(3)->get() : collect(),
             'checkedInMeetings' => $member ? $member->meetings()->pluck('unit_meetings.id')->all() : [],
             'duties' => $member ? $member->duties()->with('service', 'unit')->whereHas('service', fn ($q) => $q->where('held_on', '>=', today()->startOfDay()))->get() : collect(),
-            'unitMessages' => $member?->unit_id ? UnitMessage::where('unit_id', $member->unit_id)->latest()->take(3)->get() : collect(),
+            'unitMessages' => $member?->unit_id ? UnitMessage::with('unit')->whereIn('unit_id', $member->unitIds())->latest()->take(3)->get() : collect(),
             'unread' => $active ? $inbox->unread($request->user()) : 0,
             'joinable' => $active ? Service::joinableNow() : collect(),
             'birthday' => $active ? app(Birthdays::class)->recent($member) : null,
@@ -66,11 +66,14 @@ class AccountController extends Controller
             'birthday' => ['nullable', 'date', 'before:today'],
             'anniversary' => ['nullable', 'date', 'before_or_equal:today'],
             'address' => ['nullable', 'string', 'max:255'],
-            'unit_id' => ['nullable', Rule::exists('units', 'id')],
+            'units' => ['nullable', 'array'],
+            'units.*' => [Rule::exists('units', 'id')],
             'fellowship_id' => ['nullable', Rule::exists('fellowships', 'id')],
         ]);
 
-        $member->update([...$data, 'notify_sms' => $request->boolean('notify_sms')]);
+        $member->update([...collect($data)->except('units')->all(), 'notify_sms' => $request->boolean('notify_sms')]);
+        // Units they lead stay ticked: a head leaves their unit through the church office.
+        $member->syncUnits([...($data['units'] ?? []), ...$member->ledUnits()->modelKeys()]);
         $tokens = app(Rewards::class)->profile($member->fresh('user'));
 
         return back()->with('status', 'Your details are saved.'.($tokens ? " Your profile is complete: +{$tokens} ".TokenName::many().'!' : ''));

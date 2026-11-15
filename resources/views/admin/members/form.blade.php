@@ -69,14 +69,13 @@
                     </select>
                 </label>
             @endif
-            <label class="field">Unit
-                <select name="unit_id">
-                    <option value="">None</option>
-                    @foreach ($units as $unit)
-                        <option value="{{ $unit->id }}" @selected((int) old('unit_id', $member->unit_id) === $unit->id)>{{ $unit->name }}</option>
-                    @endforeach
-                </select>
-            </label>
+            <fieldset class="field" style="border: 0; padding: 0; margin: 0">
+                <legend style="margin-bottom: 6px">Units <x-tip text="Tick every unit they serve in. Everyone in a unit is a worker; someone in no unit is a member (ministers stay ministers). A unit's head or assistant stays in it until they're changed on Units & fellowships." /></legend>
+                @foreach ($units as $unit)
+                    <label class="login__remember"><input type="checkbox" name="units[]" value="{{ $unit->id }}" @checked(in_array($unit->id, array_map('intval', old('units', $member->exists ? $member->unitIds() : [])), true))>{{ $unit->name }}@if ($member->exists && $unit->isLedBy($member)) ({{ $unit->hod_member_id === $member->id ? 'HOD' : 'assistant' }})@endif</label>
+                @endforeach
+                @error('units') <span class="field-error">{{ $message }}</span> @enderror
+            </fieldset>
             <label class="field">House fellowship
                 <select name="fellowship_id">
                     <option value="">None</option>

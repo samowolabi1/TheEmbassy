@@ -80,7 +80,7 @@ class SetupController extends Controller
         $setup = ServiceSetup::where('service_id', $service->id)->firstOrFail();
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'member_id' => ['nullable', Rule::exists('members', 'id')->where('unit_id', $unit->id)],
+            'member_id' => ['nullable', Rule::exists('member_unit', 'member_id')->where('unit_id', $unit->id)],
         ]);
         $setup->tasks()->create([...$data, 'sort' => $setup->tasks()->max('sort') + 1]);
 
@@ -89,7 +89,7 @@ class SetupController extends Controller
 
     public function assignTask(Request $request, Unit $unit, SetupTask $task): RedirectResponse
     {
-        $data = $request->validate(['member_id' => ['nullable', Rule::exists('members', 'id')->where('unit_id', $unit->id)]]);
+        $data = $request->validate(['member_id' => ['nullable', Rule::exists('member_unit', 'member_id')->where('unit_id', $unit->id)]]);
         $task->update($data);
 
         return back();

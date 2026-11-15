@@ -48,7 +48,7 @@ class CommunityRoom extends Model
     }
 
     /**
-     * Rooms this person can see: everyone's rooms, plus their own unit's.
+     * Rooms this person can see: everyone's rooms, plus their own units'.
      */
     #[Scope]
     protected function visibleTo(Builder $query, User $user): void
@@ -57,15 +57,15 @@ class CommunityRoom extends Model
             $q->whereNull('unit_id');
             if ($user->moderatesCommunity()) {
                 $q->orWhereNotNull('unit_id');
-            } elseif ($user->member?->unit_id) {
-                $q->orWhere('unit_id', $user->member->unit_id);
+            } elseif ($user->member && ($units = $user->member->unitIds())) {
+                $q->orWhereIn('unit_id', $units);
             }
         })->orderBy('position')->orderBy('id');
     }
 
     public function isVisibleTo(User $user): bool
     {
-        return $this->unit_id === null || $user->moderatesCommunity() || $user->member?->unit_id === $this->unit_id;
+        return $this->unit_id === null || $user->moderatesCommunity() || (bool) $user->member?->inUnit($this->unit_id);
     }
 
     public function canPost(User $user): bool

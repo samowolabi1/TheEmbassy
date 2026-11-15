@@ -33,7 +33,7 @@
                                 <select name="hod_member_id">
                                     <option value="">Not set</option>
                                     @foreach ($members as $m)
-                                        <option value="{{ $m->id }}" @selected($unit->hod_member_id === $m->id)>{{ $m->name }}</option>
+                                        <option value="{{ $m->id }}" @selected($unit->hod_member_id === $m->id) @disabled(isset($heads[$m->id]) && $heads[$m->id] !== $unit->id)>{{ $m->name }}@if (isset($heads[$m->id]) && $heads[$m->id] !== $unit->id) (heads {{ $units->firstWhere('id', $heads[$m->id])?->name }})@endif</option>
                                     @endforeach
                                 </select>
                             </label>
@@ -53,8 +53,9 @@
                                 </select>
                             </label>
                         </div>
+                        @error('hod_member_id', 'unit') <span class="field-error">{{ $message }}</span> @enderror
                         @error('assistant_member_id', 'unit') <span class="field-error">{{ $message }}</span> @enderror
-                        <span class="field__hint">The HOD and assistant sign in with their member account to run the unit's area. Welfare and media units get their own tools.</span>
+                        <span class="field__hint">Someone can head one unit only; a minister can head a unit too. The HOD and assistant are added to the unit (so they're workers) and sign in with their member account to run the unit's area. Welfare and media units get their own tools.</span>
                         <label class="field">What they do <input type="text" name="description" value="{{ $unit->description }}" maxlength="500"></label>
                         <div class="list-item__actions">
                             <button type="submit" class="btn btn--navy btn--xs">Save</button>

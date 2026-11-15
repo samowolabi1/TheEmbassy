@@ -28,7 +28,7 @@ class Ranks
      */
     public function canRecordTraining(User $by, Member $member): bool
     {
-        return $by->isPastor() || $by->canManage('members') || $by->canManage('units') || (bool) $member->unit?->isLedBy($by->member);
+        return $by->isPastor() || $by->canManage('members') || $by->canManage('units') || $member->units->contains(fn ($u) => $u->isLedBy($by->member));
     }
 
     /**
@@ -71,7 +71,7 @@ class Ranks
         $todo = $missing ? ' Still to do: '.implode(', ', $missing).'. Speak to your unit head about the next classes.' : '';
         $ask = $member->needsTrainingAnswers() ? ' Please open the app and tell us which of the classes you\'ve done.' : '';
         [$title, $body] = match (true) {
-            $member->rank === 'worker' && $from === 'member' => ["You're now a worker 🎉", "Congratulations, {$first}! You're now a worker in ".($member->unit?->name ?? 'your unit').'. Workers need the baptismal class, believers\' class and workers\' in training class.'.($ask ?: $todo)],
+            $member->rank === 'worker' && $from === 'member' => ["You're now a worker 🎉", "Congratulations, {$first}! You're now a worker in ".($member->unitNames() ?? 'your unit').'. Workers need the baptismal class, believers\' class and workers\' in training class.'.($ask ?: $todo)],
             $member->rank === 'minister' => ["You're now a minister 🙌", "Congratulations, {$first}! The pastors have made you a minister of ".config('church.short_name').'. Thank you for your faithfulness; they\'ll be in touch about working together.'.($ask ?: $todo)],
             default => ['Your role at church has changed', "Hi {$first}, your role at ".config('church.short_name').' is now: '.$member->rankLine().'. Speak to your unit head or a pastor if you have any questions.'],
         };

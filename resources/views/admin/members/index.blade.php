@@ -69,7 +69,7 @@
                                     </span>
                                 </span>
                             </td>
-                            <td>{{ $m->unit?->name ?? '—' }}@if ($m->rank !== 'member') <span @class(['pill', 'pill--live' => $m->rank === 'minister', 'pill--ok' => $m->rank === 'worker'])>{{ $m->rankLabel() }}</span>@endif</td>
+                            <td>{{ $m->unitNames() ?? '—' }}@if ($m->rank !== 'member') <span @class(['pill', 'pill--live' => $m->rank === 'minister', 'pill--ok' => $m->rank === 'worker'])>{{ $m->rankLabel() }}</span>@endif</td>
                             <td style="font-weight: 700">{{ $m->user ? TokenName::icon().' '.number_format($m->user->tokenBalance()) : '—' }}</td>
                             <td style="color: var(--slate)">{{ $m->last_attended_on?->format('j M') ?? '—' }}</td>
                             <td class="num">

@@ -50,7 +50,7 @@ class AppServiceProvider extends ServiceProvider
         // The media unit's tools: its members draft, report faults and tick tasks; its leaders (and
         // staff with the media role) manage kit, stream keys, going live and publishing.
         Gate::define('media-team', fn (User $user, Unit $unit) => $unit->isMedia()
-            && (($user->member && $user->member->status === 'active' && $user->member->unit_id === $unit->id) || $unit->isLedBy($user->member) || $user->canManage('sermons')));
+            && (($user->member && $user->member->status === 'active' && $user->member->inUnit($unit)) || $unit->isLedBy($user->member) || $user->canManage('sermons')));
         Gate::define('lead-media', fn (User $user, Unit $unit) => $unit->isMedia() && ($unit->isLedBy($user->member) || $user->canManage('sermons') || $user->canManage('units')));
         // Welfare cases are confidential: the welfare unit's leaders and staff with the welfare area only.
         // Asking the media unit for a flyer, video or coverage: staff and unit heads.

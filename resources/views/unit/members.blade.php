@@ -15,7 +15,8 @@
                 <tbody>
                     @forelse ($members as $m)
                         <tr>
-                            <td style="font-weight: 700">{{ $m->name }}@if ($unit->isLedBy($m)) <span class="pill pill--info">{{ $unit->hod_member_id === $m->id ? 'HOD' : 'Assistant' }}</span>@endif</td>
+                            <td><span style="font-weight: 700">{{ $m->name }}</span>@if ($unit->isLedBy($m)) <span class="pill pill--info">{{ $unit->hod_member_id === $m->id ? 'HOD' : 'Assistant' }}</span>@endif
+                                @if ($m->units->count() > 1)<span class="training-status" style="display: block">Also in {{ $m->units->where('id', '!=', $unit->id)->pluck('name')->join(', ') }}</span>@endif</td>
                             <td>
                                 <span @class(['pill', 'pill--live' => $m->rank === 'minister', 'pill--ok' => $m->rank === 'worker', 'pill--draft' => $m->rank === 'member'])>{{ $m->rankLabel() }}</span>
                             </td>
@@ -60,7 +61,7 @@
                 <select name="member_id" required>
                     <option value="">Choose…</option>
                     @foreach ($others as $m)
-                        <option value="{{ $m->id }}">{{ $m->name }}{{ $m->unit_id ? ' (moves from another unit)' : '' }}</option>
+                        <option value="{{ $m->id }}">{{ $m->name }}{{ $m->units->isNotEmpty() ? ' (also in '.$m->units->pluck('name')->join(', ').')' : '' }}</option>
                     @endforeach
                 </select>
                 @error('member_id') <span class="field-error">{{ $message }}</span> @enderror

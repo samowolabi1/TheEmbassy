@@ -82,7 +82,7 @@ class Campaigns
                     'leaders' => ['worker', 'minister'],
                     default => ['member'],
                 }))
-                ->when($type === 'members' && ($audience['unit_id'] ?? null), fn ($q) => $q->where('unit_id', $audience['unit_id']))
+                ->when($type === 'members' && ($audience['unit_id'] ?? null), fn ($q) => $q->whereHas('units', fn ($u) => $u->whereKey($audience['unit_id'])))
                 ->when($type === 'members' && ($audience['fellowship_id'] ?? null), fn ($q) => $q->where('fellowship_id', $audience['fellowship_id']))
                 ->when($type === 'members' && ($audience['gender'] ?? null), fn ($q) => $q->where('gender', $audience['gender']))
                 ->orderBy('id')->get();

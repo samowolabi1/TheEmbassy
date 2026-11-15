@@ -44,8 +44,8 @@ class Inbox
                 'body' => (string) $a->body, 'url' => $a->url, 'at' => $a->published_at, 'key' => 'a'.$a->id,
             ]);
 
-        $unitId = $user->member?->unit_id;
-        $unit = $unitId ? UnitMessage::with('unit')->where('unit_id', $unitId)->where('created_at', '>=', $since)->latest()->take(100)->get()
+        $unitIds = $user->member?->unitIds() ?? [];
+        $unit = $unitIds ? UnitMessage::with('unit')->whereIn('unit_id', $unitIds)->where('created_at', '>=', $since)->latest()->take(100)->get()
             ->map(fn (UnitMessage $m) => [
                 'kind' => 'unit', 'from' => $m->unit->name, 'title' => $m->subject,
                 'body' => $m->body, 'url' => null, 'at' => $m->created_at, 'key' => 'u'.$m->id,

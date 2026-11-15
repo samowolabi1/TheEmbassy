@@ -70,7 +70,7 @@ class AttendanceController extends Controller
             'kinds' => Service::KINDS,
             'present' => $present,
             'members' => Member::active()->search($request->query('q'))
-                ->when($request->filled('unit'), fn ($q) => $q->where('unit_id', $request->integer('unit')))
+                ->when($request->filled('unit'), fn ($q) => $q->whereHas('units', fn ($u) => $u->whereKey($request->integer('unit'))))
                 ->orderBy('name')->get(['id', 'name', 'phone', 'unit_id']),
             'units' => Unit::orderBy('name')->get(),
             'filters' => $request->only(['q', 'unit']),

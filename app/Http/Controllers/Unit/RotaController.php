@@ -33,7 +33,7 @@ class RotaController extends Controller
     {
         $data = $request->validate([
             'service_id' => ['required', Rule::exists('services', 'id')],
-            'member_id' => ['required', Rule::exists('members', 'id')->where('unit_id', $unit->id)->where('status', 'active')],
+            'member_id' => ['required', Rule::in($unit->members()->active()->pluck('members.id')->all())],
             'role' => ['required', 'string', 'max:60'],
         ], ['member_id.exists' => 'Choose someone from this unit.']);
 

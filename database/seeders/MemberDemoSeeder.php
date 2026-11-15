@@ -18,6 +18,7 @@ use App\Services\Tokens\Rewards;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use RuntimeException;
 
@@ -67,6 +68,7 @@ class MemberDemoSeeder extends Seeder
         }
 
         $this->ranks();
+        $this->secondUnits();
 
         mt_srand();
         $this->command?->info($made->isNotEmpty() ? "Made {$made->count()} demo members." : 'The demo members are already there.');
@@ -101,6 +103,24 @@ class MemberDemoSeeder extends Seeder
             $m?->forceFill(['rank' => 'minister', 'baptised' => true, 'believers_class' => true, 'workers_training' => true, 'sod' => true, 'bible_college' => $college,
                 'training_answered_at' => now()->subMonths(8)])->save();
             $m?->forceFill(['rank_changed_at' => now()->subMonths(8)])->save();
+        }
+    }
+
+    /**
+     * A few workers serve in a second unit. Only done once (when nobody is in two units yet).
+     */
+    private function secondUnits(): void
+    {
+        if (DB::table('member_unit')->select('member_id')->groupBy('member_id')->havingRaw('count(*) > 1')->exists()) {
+            return;
+        }
+        $units = Unit::orderBy('id')->get();
+        $workers = Member::where('rank', 'worker')->whereNotNull('unit_id')->whereHas('user', fn ($u) => $u->where('email', 'like', 'member%@demo.test'))->orderBy('id')->get();
+        foreach ($workers->values()->filter(fn ($m, $i) => $i % 5 === 1) as $i => $m) {
+            $others = $units->filter(fn ($u) => $u->id !== $m->unit_id)->values();
+            if ($others->isNotEmpty()) {
+                $m->units()->syncWithoutDetaching([$others[$i % $others->count()]->id]);
+            }
         }
     }
 

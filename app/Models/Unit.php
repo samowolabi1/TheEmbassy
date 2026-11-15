@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -34,11 +35,13 @@ class Unit extends Model
     ];
 
     /**
-     * @return HasMany<Member, $this>
+     * Everyone serving in the unit (a member can be in several).
+     *
+     * @return BelongsToMany<Member, $this>
      */
-    public function members(): HasMany
+    public function members(): BelongsToMany
     {
-        return $this->hasMany(Member::class);
+        return $this->belongsToMany(Member::class, 'member_unit')->withTimestamps();
     }
 
     /**

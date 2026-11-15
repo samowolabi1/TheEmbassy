@@ -72,7 +72,7 @@ class MemberRanksTest extends TestCase
     public function test_a_new_worker_answers_their_training_in_the_app(): void
     {
         $this->assertTrue($this->ada->needsTrainingAnswers());
-        $this->actingAs($this->ada->user)->get(route('account'))->assertOk()->assertSee('You\'re now a worker in Choir', false)->assertSee('Worker · Choir');
+        $this->actingAs($this->ada->user)->get(route('account'))->assertOk()->assertSee('You\'re now a worker in Choir', false)->assertSee('Choir');
         $this->post(route('account.training'), ['training' => ['baptised' => '1', 'believers_class' => '0', 'workers_training' => '0']])
             ->assertSessionHas('status', fn ($s) => str_contains($s, 'Still to do: Believers\' class, Workers\' in training class'));
         $this->assertFalse($this->ada->fresh()->needsTrainingAnswers());
@@ -115,6 +115,61 @@ class MemberRanksTest extends TestCase
         $this->actingAs($pastor)->get(route('admin.members.index', ['rank' => 'minister']))->assertOk()->assertSee('Ada Obi')->assertDontSee('Samuel Ojo');
         $this->post(route('admin.members.rank', $this->ada), ['rank' => 'worker']);
         $this->assertSame('member', $this->ada->fresh()->rank); // no longer in a unit
+    }
+
+    public function test_a_worker_can_serve_in_several_units(): void
+    {
+        $ushering = Unit::factory()->create(['name' => 'Ushering']);
+        $usherHead = Member::factory()->active()->create();
+        $ushering->update(['hod_member_id' => $usherHead->id]);
+        $usherHead->joinUnit($ushering);
+
+        // Ada (Choir) joins Ushering too, and is in both.
+        $this->actingAs($usherHead->user)->get(route('unit.members', $ushering))->assertOk()->assertSee('Ada Obi (also in Choir)');
+        $this->post(route('unit.members.add', $ushering), ['member_id' => $this->ada->id, 'training' => self::ALL_DONE])->assertSessionHasNoErrors();
+        $ada = $this->ada->fresh();
+        $this->assertSame([$this->choir->id, $ushering->id], $ada->unitIds());
+        $this->assertSame([$this->choir->id, 'Worker · Choir, Ushering'], [$ada->unit_id, $ada->rankLine()]);
+
+        // Each unit's messages reach her, and both rosters list her.
+        $this->assertTrue($ushering->members()->whereKey($ada->id)->exists());
+        $this->actingAs($this->hod->user)->get(route('unit.members', $this->choir))->assertSee('Ada Obi');
+
+        // Leaving one unit keeps her a worker, with Ushering as her main unit; leaving the last makes her a member.
+        $this->delete(route('unit.members.remove', [$this->choir, $ada]));
+        $this->assertSame(['worker', $ushering->id], [$ada->fresh()->rank, $ada->fresh()->unit_id]);
+        $this->actingAs($usherHead->user)->delete(route('unit.members.remove', [$ushering, $ada]));
+        $this->assertSame(['member', null, []], [$ada->fresh()->rank, $ada->fresh()->unit_id, $ada->fresh()->unitIds()]);
+
+        // The office ticks several units on the profile.
+        $office = User::factory()->create(['role' => 'secretary']);
+        $this->actingAs($office)->put(route('admin.members.update', $ada), ['name' => 'Ada Obi', 'status' => 'active', 'units' => [$this->choir->id, $ushering->id]])->assertSessionHasNoErrors();
+        $this->assertSame(['worker', [$this->choir->id, $ushering->id]], [$ada->fresh()->rank, $ada->fresh()->unitIds()]);
+        $this->get(route('admin.members.index', ['unit' => $ushering->id]))->assertOk()->assertSee('Ada Obi');
+        // A head stays in the unit they lead even if it's unticked.
+        $this->put(route('admin.members.update', $this->hod), ['name' => 'Samuel Ojo', 'status' => 'active', 'units' => []]);
+        $this->assertTrue($this->hod->fresh()->inUnit($this->choir));
+    }
+
+    public function test_someone_heads_one_unit_only_and_a_minister_can_head_one(): void
+    {
+        $admin = User::factory()->create(['role' => 'super']);
+        $drama = Unit::factory()->create(['name' => 'Drama']);
+        $this->actingAs($admin)->get(route('admin.units.index'))->assertOk()->assertSee('Samuel Ojo (heads Choir)');
+        $this->put(route('admin.units.update', $drama), ['name' => 'Drama', 'hod_member_id' => $this->hod->id])
+            ->assertSessionHasErrors(['hod_member_id' => 'Samuel Ojo already heads Choir. Someone can head one unit only: choose someone else, or change Choir\'s HOD first.'], null, 'unit');
+        $this->assertNull($drama->fresh()->hod_member_id);
+
+        // A minister can head a unit, and becomes part of it.
+        $minister = Member::factory()->active()->create(['name' => 'Grace Eze']);
+        $minister->forceFill(['rank' => 'minister'])->save();
+        $this->put(route('admin.units.update', $drama), ['name' => 'Drama', 'hod_member_id' => $minister->id])->assertSessionHasNoErrors();
+        $minister->refresh();
+        $this->assertSame(['minister', [$drama->id]], [$minister->rank, $minister->unitIds()]);
+        // ...and can also serve in another unit.
+        $this->actingAs($this->hod->user)->post(route('unit.members.add', $this->choir), ['member_id' => $minister->id, 'training' => self::ALL_DONE + ['sod' => '1', 'bible_college' => '1']])->assertSessionHasNoErrors();
+        $this->assertSame('minister', $minister->fresh()->rank);
+        $this->assertTrue($minister->fresh()->inUnit($this->choir));
     }
 
     public function test_the_message_centre_reaches_workers_and_ministers(): void

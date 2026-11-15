@@ -31,7 +31,7 @@ class MemberController extends Controller
         $tab = array_key_exists($request->query('tab'), self::TABS) ? $request->query('tab') : 'active';
 
         return view('admin.members.index', [
-            'members' => $this->filtered($request, $tab)->with('unit', 'fellowship', 'user.tokenAccount')->orderBy('name')->paginate(25)->withQueryString(),
+            'members' => $this->filtered($request, $tab)->with('units', 'fellowship', 'user.tokenAccount')->orderBy('name')->paginate(25)->withQueryString(),
             'tab' => $tab,
             'tabs' => collect(self::TABS)->map(fn ($label, $key) => ['label' => $label, 'count' => Member::where('status', $key)->count()]),
             'units' => Unit::orderBy('name')->get(),
@@ -48,7 +48,7 @@ class MemberController extends Controller
     public function show(Member $member): View
     {
         return view('admin.members.show', [
-            'member' => $member->load('unit', 'fellowship', 'user.shop'),
+            'member' => $member->load('unit', 'units', 'fellowship', 'user.shop'),
             'tokenAccount' => $account = $member->user?->tokenAccount,
             'tokenHistory' => $account ? TokenTransfer::where(fn ($q) => $q->where('from_account_id', $account->id)->orWhere('to_account_id', $account->id))->latest('id')->take(8)->get() : collect(),
             'givingThisYear' => request()->user()->can('see-giving') ? (int) $member->gifts()->paid()->whereYear('given_on', now()->year)->sum('amount') : null,
@@ -63,10 +63,12 @@ class MemberController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $member = new Member($this->validated($request));
+        $data = $this->validated($request);
+        $member = new Member(collect($data)->except('units')->all());
         $member->status = Member::ACTIVE;
-        $member->training_answered_at = now(); // the training ticks on the form are the answers
         $member->save();
+        $member->syncUnits($data['units'] ?? []);
+        $member->forceFill(['training_answered_at' => now()])->save(); // the training ticks on the form are the answers
         $member->approve();
 
         return redirect()->route('admin.members.show', $member)->with('status', "{$member->name} added to the register.");
@@ -82,10 +84,12 @@ class MemberController extends Controller
         $data = $this->validated($request, $member);
         $wasPending = $member->status === Member::PENDING;
         $rankBefore = $member->rank;
-        $member->fill($data);
+        $member->fill(collect($data)->except('units')->all());
         $member->status = $request->validate(['status' => ['required', Rule::in(array_keys(self::TABS))]])['status'];
-        $member->training_answered_at = now(); // the training ticks on the form are the answers
         $member->save();
+        // Units they lead stay: change the head or assistant on Units & fellowships first.
+        $member->syncUnits([...($data['units'] ?? []), ...$member->ledUnits()->modelKeys()]);
+        $member->forceFill(['training_answered_at' => now()])->save(); // the training ticks on the form are the answers
         if ($rankBefore === 'member' && $member->rank === 'worker' && ! $wasPending) {
             app(Ranks::class)->tell($member->fresh('unit', 'user'), 'member');
         }
@@ -117,13 +121,13 @@ class MemberController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $tab = array_key_exists($request->query('tab'), self::TABS) ? $request->query('tab') : 'active';
-        $query = $this->filtered($request, $tab)->with('unit', 'fellowship', 'user.tokenAccount')->orderBy('name');
+        $query = $this->filtered($request, $tab)->with('units', 'fellowship', 'user.tokenAccount')->orderBy('name');
 
         return Csv::download('members-'.now()->format('Y-m-d').'.csv',
             ['name', 'phone', 'email', 'gender', 'birthday', 'address', 'unit', 'fellowship', 'status', 'joined_on', 'tokens', 'role', 'baptised', 'believers_class', 'workers_training', 'sod', 'bible_college', 'last_attended_on'],
             function ($write) use ($query) {
                 $query->each(fn (Member $m) => $write([
-                    $m->name, $m->phone, $m->email, $m->gender, $m->birthday?->toDateString(), $m->address, $m->unit?->name, $m->fellowship?->name,
+                    $m->name, $m->phone, $m->email, $m->gender, $m->birthday?->toDateString(), $m->address, $m->unitNames(), $m->fellowship?->name,
                     $m->status, $m->joined_on?->toDateString(), (int) $m->user?->tokenBalance(),
                     $m->rankLabel(), $m->baptised ? 'yes' : 'no', $m->believers_class ? 'yes' : 'no', $m->workers_training ? 'yes' : 'no', $m->sod ? 'yes' : 'no', $m->bible_college ? 'yes' : 'no', $m->last_attended_on?->toDateString(),
                 ]));
@@ -212,7 +216,7 @@ class MemberController extends Controller
         return Member::query()
             ->where('status', $tab)
             ->search($request->query('q'))
-            ->when($request->filled('unit'), fn ($q) => $q->where('unit_id', $request->integer('unit')))
+            ->when($request->filled('unit'), fn ($q) => $q->whereHas('units', fn ($u) => $u->whereKey($request->integer('unit'))))
             ->when($request->filled('fellowship'), fn ($q) => $q->where('fellowship_id', $request->integer('fellowship')))
             ->when(array_key_exists((string) $request->query('rank'), Member::RANKS), fn ($q) => $q->where('rank', $request->query('rank')))
             ->when($request->query('training') === 'unanswered', fn ($q) => $q->whereIn('rank', ['worker', 'minister'])->whereNull('training_answered_at'))
@@ -236,7 +240,8 @@ class MemberController extends Controller
             'birthday' => ['nullable', 'date', 'before:today'],
             'anniversary' => ['nullable', 'date', 'before_or_equal:today'],
             'address' => ['nullable', 'string', 'max:255'],
-            'unit_id' => ['nullable', Rule::exists('units', 'id')],
+            'units' => ['nullable', 'array'],
+            'units.*' => [Rule::exists('units', 'id')],
             'fellowship_id' => ['nullable', Rule::exists('fellowships', 'id')],
             'joined_on' => ['nullable', 'date', 'before_or_equal:today'],
             'notes' => ['nullable', 'string', 'max:2000'],

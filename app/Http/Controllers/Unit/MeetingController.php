@@ -114,7 +114,7 @@ class MeetingController extends Controller
     public function checkIn(Request $request, UnitMeeting $meeting): RedirectResponse
     {
         $member = $request->user()->member;
-        abort_unless($member && $member->status === Member::ACTIVE && $member->unit_id === $meeting->unit_id, 403);
+        abort_unless($member && $member->status === Member::ACTIVE && $member->inUnit($meeting->unit_id), 403);
 
         if (! $meeting->checkInIsOpen()) {
             return back()->withErrors(['meeting' => 'Check-in for this meeting isn\'t open right now.']);
