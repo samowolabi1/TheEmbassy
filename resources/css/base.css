@@ -575,3 +575,21 @@ textarea {
 .money-field--sm .money-field__symbol {
   left: 11px;
 }
+
+/* Small screens: let boxes, form fields and columns shrink to fit instead of pushing the page
+   wider than the phone. */
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+input[type='file']:not(.sr-only) {
+  min-width: 0;
+  width: 100%;
+}
+.stack,
+.row > *,
+.form-row > *,
+.field {
+  min-width: 0;
+}

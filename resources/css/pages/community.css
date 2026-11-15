@@ -792,7 +792,7 @@
   }
   .community-home__grid,
   .quiz-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .chat__scroll {
     padding: 10px;

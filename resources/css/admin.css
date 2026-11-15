@@ -2095,6 +2095,10 @@ input[type='file'] {
 }
 
 @media (max-width: 900px) {
+  /* Short pages: keep the top bar its own height instead of stretching to fill the screen. */
+  .admin-shell {
+    align-content: flex-start;
+  }
   .js .side__menu {
     display: grid;
   }
@@ -2138,5 +2142,16 @@ input[type='file'] {
   }
   .js .side .side__group.is-folded .side__items {
     display: none;
+  }
+}
+
+/* Room at the bottom so the Help button never covers the last buttons on a page. */
+.admin-main {
+  padding-bottom: 96px;
+}
+@media (max-width: 600px) {
+  .tour-prompt {
+    font-size: 13px;
+    padding: 8px 8px 8px 14px;
   }
 }
