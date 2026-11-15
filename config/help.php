@@ -91,6 +91,8 @@ return [
                 ['Can I rename or remove a unit?', 'Yes. Renaming keeps its members. Remove only units nobody belongs to.'],
                 ['Who can make someone a worker?', 'Everyone in a unit is a worker, so the unit\'s head or assistant makes someone a worker by adding them to the unit, answering which workers\' classes they\'ve done. A worker can serve in several units. Someone who leaves their last unit becomes a member again (ministers stay ministers). Only a pastor makes a worker a minister.'],
                 ['Can someone head two units?', 'No: someone can head one unit only. A worker or minister can serve in several units, and a minister can head a unit. The head and assistant are added to the unit they lead.'],
+                ['How do members join a unit?', 'They ask from their account (or choose one when they sign up), answering which workers\' classes they\'ve done. Requests appear at the top of this page: Approve puts them in the unit, which makes them a worker; Decline tells them, with your reason. Unit heads can also add someone from their unit\'s Members page.'],
+                ['How do I add a new unit?', 'Press "New unit" at the top of this page. Give it a name, a type, and optionally a head, an assistant and a line about what the unit does.'],
             ],
         ],
 

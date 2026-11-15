@@ -172,6 +172,63 @@ class MemberRanksTest extends TestCase
         $this->assertTrue($minister->fresh()->inUnit($this->choir));
     }
 
+    public function test_members_ask_to_join_a_unit_and_the_office_approves(): void
+    {
+        $plain = Member::factory()->active()->create(['name' => 'Bola Ade']);
+        $office = User::factory()->create(['role' => 'secretary']);
+
+        // Members can't put themselves in a unit any more.
+        $this->actingAs($plain->user)->put(route('account.update'), ['phone' => '0803', 'units' => [$this->choir->id]]);
+        $this->assertSame([], $plain->fresh()->unitIds());
+
+        // They ask, answering the workers' questions.
+        $this->get(route('account'))->assertOk()->assertSee('Ask to join a unit');
+        $this->post(route('account.units.request'), ['unit_id' => $this->choir->id])->assertSessionHasErrors('training');
+        $this->post(route('account.units.request'), ['unit_id' => $this->choir->id, 'message' => 'I sing alto.', 'training' => self::ALL_DONE])
+            ->assertSessionHas('status', 'Thank you! Your request to join Choir has gone to the church office for approval.');
+        $this->post(route('account.units.request'), ['unit_id' => $this->choir->id, 'training' => self::ALL_DONE])->assertSessionHasErrors('unit_id');
+        $this->assertSame('member', $plain->fresh()->rank);
+        $this->get(route('account'))->assertSee('Waiting for approval');
+
+        // The head sees it; only the pastors or office approve.
+        $this->actingAs($this->hod->user)->get(route('unit.members', $this->choir))->assertOk()->assertSee('Bola Ade')->assertSee('waiting for the church office');
+        $req = $plain->unitRequests()->first();
+        $this->post(route('admin.unit-requests.approve', $req))->assertForbidden();
+        $this->actingAs($office)->get(route('admin.units.index'))->assertOk()->assertSee('Asking to join a unit')->assertSee('I sing alto.');
+        $this->post(route('admin.unit-requests.approve', $req))->assertSessionHas('status', 'Bola Ade has joined Choir.');
+        $plain->refresh();
+        $this->assertSame(['worker', [$this->choir->id], true], [$plain->rank, $plain->unitIds(), $plain->workers_training]);
+        $this->assertFalse($plain->needsTrainingAnswers());
+        Mail::assertSent(ReminderMail::class, fn ($m) => $m->hasTo($plain->user->email) && str_contains($m->body, 'worker in Choir'));
+
+        // Declining tells them why.
+        $drama = Unit::factory()->create(['name' => 'Drama']);
+        $this->actingAs($plain->user)->post(route('account.units.request'), ['unit_id' => $drama->id, 'training' => self::ALL_DONE]);
+        $this->actingAs($office)->post(route('admin.unit-requests.decline', $plain->unitRequests()->where('unit_id', $drama->id)->first()), ['reason' => 'Drama is full until January.']);
+        Mail::assertSent(ReminderMail::class, fn ($m) => str_contains($m->body, 'Drama is full until January.'));
+        $this->actingAs($plain->user)->get(route('account'))->assertSee('Not approved')->assertSee('Drama is full until January.');
+        $this->assertFalse($plain->fresh()->inUnit($drama));
+    }
+
+    public function test_choosing_a_unit_when_signing_up_is_a_request_and_staff_add_units(): void
+    {
+        $this->post(route('join.store'), ['name' => 'New Person', 'email' => 'new@example.com', 'phone' => '0803', 'unit_id' => $this->choir->id, 'password' => 'a-long-password', 'password_confirmation' => 'a-long-password', 'agree' => '1'])->assertRedirect(route('account'));
+        $member = Member::where('email', 'new@example.com')->first();
+        $this->assertSame([[], 'pending'], [$member->unitIds(), $member->unitRequests()->value('status')]);
+
+        // A head adding someone who asked closes their request.
+        $member->approve();
+        $this->actingAs($this->hod->user)->post(route('unit.members.add', $this->choir), ['member_id' => $member->id, 'training' => self::ALL_DONE]);
+        $this->assertSame('approved', $member->unitRequests()->value('status'));
+
+        // The office creates a unit with a head.
+        $admin = User::factory()->create(['role' => 'secretary']);
+        $this->actingAs($admin)->post(route('admin.units.store'), ['name' => 'Children', 'kind' => 'general', 'hod_member_id' => $member->id, 'description' => 'Sunday school'])->assertSessionHasNoErrors();
+        $children = Unit::where('name', 'Children')->first();
+        $this->assertSame($member->id, $children->hod_member_id);
+        $this->assertTrue($member->fresh()->inUnit($children));
+    }
+
     public function test_the_message_centre_reaches_workers_and_ministers(): void
     {
         $worker = Member::factory()->active()->create(['unit_id' => $this->choir->id]);

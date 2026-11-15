@@ -13,6 +13,7 @@ use App\Models\TokenTransfer;
 use App\Models\Unit;
 use App\Models\UnitMeeting;
 use App\Models\UnitMessage;
+use App\Models\UnitRequest;
 use App\Models\WelfarePackage;
 use App\Services\Celebrations\BirthdayCard;
 use App\Services\Celebrations\Birthdays;
@@ -44,6 +45,7 @@ class AccountController extends Controller
             'units' => Unit::orderBy('name')->get(),
             'fellowships' => Fellowship::orderBy('name')->get(),
             'ledUnits' => $member?->ledUnits() ?? collect(),
+            'unitRequests' => $member ? $member->unitRequests()->with('unit')->where(fn ($q) => $q->where('status', UnitRequest::PENDING)->orWhere('decided_at', '>=', now()->subDays(30)))->latest()->get() : collect(),
             'meetings' => $member?->unit_id ? UnitMeeting::with('unit')->whereIn('unit_id', $member->unitIds())->where('starts_at', '>=', now()->subHours(3))->orderBy('starts_at')->take(3)->get() : collect(),
             'checkedInMeetings' => $member ? $member->meetings()->pluck('unit_meetings.id')->all() : [],
             'duties' => $member ? $member->duties()->with('service', 'unit')->whereHas('service', fn ($q) => $q->where('held_on', '>=', today()->startOfDay()))->get() : collect(),
@@ -66,14 +68,11 @@ class AccountController extends Controller
             'birthday' => ['nullable', 'date', 'before:today'],
             'anniversary' => ['nullable', 'date', 'before_or_equal:today'],
             'address' => ['nullable', 'string', 'max:255'],
-            'units' => ['nullable', 'array'],
-            'units.*' => [Rule::exists('units', 'id')],
             'fellowship_id' => ['nullable', Rule::exists('fellowships', 'id')],
         ]);
 
-        $member->update([...collect($data)->except('units')->all(), 'notify_sms' => $request->boolean('notify_sms')]);
-        // Units they lead stay ticked: a head leaves their unit through the church office.
-        $member->syncUnits([...($data['units'] ?? []), ...$member->ledUnits()->modelKeys()]);
+        // Units aren't chosen here: members ask to join one, and the pastors or office approve.
+        $member->update([...$data, 'notify_sms' => $request->boolean('notify_sms')]);
         $tokens = app(Rewards::class)->profile($member->fresh('user'));
 
         return back()->with('status', 'Your details are saved.'.($tokens ? " Your profile is complete: +{$tokens} ".TokenName::many().'!' : ''));
@@ -112,6 +111,45 @@ class AccountController extends Controller
     /**
      * Their own card, to preview before the day or download on it.
      */
+    /**
+     * Ask to join a unit. The pastors or the church office approve it; the answers to the
+     * workers' training questions go with it.
+     */
+    public function requestUnit(Request $request): RedirectResponse
+    {
+        $member = $this->member($request);
+        $rules = [
+            'unit_id' => ['required', Rule::exists('units', 'id')],
+            'message' => ['nullable', 'string', 'max:500'],
+            'training' => ['required', 'array'],
+        ];
+        foreach (Member::REQUIREMENTS['worker'] as $field) {
+            $rules["training.{$field}"] = ['required', Rule::in(['0', '1'])];
+        }
+        $data = $request->validate($rules, [
+            'unit_id.required' => 'Choose a unit.',
+            'training.required' => 'Answer the questions about your classes.',
+            'training.*.required' => 'Answer each question: done or not yet.',
+        ]);
+        if ($member->inUnit((int) $data['unit_id'])) {
+            return back()->withErrors(['unit_id' => 'You\'re already in that unit.']);
+        }
+        if ($member->unitRequests()->where('status', UnitRequest::PENDING)->where('unit_id', $data['unit_id'])->exists()) {
+            return back()->withErrors(['unit_id' => 'You\'ve already asked to join that unit. The church office will be in touch.']);
+        }
+        $req = $member->unitRequests()->create($data);
+
+        return redirect()->route('account')->with('status', "Thank you! Your request to join {$req->unit->name} has gone to the church office for approval.");
+    }
+
+    public function cancelUnitRequest(Request $request, UnitRequest $unitRequest): RedirectResponse
+    {
+        abort_unless($unitRequest->member_id === $this->member($request)->id && $unitRequest->status === UnitRequest::PENDING, 404);
+        $unitRequest->delete();
+
+        return back()->with('status', 'Request withdrawn.');
+    }
+
     /**
      * A worker or minister tells us which of the classes their role needs they've done.
      */

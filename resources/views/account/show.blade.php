@@ -240,12 +240,6 @@
                         <label class="field">Wedding anniversary (optional)
                             <input type="date" name="anniversary" value="{{ old('anniversary', $member->anniversary?->toDateString()) }}" max="{{ today()->toDateString() }}">
                         </label>
-                        <fieldset class="field" style="border: 0; padding: 0; margin: 0">
-                            <legend style="margin-bottom: 6px">Units you serve in <span style="font-weight: 500; color: var(--slate)">(everyone in a unit is a worker)</span></legend>
-                            @foreach ($units as $unit)
-                                <label class="login__remember"><input type="checkbox" name="units[]" value="{{ $unit->id }}" @checked(in_array($unit->id, array_map('intval', old('units', $member->unitIds())), true)) @disabled($unit->isLedBy($member))>{{ $unit->name }}@if ($unit->isLedBy($member)) (you lead it)@endif</label>
-                            @endforeach
-                        </fieldset>
                         <label class="field">House fellowship
                             <select name="fellowship_id">
                                 <option value="">None</option>
@@ -262,6 +256,67 @@
                     <button type="submit" class="btn btn--navy" style="align-self: flex-start">Save details</button>
                 </fieldset>
             </form>
+
+            <div class="card notice-form__main" style="flex: none" id="units">
+                <fieldset class="notice-form__group">
+                    <legend>My units</legend>
+                    <p class="lede" style="margin: 0">
+                        @if ($member->units->isNotEmpty())
+                            You serve in <strong>{{ $member->unitNames() }}</strong>. Everyone in a unit is a worker.
+                        @else
+                            You're not in a unit yet. Serving in a unit makes you a worker.
+                        @endif
+                        To join a unit, ask below: the pastors or church office approve it. To leave one, speak to its head of department.
+                    </p>
+                    @foreach ($unitRequests as $req)
+                        <div class="unit-request">
+                            <span>
+                                <strong>{{ $req->unit->name }}</strong>
+                                @if ($req->status === 'pending')
+                                    <span class="status-chip">Waiting for approval</span>
+                                @elseif ($req->status === 'approved')
+                                    <span class="status-chip status-chip--ok">Approved</span>
+                                @else
+                                    <span class="status-chip status-chip--no">Not approved</span>
+                                @endif
+                                @if ($req->reason)<span class="field-hint" style="display: block">{{ $req->reason }}</span>@endif
+                            </span>
+                            @if ($req->status === 'pending')
+                                <form method="POST" action="{{ route('account.units.cancel', $req) }}" data-confirm="Withdraw your request to join {{ $req->unit->name }}?">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn--outline btn--sm">Withdraw</button>
+                                </form>
+                            @endif
+                        </div>
+                    @endforeach
+                    @php
+                        $askable = $units->reject(fn ($u) => $member->inUnit($u) || $unitRequests->contains(fn ($r) => $r->status === 'pending' && $r->unit_id === $u->id));
+                    @endphp
+                    @if ($askable->isNotEmpty())
+                        <details class="training-edit" @if ($errors->has('unit_id') || $errors->has('training') || $errors->has('training.*')) open @endif>
+                            <summary class="btn btn--gold btn--sm">Ask to join a unit</summary>
+                            <form method="POST" action="{{ route('account.units.request') }}" class="form" style="gap: 12px; margin-top: 12px; max-width: 560px">
+                                @csrf
+                                <label class="field">Unit
+                                    <select name="unit_id" required>
+                                        <option value="">Choose…</option>
+                                        @foreach ($askable as $unit)
+                                            <option value="{{ $unit->id }}" @selected((int) old('unit_id') === $unit->id)>{{ $unit->name }}{{ $unit->description ? ' · '.\Illuminate\Support\Str::limit($unit->description, 60) : '' }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('unit_id') <span class="field-error">{{ $message }}</span> @enderror
+                                </label>
+                                <label class="field">Why you'd like to join (optional)
+                                    <textarea name="message" rows="2" maxlength="500">{{ old('message') }}</textarea>
+                                </label>
+                                <x-training-questions rank="worker" :member="$member" />
+                                <button type="submit" class="btn btn--navy btn--sm" style="align-self: flex-start">Send my request</button>
+                            </form>
+                        </details>
+                    @endif
+                </fieldset>
+            </div>
 
             @if ($member->status === 'active')
                 <form method="POST" action="{{ route('account.birthday') }}" enctype="multipart/form-data" class="card notice-form__main" style="flex: none">

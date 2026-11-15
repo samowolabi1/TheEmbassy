@@ -11,6 +11,7 @@ use App\Models\ServiceFeedback;
 use App\Models\Suggestion;
 use App\Models\Testimony;
 use App\Models\Unit;
+use App\Models\UnitRequest;
 use App\Models\User;
 use App\Services\Care\FollowUps;
 use App\Services\Tokens\Ledger;
@@ -69,6 +70,7 @@ class MemberDemoSeeder extends Seeder
 
         $this->ranks();
         $this->secondUnits();
+        $this->unitRequests();
 
         mt_srand();
         $this->command?->info($made->isNotEmpty() ? "Made {$made->count()} demo members." : 'The demo members are already there.');
@@ -103,6 +105,23 @@ class MemberDemoSeeder extends Seeder
             $m?->forceFill(['rank' => 'minister', 'baptised' => true, 'believers_class' => true, 'workers_training' => true, 'sod' => true, 'bible_college' => $college,
                 'training_answered_at' => now()->subMonths(8)])->save();
             $m?->forceFill(['rank_changed_at' => now()->subMonths(8)])->save();
+        }
+    }
+
+    /**
+     * Three members waiting to join a unit, for the office to approve. Only done once.
+     */
+    private function unitRequests(): void
+    {
+        if (UnitRequest::exists()) {
+            return;
+        }
+        $units = Unit::orderBy('id')->get();
+        $askers = Member::where('status', Member::ACTIVE)->where('rank', 'member')->whereHas('user', fn ($u) => $u->where('email', 'like', 'member%@demo.test'))->orderBy('id')->take(3)->get();
+        $messages = ['I\'d love to sing with the choir.', 'I\'m good with cameras and editing.', null];
+        foreach ($askers as $i => $m) {
+            $m->unitRequests()->forceCreate(['unit_id' => $units[$i % $units->count()]->id, 'message' => $messages[$i],
+                'training' => ['baptised' => true, 'believers_class' => $i !== 1, 'workers_training' => false], 'created_at' => now()->subDays($i + 1)]);
         }
     }
 

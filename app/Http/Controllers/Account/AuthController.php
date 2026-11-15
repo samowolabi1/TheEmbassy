@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Fellowship;
 use App\Models\Member;
 use App\Models\Unit;
+use App\Models\UnitRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
@@ -105,11 +106,16 @@ class AuthController extends Controller
             }
 
             // Someone the office already added to the register is linked, not added twice.
-            $details = collect($data)->only(['name', 'phone', 'gender', 'birthday', 'address', 'unit_id', 'fellowship_id'])->filter(fn ($v) => filled($v))->all();
+            $details = collect($data)->only(['name', 'phone', 'gender', 'birthday', 'address', 'fellowship_id'])->filter(fn ($v) => filled($v))->all();
             $member = Member::whereNull('user_id')->where('email', $user->email)->first();
             $member ? $member->fill(array_diff_key($details, array_filter($member->only(array_keys($details))))) : $member = new Member($details);
             $member->email = $user->email;
             $member->user()->associate($user)->save();
+            // A unit chosen here is a request: the pastors or the office approve it.
+            if (! empty($data['unit_id']) && ! $member->inUnit((int) $data['unit_id'])
+                && ! $member->unitRequests()->where('status', UnitRequest::PENDING)->where('unit_id', $data['unit_id'])->exists()) {
+                $member->unitRequests()->create(['unit_id' => $data['unit_id']]);
+            }
         });
 
         if (! $request->user()) {

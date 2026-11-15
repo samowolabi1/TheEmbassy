@@ -52,6 +52,18 @@
         </div>
     </section>
 
+    @if ($requests->isNotEmpty())
+        <section class="box">
+            <h2>Asking to join {{ $unit->name }}</h2>
+            <p class="box__note">These members asked to join from their account. The pastors or church office approve requests; you can also add someone yourself below.</p>
+            <ul class="check-list">
+                @foreach ($requests as $req)
+                    <li>{{ $req->member->name }} <span class="box__note" style="margin: 0">· asked {{ $req->created_at->diffForHumans() }} · waiting for the church office</span></li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     <section class="box">
         <h2>Add a member</h2>
         <p class="box__note">Everyone in the unit is a worker, so tell us which of the workers' classes they've done. They're told they're now a worker.</p>

@@ -106,6 +106,14 @@ class Member extends Model
     }
 
     /**
+     * @return HasMany<UnitRequest, $this>
+     */
+    public function unitRequests(): HasMany
+    {
+        return $this->hasMany(UnitRequest::class);
+    }
+
+    /**
      * Every unit they serve in.
      *
      * @return BelongsToMany<Unit, $this>
@@ -149,6 +157,9 @@ class Member extends Model
         $this->unit_id ??= $unit->id;
         $this->save();
         $this->unsetRelation('units');
+        // Anything they'd asked for is answered: they're in.
+        $this->unitRequests()->where('unit_id', $unit->id)->where('status', UnitRequest::PENDING)
+            ->update(['status' => 'approved', 'decided_by' => auth()->id(), 'decided_at' => now()]);
     }
 
     /**

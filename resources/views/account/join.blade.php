@@ -41,7 +41,7 @@
                 <fieldset class="notice-form__group">
                     <legend>Get connected (optional)</legend>
                     <div class="grid-auto" style="--min: 220px; --gap: 14px">
-                        <label class="field">Unit you'd like to serve in
+                        <label class="field">Unit you'd like to serve in <span style="font-weight: 500; color: var(--slate)">(the church office approves it)</span>
                             <select name="unit_id">
                                 <option value="">Not sure yet</option>
                                 @foreach ($units as $unit)

@@ -145,7 +145,8 @@ class TokensTest extends TestCase
         $this->post(route('account.declare'))->assertSessionHas('status', 'Amen! +2 Crowns.');
         $this->post(route('account.declare'))->assertSessionHas('status', fn ($s) => str_contains($s, 'declared it this week'));
 
-        $this->put(route('account.update'), ['phone' => '0803', 'birthday' => $member->birthday->toDateString(), 'address' => 'Yaba', 'units' => [Unit::factory()->create()->id], 'fellowship_id' => Fellowship::create(['name' => 'Yaba'])->id])
+        $member->unitRequests()->create(['unit_id' => Unit::factory()->create()->id]); // asking to join a unit counts
+        $this->put(route('account.update'), ['phone' => '0803', 'birthday' => $member->birthday->toDateString(), 'address' => 'Yaba', 'fellowship_id' => Fellowship::create(['name' => 'Yaba'])->id])
             ->assertSessionHas('status', fn ($s) => str_contains($s, '+10 Crowns'));
 
         $this->artisan('tokens:daily')->assertSuccessful();

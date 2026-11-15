@@ -160,6 +160,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/services/{service}/watching', [Account\JoinController::class, 'watching'])->middleware('throttle:10,1')->name('services.watching');
     Route::post('/check-in', [Account\CheckInController::class, 'store'])->middleware('throttle:10,1')->name('check-in.store');
     Route::post('/account/declare', [Account\AccountController::class, 'declare'])->middleware('throttle:10,1')->name('account.declare');
+    Route::post('/account/units', [Account\AccountController::class, 'requestUnit'])->middleware('throttle:10,1')->name('account.units.request');
+    Route::delete('/account/units/{unitRequest}', [Account\AccountController::class, 'cancelUnitRequest'])->name('account.units.cancel');
     Route::post('/account/training', [Account\AccountController::class, 'training'])->name('account.training');
     Route::put('/account/birthday', [Account\AccountController::class, 'birthday'])->name('account.birthday');
     Route::get('/account/birthday-card.png', [Account\AccountController::class, 'birthdayCard'])->middleware('throttle:20,1')->name('account.birthday-card');
@@ -413,6 +415,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/units', [Admin\UnitController::class, 'storeUnit'])->name('units.store');
             Route::put('/units/{unit}', [Admin\UnitController::class, 'updateUnit'])->name('units.update');
             Route::delete('/units/{unit}', [Admin\UnitController::class, 'destroyUnit'])->name('units.destroy');
+            Route::post('/unit-requests/{unitRequest}/approve', [Admin\UnitController::class, 'approveRequest'])->name('unit-requests.approve');
+            Route::post('/unit-requests/{unitRequest}/decline', [Admin\UnitController::class, 'declineRequest'])->name('unit-requests.decline');
             Route::post('/fellowships', [Admin\UnitController::class, 'storeFellowship'])->name('fellowships.store');
             Route::put('/fellowships/{fellowship}', [Admin\UnitController::class, 'updateFellowship'])->name('fellowships.update');
             Route::delete('/fellowships/{fellowship}', [Admin\UnitController::class, 'destroyFellowship'])->name('fellowships.destroy');

@@ -8,6 +8,7 @@ use App\Models\Member;
 use App\Models\PushSubscription;
 use App\Models\Service;
 use App\Models\Unit;
+use App\Models\UnitRequest;
 use App\Services\Messaging\WebPush;
 use App\Services\People\Ranks;
 use Illuminate\Http\RedirectResponse;
@@ -46,6 +47,7 @@ class UnitController extends Controller
         return view('unit.members', [
             'unit' => $unit,
             'members' => $unit->members()->active()->with('fellowship', 'units:id,name')->orderByRaw("case rank when 'minister' then 0 when 'worker' then 1 else 2 end")->orderBy('name')->get(),
+            'requests' => $unit->hasMany(UnitRequest::class)->with('member')->where('status', UnitRequest::PENDING)->oldest()->get(),
             'others' => Member::active()->whereDoesntHave('units', fn ($q) => $q->whereKey($unit->id))->with('units:id,name')->orderBy('name')->get(['id', 'name', 'unit_id']),
         ]);
     }

@@ -43,7 +43,9 @@ class MemberAccountTest extends TestCase
         $member = Member::sole();
         $this->assertSame(Member::PENDING, $member->status);
         $this->assertSame('ada@example.com', $member->email);
-        $this->assertSame($choir->id, $member->unit_id);
+        // The unit they chose is a request for the office to approve.
+        $this->assertNull($member->unit_id);
+        $this->assertSame($choir->id, $member->unitRequests()->value('unit_id'));
         $this->assertAuthenticatedAs($member->user);
         $this->assertNull($member->user->role);
 

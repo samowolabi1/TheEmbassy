@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Fellowship;
 use App\Models\Member;
 use App\Models\Unit;
+use App\Models\UnitRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -21,6 +22,7 @@ class UnitController extends Controller
         return view('admin.units', [
             'units' => Unit::with('hod', 'assistant')->withCount(['members' => fn ($q) => $q->active()])->orderBy('name')->get(),
             'members' => Member::active()->orderBy('name')->get(['id', 'name']),
+            'requests' => UnitRequest::with('member.units', 'unit')->where('status', UnitRequest::PENDING)->oldest()->get(),
             'heads' => Unit::whereNotNull('hod_member_id')->pluck('id', 'hod_member_id')->all(), // member id => the unit they head
             'kinds' => Unit::KINDS,
             'fellowships' => Fellowship::withCount(['members' => fn ($q) => $q->active()])->orderBy('name')->get(),
@@ -53,6 +55,26 @@ class UnitController extends Controller
         $this->leadersJoin($unit);
 
         return back()->with('status', "{$unit->name} saved.");
+    }
+
+    /**
+     * A member's request to join a unit: approving puts them in it (so they're a worker).
+     */
+    public function approveRequest(Request $request, UnitRequest $unitRequest): RedirectResponse
+    {
+        abort_unless($unitRequest->status === UnitRequest::PENDING, 422, 'That request has already been answered.');
+        $unitRequest->approve($request->user());
+
+        return back()->with('status', "{$unitRequest->member->name} has joined {$unitRequest->unit->name}.");
+    }
+
+    public function declineRequest(Request $request, UnitRequest $unitRequest): RedirectResponse
+    {
+        abort_unless($unitRequest->status === UnitRequest::PENDING, 422, 'That request has already been answered.');
+        $reason = $request->validate(['reason' => ['nullable', 'string', 'max:300']])['reason'] ?? null;
+        $unitRequest->decline($request->user(), $reason);
+
+        return back()->with('status', "Request from {$unitRequest->member->name} declined. They've been told.");
     }
 
     public function destroyUnit(Unit $unit): RedirectResponse

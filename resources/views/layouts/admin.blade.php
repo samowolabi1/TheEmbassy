@@ -18,7 +18,8 @@
             ['id' => 'attendance', 'area' => 'attendance', 'label' => 'Attendance', 'route' => 'admin.attendance.index'],
             ['id' => 'welfare', 'area' => 'welfare', 'label' => 'Welfare', 'route' => 'admin.welfare',
                 'badge' => $count('welfare', fn () => \App\Models\WelfareCase::where('status', 'awaiting_pastor')->count())],
-            ['id' => 'units', 'area' => 'units', 'label' => 'Units & fellowships', 'route' => 'admin.units.index'],
+            ['id' => 'units', 'area' => 'units', 'label' => 'Units & fellowships', 'route' => 'admin.units.index',
+                'badge' => $count('units', fn () => \App\Models\UnitRequest::where('status', \App\Models\UnitRequest::PENDING)->count())],
             ['id' => 'subscribers', 'area' => 'subscribers', 'label' => 'Weekly email', 'route' => 'admin.subscribers.index'],
         ],
         'MONEY' => [

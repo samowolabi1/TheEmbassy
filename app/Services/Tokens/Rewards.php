@@ -116,12 +116,12 @@ class Rewards
     }
 
     /**
-     * Once the profile has everything in it.
+     * Once the profile has everything in it (a unit, or a request to join one, counts).
      */
     public function profile(Member $member): int
     {
         if (! $member->user || $member->status !== Member::ACTIVE
-            || ! $member->birthday || blank($member->address) || ! $member->unit_id || ! $member->fellowship_id) {
+            || ! $member->birthday || blank($member->address) || (! $member->unit_id && ! $member->unitRequests()->exists()) || ! $member->fellowship_id) {
             return 0;
         }
 
