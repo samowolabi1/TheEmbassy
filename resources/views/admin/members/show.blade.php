@@ -5,7 +5,7 @@
         <div class="stack" style="gap: 4px">
             <a href="{{ route('admin.members.index', ['tab' => $member->status]) }}" class="box__link">← Members</a>
             <h1 style="display: flex; align-items: center; gap: 14px"><span class="avatar" style="width: 52px; height: 52px; font-size: 18px">{{ $member->initials() }}</span>{{ $member->name }}</h1>
-            <span class="page-head__sub">{{ $member->statusLabel() }}@if ($member->user) · has a login @endif</span>
+            <span class="page-head__sub">{{ $member->statusLabel() }} · {{ $member->rankLine() }}@if ($member->user) · has a login @endif</span>
         </div>
         <div class="actions">
             @if ($member->whatsappUrl())
@@ -28,6 +28,25 @@
                 <dt>Phone</dt><dd>{{ $member->phone ?? '—' }}</dd>
                 <dt>Email</dt><dd>{{ $member->email ?? '—' }}</dd>
                 <dt>Unit</dt><dd>{{ $member->unit?->name ?? '—' }}</dd>
+                <dt>Role</dt>
+                <dd>
+                    <span @class(['pill', 'pill--live' => $member->rank === 'minister', 'pill--ok' => $member->rank === 'worker', 'pill--draft' => $member->rank === 'member'])>{{ $member->rankLabel() }}</span>
+                    @if ($member->rank_changed_at) <span class="box__note" style="margin: 0">since {{ $member->rank_changed_at->format('j M Y') }}</span> @endif
+                    @if ($member->status === 'active')
+                        @php($ranks = app(\App\Services\People\Ranks::class))
+                        <span style="display: inline-flex; gap: 6px; flex-wrap: wrap; margin-top: 6px">
+                            @foreach (['member' => 'Make a member', 'worker' => 'Make a worker', 'minister' => 'Make a minister'] as $to => $label)
+                                @if ($to !== $member->rank && $ranks->canChange(auth()->user(), $member, $to) && ! ($to === 'minister' && $member->rank === 'member') && ! ($to === 'worker' && ! $member->unit_id))
+                                    <form method="POST" action="{{ route('admin.members.rank', $member) }}" @if ($to !== 'minister') data-confirm="{{ $label }}: {{ $member->name }}?" @endif>
+                                        @csrf
+                                        <input type="hidden" name="rank" value="{{ $to }}">
+                                        <button type="submit" @class(['btn', 'btn--xs', 'btn--gold' => $to === 'minister', 'btn--ghost' => $to !== 'minister'])>{{ $label }}</button>
+                                    </form>
+                                @endif
+                            @endforeach
+                        </span>
+                    @endif
+                </dd>
                 <dt>Fellowship</dt><dd>{{ $member->fellowship?->name ?? '—' }}</dd>
                 <dt>Member since</dt><dd>{{ $member->joined_on?->format('F Y') ?? '—' }}</dd>
                 <dt>Birthday</dt><dd>{{ $member->birthday?->format('j F') ?? '—' }}</dd>

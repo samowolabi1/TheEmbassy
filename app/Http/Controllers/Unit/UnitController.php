@@ -9,6 +9,7 @@ use App\Models\PushSubscription;
 use App\Models\Service;
 use App\Models\Unit;
 use App\Services\Messaging\WebPush;
+use App\Services\People\Ranks;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +45,7 @@ class UnitController extends Controller
     {
         return view('unit.members', [
             'unit' => $unit,
-            'members' => $unit->members()->active()->with('fellowship')->orderBy('name')->get(),
+            'members' => $unit->members()->active()->with('fellowship')->orderByRaw("case rank when 'minister' then 0 when 'worker' then 1 else 2 end")->orderBy('name')->get(),
             'others' => Member::active()->where(fn ($q) => $q->whereNull('unit_id')->orWhere('unit_id', '!=', $unit->id))->orderBy('name')->get(['id', 'name', 'unit_id']),
         ]);
     }
@@ -58,11 +59,27 @@ class UnitController extends Controller
         return back()->with('status', "{$member->name} added to {$unit->name}.");
     }
 
+    /**
+     * Make a member of the unit a worker, or a member again.
+     */
+    public function rank(Request $request, Unit $unit, Member $member, Ranks $ranks): RedirectResponse
+    {
+        abort_unless($member->unit_id === $unit->id, 404);
+        $to = $request->validate(['rank' => ['required', Rule::in(['member', 'worker'])]])['rank'];
+        $ranks->change($member, $to, $request->user());
+
+        return back()->with('status', $to === 'worker' ? "{$member->name} is now a worker in {$unit->name}." : "{$member->name} is a member again.");
+    }
+
     public function removeMember(Unit $unit, Member $member): RedirectResponse
     {
         abort_unless($member->unit_id === $unit->id, 404);
         abort_if($unit->isLedBy($member), 422, 'Change the HOD or assistant in church admin first.');
         $member->update(['unit_id' => null]);
+        // Workers serve in a unit; leaving it makes them a member again (ministers stay ministers).
+        if ($member->rank === 'worker') {
+            $member->forceFill(['rank' => 'member', 'rank_changed_at' => now(), 'rank_changed_by' => auth()->id()])->save();
+        }
 
         return back()->with('status', "{$member->name} removed from {$unit->name}.");
     }

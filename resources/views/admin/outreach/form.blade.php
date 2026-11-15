@@ -42,6 +42,13 @@
                             @endforeach
                         </select>
                     </label>
+                    <label class="field">Role <x-tip text="Workers serve in a unit; ministers work closely with the pastors." />
+                        <select name="audience[rank]">
+                            @foreach (\App\Services\Messaging\Campaigns::MEMBER_RANKS as $key => $label)
+                                <option value="{{ $key }}" @selected(($a['rank'] ?? 'any') === $key)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </label>
                     <label class="field">Unit
                         <select name="audience[unit_id]">
                             <option value="">Any unit</option>

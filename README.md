@@ -208,6 +208,14 @@ Each unit (choir, ushering, media, welfare…) has a **head of department (HOD)*
 
 Staff who manage units (church office, pastors, administrators) can open any unit's area. A unit's type adds tools: **Welfare** or **Media**.
 
+### Workers and ministers
+
+Every member has a role: **member**, **worker** or **minister**.
+- **Workers** serve in a unit. The unit's head or assistant (or staff who manage units) makes a unit member a worker, or a member again, on the unit's Members page. Someone must be in a unit first. A worker who leaves the unit becomes a member again.
+- **Ministers** work closely with the pastors. Only a pastor (or the pastor in charge) makes a worker a minister, or takes it away, from the member's profile in admin.
+- The member is told by email (and WhatsApp, if it's on) when their role changes. Their role shows on their profile, on their account page and in the members list, which can be filtered by role.
+- In the Message centre, messages to members can go to workers, ministers, both, or members only, and Contacts has a "Workers & ministers" tab.
+
 ### Welfare
 
 The welfare unit's HOD and assistant (and pastors) run a confidential case desk:
@@ -258,7 +266,7 @@ Anyone can send a prayer request from the form on the home page, as before. Memb
 Admin › **Message centre**, for the pastors and the church office (the "Message centre" area):
 - **Contacts:** everyone the church can reach in one searchable list: members (every status), approved sellers and staff. It shows each person's email, phone and WhatsApp link (or "WhatsApp off" if they turned it off), and how many messages they've had.
 - **New message:**
-  - **Who it's for:** members (narrowed by approval status, unit, house fellowship, gender or birthday month), sellers (all approved, listed now, or lapsed), staff, or everyone. A live count shows how many people it reaches, and how many each way. Each person gets it once, even if they're both a member and a seller.
+  - **Who it's for:** members (narrowed by approval status, role (workers, ministers or both), unit, house fellowship, gender or birthday month), sellers (all approved, listed now, or lapsed), staff, or everyone. A live count shows how many people it reaches, and how many each way. Each person gets it once, even if they're both a member and a seller.
   - **The message:** a subject and message with fill-ins `{first_name}`, `{name}` and `{church}`.
   - **Send by:** email (ticked to start), WhatsApp and/or app notification, whichever are switched on in Settings & roles › Notifications.
   - **When:** send now, schedule for later, send yourself a test, or save a draft.

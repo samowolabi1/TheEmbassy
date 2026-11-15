@@ -12,7 +12,7 @@
 
     <div class="tabs-row">
         <nav class="tabs" aria-label="Kind of contact">
-            @foreach (['everyone' => 'Everyone', 'members' => 'Members', 'sellers' => 'Sellers', 'staff' => 'Staff'] as $key => $label)
+            @foreach (['everyone' => 'Everyone', 'members' => 'Members', 'leaders' => 'Workers & ministers', 'sellers' => 'Sellers', 'staff' => 'Staff'] as $key => $label)
                 <a href="{{ route('admin.outreach.contacts', ['type' => $key, 'q' => $q ?: null]) }}" class="tab" @if ($type === $key) aria-current="page" @endif>{{ $label }}</a>
             @endforeach
         </nav>
@@ -38,7 +38,7 @@
                                     {{ $p['name'] }}
                                 @endif
                             </td>
-                            <td>{{ ucfirst($p['kind']) }}</td>
+                            <td>{{ ucfirst($p['kind']) }}@if (($p['rank'] ?? 'member') !== 'member') <span @class(['pill', 'pill--live' => $p['rank'] === 'minister', 'pill--ok' => $p['rank'] === 'worker'])>{{ \App\Models\Member::RANKS[$p['rank']] }}</span>@endif</td>
                             <td>@if ($p['email'])<a href="mailto:{{ $p['email'] }}">{{ $p['email'] }}</a>@else — @endif</td>
                             <td>
                                 @if ($p['phone'])

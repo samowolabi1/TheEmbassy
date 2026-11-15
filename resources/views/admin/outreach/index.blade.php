@@ -14,6 +14,7 @@
 
     <div class="stats">
         <a href="{{ route('admin.outreach.create', ['to' => 'members']) }}" class="stat-tile"><span class="stat-tile__label">Approved members</span><span class="stat-tile__num">{{ number_format($counts['members']) }}</span><span class="stat-tile__foot">Message them →</span></a>
+        <a href="{{ route('admin.outreach.create', ['to' => 'members', 'rank' => 'leaders']) }}" class="stat-tile"><span class="stat-tile__label">Workers &amp; ministers</span><span class="stat-tile__num">{{ number_format($counts['workers'] + $counts['ministers']) }}</span><span class="stat-tile__foot">{{ number_format($counts['workers']) }} workers · {{ number_format($counts['ministers']) }} ministers →</span></a>
         <a href="{{ route('admin.outreach.create', ['to' => 'sellers']) }}" class="stat-tile"><span class="stat-tile__label">Sellers</span><span class="stat-tile__num">{{ number_format($counts['sellers']) }}</span><span class="stat-tile__foot">Message them →</span></a>
         <div class="stat-tile"><span class="stat-tile__label">Messages sent</span><span class="stat-tile__num">{{ number_format($counts['sent']) }}</span><span class="stat-tile__foot">in the last 30 days</span></div>
     </div>

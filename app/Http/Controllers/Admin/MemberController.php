@@ -8,6 +8,7 @@ use App\Models\Member;
 use App\Models\TokenTransfer;
 use App\Models\Unit;
 use App\Services\Care\FollowUps;
+use App\Services\People\Ranks;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,7 +36,7 @@ class MemberController extends Controller
             'tabs' => collect(self::TABS)->map(fn ($label, $key) => ['label' => $label, 'count' => Member::where('status', $key)->count()]),
             'units' => Unit::orderBy('name')->get(),
             'fellowships' => Fellowship::orderBy('name')->get(),
-            'filters' => $request->only(['q', 'unit', 'fellowship']),
+            'filters' => $request->only(['q', 'unit', 'fellowship', 'rank']),
             'totals' => [
                 'members' => Member::active()->count(),
                 'units' => Unit::count(),
@@ -178,13 +179,25 @@ class MemberController extends Controller
         return redirect()->route('admin.members.index')->with('status', "Imported {$added} ".Str::plural('member', $added).'.'.($skipped ? " Skipped {$skipped} (no name, a bad email, or already on the register)." : ''));
     }
 
+    /**
+     * Member, worker or minister (see Ranks for who may change what).
+     */
+    public function rank(Request $request, Member $member, Ranks $ranks): RedirectResponse
+    {
+        $to = $request->validate(['rank' => ['required', Rule::in(array_keys(Member::RANKS))]])['rank'];
+        $ranks->change($member, $to, $request->user());
+
+        return back()->with('status', "{$member->name} is now: ".$member->fresh('unit')->rankLine().'.');
+    }
+
     private function filtered(Request $request, string $tab)
     {
         return Member::query()
             ->where('status', $tab)
             ->search($request->query('q'))
             ->when($request->filled('unit'), fn ($q) => $q->where('unit_id', $request->integer('unit')))
-            ->when($request->filled('fellowship'), fn ($q) => $q->where('fellowship_id', $request->integer('fellowship')));
+            ->when($request->filled('fellowship'), fn ($q) => $q->where('fellowship_id', $request->integer('fellowship')))
+            ->when(array_key_exists((string) $request->query('rank'), Member::RANKS), fn ($q) => $q->where('rank', $request->query('rank')));
     }
 
     /**

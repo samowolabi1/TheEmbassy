@@ -66,10 +66,34 @@ class MemberDemoSeeder extends Seeder
             app(FollowUps::class)->scanAbsences();
         }
 
+        $this->ranks();
+
         mt_srand();
         $this->command?->info($made->isNotEmpty() ? "Made {$made->count()} demo members." : 'The demo members are already there.');
         $this->command?->line('Member logins: member1@demo.test … member'.count($this->people()).'@demo.test, password '.self::PASSWORD.' (at /login).');
         $this->command?->line('member1 has a birthday today: run `php artisan birthdays:celebrate` to see the celebration.');
+    }
+
+    /**
+     * Workers and ministers: every unit head and assistant is a worker, as are about half the
+     * other members who finished workers' training; two long-serving workers are ministers.
+     * Only done once (when nobody has a rank yet), so it never undoes changes made in the app.
+     */
+    private function ranks(): void
+    {
+        $demo = Member::where('status', Member::ACTIVE)->whereHas('user', fn ($u) => $u->where('email', 'like', 'member%@demo.test'))->whereNotNull('unit_id')->orderBy('id')->get();
+        if ($demo->isEmpty() || Member::where('rank', '!=', 'member')->exists()) {
+            return;
+        }
+        $leaders = Unit::query()->pluck('hod_member_id')->merge(Unit::query()->pluck('assistant_member_id'))->filter()->all();
+        foreach ($demo as $i => $m) {
+            if (in_array($m->id, $leaders, true) || ($m->workers_training && $i % 2 === 0)) {
+                $m->forceFill(['rank' => 'worker', 'rank_changed_at' => now()->subMonths(mt_rand(2, 30))])->save();
+            }
+        }
+        foreach (['member5@demo.test', 'member16@demo.test'] as $email) {
+            Member::whereHas('user', fn ($u) => $u->where('email', $email))->update(['rank' => 'minister', 'rank_changed_at' => now()->subMonths(8)]);
+        }
     }
 
     /**

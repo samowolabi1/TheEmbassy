@@ -32,6 +32,8 @@ class Campaigns
 
     public const MEMBER_STATUSES = ['active' => 'Approved members', 'pending' => 'Waiting for approval', 'inactive' => 'Inactive', 'all' => 'All of them'];
 
+    public const MEMBER_RANKS = ['any' => 'Everyone', 'workers' => 'Workers', 'ministers' => 'Ministers', 'leaders' => 'Workers and ministers', 'members' => 'Members who aren\'t workers or ministers'];
+
     public const SELLER_STATUSES = ['all' => 'All approved shops', 'listed' => 'Shops listed now (subscription active)', 'lapsed' => 'Shops whose subscription has ended'];
 
     public const FILL_INS = ['first_name', 'name', 'church'];
@@ -52,6 +54,7 @@ class Campaigns
         return [
             'type' => $type,
             'member_status' => array_key_exists($input['member_status'] ?? '', self::MEMBER_STATUSES) ? $input['member_status'] : 'active',
+            'rank' => array_key_exists($input['rank'] ?? '', self::MEMBER_RANKS) ? $input['rank'] : 'any',
             'unit_id' => ($input['unit_id'] ?? null) ? (int) $input['unit_id'] : null,
             'fellowship_id' => ($input['fellowship_id'] ?? null) ? (int) $input['fellowship_id'] : null,
             'gender' => in_array($input['gender'] ?? '', ['female', 'male'], true) ? $input['gender'] : null,
@@ -73,6 +76,12 @@ class Campaigns
         if (in_array($type, ['members', 'everyone'], true)) {
             $members = Member::with('user:id,email')
                 ->when(($audience['member_status'] ?? 'active') !== 'all' || $type === 'everyone', fn ($q) => $q->where('status', $type === 'everyone' ? Member::ACTIVE : $audience['member_status']))
+                ->when($type === 'members' && ($audience['rank'] ?? 'any') !== 'any', fn ($q) => $q->whereIn('rank', match ($audience['rank']) {
+                    'workers' => ['worker'],
+                    'ministers' => ['minister'],
+                    'leaders' => ['worker', 'minister'],
+                    default => ['member'],
+                }))
                 ->when($type === 'members' && ($audience['unit_id'] ?? null), fn ($q) => $q->where('unit_id', $audience['unit_id']))
                 ->when($type === 'members' && ($audience['fellowship_id'] ?? null), fn ($q) => $q->where('fellowship_id', $audience['fellowship_id']))
                 ->when($type === 'members' && ($audience['gender'] ?? null), fn ($q) => $q->where('gender', $audience['gender']))
@@ -82,7 +91,7 @@ class Campaigns
             }
             $people = $people->concat($members->map(fn (Member $m) => [
                 'kind' => 'member', 'contact_id' => $m->id, 'user_id' => $m->user_id, 'name' => $m->name,
-                'email' => $m->user?->email ?? $m->email, 'phone' => $m->phone, 'whatsapp_ok' => (bool) $m->notify_sms,
+                'email' => $m->user?->email ?? $m->email, 'phone' => $m->phone, 'whatsapp_ok' => (bool) $m->notify_sms, 'rank' => $m->rank,
             ]));
         }
 
@@ -181,7 +190,8 @@ class Campaigns
     private function snapshot(Campaign $campaign): void
     {
         DB::transaction(function () use ($campaign) {
-            $rows = $this->contacts($campaign->audience)->map(fn ($p) => [...$p, 'campaign_id' => $campaign->id, 'status' => 'pending'])->all();
+            $rows = $this->contacts($campaign->audience)
+                ->map(fn ($p) => [...collect($p)->only(['kind', 'contact_id', 'user_id', 'name', 'email', 'phone', 'whatsapp_ok'])->all(), 'campaign_id' => $campaign->id, 'status' => 'pending'])->all();
             foreach (array_chunk($rows, 500) as $chunk) {
                 CampaignRecipient::insert($chunk);
             }

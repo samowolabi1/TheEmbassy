@@ -33,6 +33,8 @@ class OutreachController extends Controller
             'counts' => [
                 'members' => Member::where('status', Member::ACTIVE)->count(),
                 'sellers' => Shop::approved()->count(),
+                'workers' => Member::where('status', Member::ACTIVE)->where('rank', 'worker')->count(),
+                'ministers' => Member::where('status', Member::ACTIVE)->where('rank', 'minister')->count(),
                 'sent' => Campaign::where('status', 'sent')->where('finished_at', '>=', now()->subDays(30))->count(),
             ],
         ]);
@@ -42,7 +44,7 @@ class OutreachController extends Controller
     {
         $campaign = new Campaign([
             'channels' => ['email'],
-            'audience' => Campaigns::audience(['type' => $request->query('to', 'members')]),
+            'audience' => Campaigns::audience(['type' => $request->query('to', 'members'), 'rank' => $request->query('rank')]),
         ]);
 
         return $this->form($campaign, $campaigns);
@@ -111,8 +113,10 @@ class OutreachController extends Controller
     public function contacts(Request $request, Campaigns $campaigns): View
     {
         $q = trim((string) $request->query('q'));
-        $type = array_key_exists($request->query('type'), Campaigns::AUDIENCES) ? $request->query('type') : 'everyone';
-        $people = $campaigns->contacts(Campaigns::audience(['type' => $type, 'member_status' => 'all', 'seller_status' => 'all']))
+        $type = array_key_exists($request->query('type'), Campaigns::AUDIENCES) || $request->query('type') === 'leaders' ? $request->query('type') : 'everyone';
+        $people = $campaigns->contacts(Campaigns::audience($type === 'leaders'
+            ? ['type' => 'members', 'member_status' => 'active', 'rank' => 'leaders']
+            : ['type' => $type, 'member_status' => 'all', 'seller_status' => 'all']))
             ->when($q !== '', fn ($c) => $c->filter(fn ($p) => str_contains(mb_strtolower($p['name'].' '.$p['email'].' '.$p['phone']), mb_strtolower($q))))
             ->values();
         $page = LengthAwarePaginator::resolveCurrentPage();

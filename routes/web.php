@@ -221,6 +221,7 @@ Route::middleware(['auth', 'can:lead-unit,unit'])->prefix('units/{unit}')->name(
     Route::get('/members', [Unit\UnitController::class, 'members'])->name('members');
     Route::post('/members', [Unit\UnitController::class, 'addMember'])->name('members.add');
     Route::delete('/members/{member}', [Unit\UnitController::class, 'removeMember'])->name('members.remove');
+    Route::post('/members/{member}/rank', [Unit\UnitController::class, 'rank'])->name('members.rank');
     Route::get('/attendance', [Unit\UnitController::class, 'attendance'])->name('attendance');
     Route::get('/messages', [Unit\UnitController::class, 'messages'])->name('messages');
     Route::post('/messages', [Unit\UnitController::class, 'sendMessage'])->middleware('throttle:10,1')->name('messages.send');
@@ -375,6 +376,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/members/export', [Admin\MemberController::class, 'export'])->name('members.export');
             Route::post('/members/import', [Admin\MemberController::class, 'import'])->name('members.import');
             Route::post('/members/{member}/approve', [Admin\MemberController::class, 'approve'])->name('members.approve');
+            Route::post('/members/{member}/rank', [Admin\MemberController::class, 'rank'])->name('members.rank');
             Route::resource('members', Admin\MemberController::class);
         });
 

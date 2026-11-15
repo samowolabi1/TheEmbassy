@@ -39,6 +39,13 @@
                     <option value="{{ $fellowship->id }}" @selected((int) ($filters['fellowship'] ?? 0) === $fellowship->id)>{{ $fellowship->name }}</option>
                 @endforeach
             </select>
+            <label class="sr-only" for="filter-rank">Role</label>
+            <select id="filter-rank" name="rank" class="select-sm">
+                <option value="">Everyone</option>
+                @foreach (\App\Models\Member::RANKS as $key => $label)
+                    <option value="{{ $key }}" @selected(($filters['rank'] ?? '') === $key)>{{ \Illuminate\Support\Str::plural($label) }}</option>
+                @endforeach
+            </select>
             <button type="submit" class="btn btn--ghost btn--xs">Filter</button>
         </form>
         <div class="table-wrap">
@@ -56,7 +63,7 @@
                                     </span>
                                 </span>
                             </td>
-                            <td>{{ $m->unit?->name ?? '—' }}</td>
+                            <td>{{ $m->unit?->name ?? '—' }}@if ($m->rank !== 'member') <span @class(['pill', 'pill--live' => $m->rank === 'minister', 'pill--ok' => $m->rank === 'worker'])>{{ $m->rankLabel() }}</span>@endif</td>
                             <td style="font-weight: 700">{{ $m->user ? TokenName::icon().' '.number_format($m->user->tokenBalance()) : '—' }}</td>
                             <td style="color: var(--slate)">{{ $m->last_attended_on?->format('j M') ?? '—' }}</td>
                             <td class="num">

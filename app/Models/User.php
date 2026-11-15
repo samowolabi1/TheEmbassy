@@ -51,6 +51,14 @@ class User extends Authenticatable
     /**
      * The pastor in charge: sees giving and controls the token currency.
      */
+    /**
+     * Pastors and the pastor in charge: they make workers ministers.
+     */
+    public function isPastor(): bool
+    {
+        return in_array($this->role, ['pastor', 'super'], true);
+    }
+
     public function isSuperAdmin(): bool
     {
         return $this->role === 'super';

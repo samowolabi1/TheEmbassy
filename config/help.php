@@ -33,6 +33,7 @@ return [
                 ['Can I add members without them signing up?', 'Yes: "Add member" adds someone to the register without a login, or import many at once from a spreadsheet (CSV). They can still create a login later with the same email.'],
                 ['What does "Inactive" mean?', 'Someone who has moved away or stopped coming. They stay on the register with their history but drop out of counts and follow-ups.'],
                 ['How do I download the register?', 'Use Export: it gives a spreadsheet of the members you\'re looking at, with the filters you\'ve chosen.'],
+                ['What are workers and ministers?', 'Workers serve in a unit; the unit\'s head makes them a worker from the unit\'s Members page. Ministers work closely with the pastors; only a pastor can make a worker a minister, from the member\'s profile. Filter the list by role, and reach them on their own in the Message centre.'],
             ],
         ],
 
@@ -87,6 +88,7 @@ return [
             'faqs' => [
                 ['How do I make someone head of a unit?', 'Pick a head and an assistant for the unit. They then get the unit leaders\' area for their unit: members, meetings, rota and messages.'],
                 ['Can I rename or remove a unit?', 'Yes. Renaming keeps its members. Remove only units nobody belongs to.'],
+                ['Who can make someone a worker?', 'The unit\'s head or assistant (and staff who manage units) can make a unit member a worker, or a member again. A worker who leaves the unit becomes a member again. Making someone a minister is for pastors.'],
             ],
         ],
 

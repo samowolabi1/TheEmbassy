@@ -23,6 +23,9 @@ class Member extends Model
 {
     use HasFactory;
 
+    /** Ranks: every member; workers serve in a unit (made by its head); ministers work closely with the pastors (made by a pastor). */
+    public const RANKS = ['member' => 'Member', 'worker' => 'Worker', 'minister' => 'Minister'];
+
     public const PENDING = 'pending';
 
     public const ACTIVE = 'active';
@@ -52,6 +55,7 @@ class Member extends Model
             'believers_class' => 'boolean',
             'workers_training' => 'boolean',
             'notify_sms' => 'boolean',
+            'rank_changed_at' => 'datetime',
         ];
     }
 
@@ -255,5 +259,22 @@ class Member extends Model
         }
 
         return $words[0] ?? (string) $name;
+    }
+
+    public function rankLabel(): string
+    {
+        return self::RANKS[$this->rank ?? 'member'] ?? 'Member';
+    }
+
+    /**
+     * "Worker · Choir", "Minister", or "Member".
+     */
+    public function rankLine(): string
+    {
+        return match ($this->rank) {
+            'worker' => 'Worker'.($this->unit ? ' · '.$this->unit->name : ''),
+            'minister' => 'Minister',
+            default => 'Member',
+        };
     }
 }

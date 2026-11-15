@@ -113,6 +113,7 @@
                     <span class="status-chip {{ $member->status === 'active' ? 'status-chip--ok' : '' }}">{{ $member->statusLabel() }}</span>
                     <dl class="facts">
                         <dt>Unit</dt><dd>{{ $member->unit?->name ?? 'Not yet' }}</dd>
+                        @if ($member->rank !== 'member')<dt>Role</dt><dd>{{ $member->rankLine() }}</dd>@endif
                         <dt>Fellowship</dt><dd>{{ $member->fellowship?->name ?? 'Not yet' }}</dd>
                         @if ($member->joined_on)<dt>Member since</dt><dd>{{ $member->joined_on->format('F Y') }}</dd>@endif
                         @if ($member->last_attended_on)<dt>Last at church</dt><dd>{{ $member->last_attended_on->format('j M Y') }}</dd>@endif
