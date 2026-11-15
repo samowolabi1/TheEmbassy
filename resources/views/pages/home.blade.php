@@ -21,34 +21,47 @@
 @endphp
 
 @section('content')
-    {{-- Hero carousel --}}
-    <section class="hero on-dark" aria-roledescription="carousel" aria-label="Highlights" data-carousel>
-        <div class="container hero__inner">
-            <div class="hero__slides">
-                @foreach ($slides as $i => $slide)
-                    @include('pages.partials.hero-slide', ['slide' => $slide, 'i' => $i, 'total' => $slides->count()])
-                @endforeach
-            </div>
-
-            @if ($slides->count() > 1)
-            <div class="hero__controls">
-                <div class="hero__progress">
-                    <span class="hero__count"><span data-slide-num>01</span> <span class="hero__of">/ {{ str_pad((string) $slides->count(), 2, '0', STR_PAD_LEFT) }}</span></span>
-                    <div class="hero__dots">
-                        @foreach (range(0, $slides->count() - 1) as $n)
-                            <button type="button" class="dot" aria-label="Go to slide {{ $n + 1 }}" @if ($n === 0) aria-current="true" @endif data-dot="{{ $n }}"><span class="dot__fill"></span></button>
-                        @endforeach
-                    </div>
-                </div>
-                <div class="hero__arrows">
-                    <button type="button" class="arrow arrow--ghost" aria-label="Previous slide" data-prev><x-icon name="chevron-left" /></button>
-                    <button type="button" class="arrow arrow--solid" aria-label="Next slide" data-next><x-icon name="chevron-right" /></button>
-                    <button type="button" class="hero__pause" data-pause aria-pressed="false">Pause</button>
-                </div>
-            </div>
-            @endif
+    {{-- Hero: full-width slides staff edit in admin › Pages › Home page --}}
+    <section class="hero2" aria-roledescription="carousel" aria-label="Highlights" data-carousel style="--slide-ms: 7000ms">
+        <div class="hero2__glow" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="hero2__stage">
+            @foreach ($slides as $i => $slide)
+                @include('pages.partials.hero-slide', ['slide' => $slide, 'i' => $i, 'total' => $slides->count()])
+            @endforeach
         </div>
+
+        @if ($slides->count() > 1)
+            <div class="container hero2__bar">
+                <div class="hero2__steps">
+                    @foreach ($slides as $n => $s)
+                        <button type="button" class="hero2__step" aria-label="Go to slide {{ $n + 1 }}" @if ($n === 0) aria-current="true" @endif data-dot="{{ $n }}">
+                            <span class="hero2__step-track"><span class="hero2__step-fill"></span></span>
+                            <span class="hero2__step-label">{{ \Illuminate\Support\Str::limit(trim(($s['kicker'] ?? '') ?: str_replace("\n", ' ', (string) $s['title'])) ?: 'Slide '.($n + 1), 26) }}</span>
+                        </button>
+                    @endforeach
+                </div>
+                <div class="hero2__nav">
+                    <span class="hero2__count" aria-hidden="true"><span data-slide-num>01</span>/{{ str_pad((string) $slides->count(), 2, '0', STR_PAD_LEFT) }}</span>
+                    <button type="button" class="hero2__btn" aria-label="Previous slide" data-prev><x-icon name="chevron-left" :size="20" /></button>
+                    <button type="button" class="hero2__btn" data-pause aria-pressed="false" aria-label="Pause the slides"><span class="hero2__pause-icon" aria-hidden="true"></span></button>
+                    <button type="button" class="hero2__btn hero2__btn--solid" aria-label="Next slide" data-next><x-icon name="chevron-right" :size="20" /></button>
+                </div>
+            </div>
+        @endif
     </section>
+
+    {{-- A moving strip of what the Tribe is about --}}
+    <div class="ticker" aria-hidden="true">
+        <div class="ticker__track">
+            @foreach ([1, 2] as $copy)
+                <span class="ticker__group">
+                    @foreach (['Worship', 'The Word', 'Family', 'Purpose', 'Prayer', 'Royalty', 'Community', 'Growth'] as $word)
+                        <span class="ticker__item">{{ $word }}</span><x-crown :width="22" :height="18" fill="var(--midnight)" class="ticker__crown" />
+                    @endforeach
+                </span>
+            @endforeach
+        </div>
+    </div>
 
     {{-- Quick links --}}
     <section class="container quick">

@@ -1,0 +1,748 @@
+/* ---------- Home page hero: full-width slides ----------
+   Each slide is the whole picture (a photo, or a brand colour with the crown). Words rise in
+   line by line, the photo drifts slowly, a card floats beside the words, and story-style bars
+   show progress. Light CSS animation only; it all stops for people who prefer less motion. */
+
+.hero2 {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--midnight);
+  color: var(--white);
+}
+
+/* Slow-moving brand glow behind everything. */
+.hero2__glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.hero2__glow span {
+  position: absolute;
+  width: 46vmax;
+  height: 46vmax;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  animation: glowDrift 22s ease-in-out infinite alternate;
+}
+.hero2__glow span:nth-child(1) {
+  top: -20vmax;
+  left: -12vmax;
+  background: #1d4fa8;
+}
+.hero2__glow span:nth-child(2) {
+  bottom: -26vmax;
+  right: -10vmax;
+  background: var(--gold);
+  opacity: 0.22;
+  animation-duration: 28s;
+  animation-delay: -6s;
+}
+.hero2__glow span:nth-child(3) {
+  top: 30%;
+  left: 45%;
+  width: 26vmax;
+  height: 26vmax;
+  background: #7b4fd6;
+  opacity: 0.18;
+  animation-duration: 34s;
+  animation-delay: -12s;
+}
+
+/* All slides share one grid cell, so the hero is as tall as the tallest one. */
+.hero2__stage {
+  position: relative;
+  z-index: 1;
+  display: grid;
+}
+.hero2__slide {
+  grid-area: 1 / 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: clamp(560px, 82vh, 820px);
+  padding: 72px 0 150px;
+}
+/* Without the script, only the first slide shows. */
+.hero2:not(.is-ready) .hero2__slide:not(:first-child) {
+  display: none;
+}
+.hero2.is-ready .hero2__slide {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.9s ease, visibility 0s linear 0.9s;
+}
+.hero2.is-ready .hero2__slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.9s ease, visibility 0s;
+}
+
+/* Backgrounds */
+.hero2__bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.hero2__slide--mid .hero2__bg {
+  background: radial-gradient(120% 90% at 85% 10%, rgba(42, 92, 180, 0.55), transparent 60%), linear-gradient(135deg, #0b2250, #06132b 70%);
+}
+.hero2__slide--night .hero2__bg,
+.hero2__slide--navy .hero2__bg {
+  background: radial-gradient(90% 80% at 90% 90%, rgba(224, 170, 30, 0.2), transparent 60%), linear-gradient(160deg, #0a1d3f, #050f22 75%);
+}
+.hero2__slide--gold .hero2__bg {
+  background: radial-gradient(80% 90% at 85% 20%, #ffd76a, transparent 60%), linear-gradient(135deg, #f2c14b, #e0aa1e 55%, #c98b12);
+}
+.hero2__slide--photo .hero2__bg {
+  background: var(--midnight);
+}
+/* Fine dotted texture for colour slides. */
+.hero2__slide:not(.hero2__slide--photo) .hero2__bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(90deg, transparent, #000 40%, #000 70%, transparent);
+}
+.hero2__slide--light .hero2__bg::before {
+  background-image: radial-gradient(rgba(6, 19, 43, 0.08) 1px, transparent 1px);
+}
+.hero2__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.12);
+}
+.hero2__slide.is-active .hero2__photo {
+  animation: kenBurns calc(var(--slide-ms, 7000ms) + 1500ms) ease-out both;
+}
+/* Shade so the words always read over a photo. */
+.hero2__slide--photo .hero2__bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(4, 12, 30, 0.88) 0%, rgba(4, 12, 30, 0.55) 45%, rgba(4, 12, 30, 0.15) 100%),
+    linear-gradient(0deg, rgba(4, 12, 30, 0.85) 0%, transparent 35%);
+}
+.hero2__crown {
+  position: absolute;
+  right: -70px;
+  bottom: -60px;
+  width: min(560px, 60vw);
+  height: auto;
+  opacity: 0.1;
+  transform: rotate(-8deg);
+}
+.hero2__slide--light .hero2__crown {
+  opacity: 0.08;
+}
+.hero2__slide.is-active .hero2__crown {
+  animation: crownFloat 9s ease-in-out infinite alternate;
+}
+
+/* Words */
+.hero2__inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  gap: 48px;
+  align-items: center;
+}
+.hero2__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 22px;
+  max-width: 680px;
+}
+.hero2__slide--light {
+  color: var(--midnight);
+}
+.hero2__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  backdrop-filter: blur(8px);
+}
+.hero2__kicker--outline {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--gold);
+}
+.hero2__kicker--gold {
+  background: var(--gold);
+  color: var(--midnight);
+}
+.hero2__slide--light .hero2__kicker--outline {
+  border-color: rgba(6, 19, 43, 0.3);
+  background: rgba(255, 255, 255, 0.25);
+  color: var(--midnight);
+}
+.hero2__slide--light .hero2__kicker--gold {
+  background: var(--midnight);
+  color: var(--gold);
+}
+.hero2__title {
+  font-size: clamp(46px, 7.4vw, 96px);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+}
+.hero2__line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.06em;
+}
+.hero2__line > span {
+  display: inline-block;
+}
+.hero2__slide--light .accent {
+  color: var(--white);
+  text-shadow: 0 2px 0 rgba(6, 19, 43, 0.12);
+}
+.hero2__text {
+  margin: 0;
+  max-width: 540px;
+  font-size: clamp(16px, 1.6vw, 19px);
+  line-height: 1.6;
+  color: var(--mist);
+}
+.hero2__slide--light .hero2__text {
+  color: rgba(6, 19, 43, 0.8);
+}
+.hero2__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.btn--glass {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+  backdrop-filter: blur(10px);
+}
+.btn--glass:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--white);
+}
+
+/* Entrances: lines rise one after another, then the rest fades up. */
+.hero2.is-ready .hero2__line > span {
+  transform: translateY(110%);
+}
+.hero2.is-ready .hero2__in {
+  opacity: 0;
+  transform: translateY(18px);
+}
+.hero2.is-ready .hero2__slide.is-active .hero2__line > span {
+  animation: lineUp 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(0.15s + var(--d, 0) * 0.09s);
+}
+.hero2.is-ready .hero2__slide.is-active .hero2__in {
+  animation: fadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(0.2s + var(--d, 0) * 0.09s);
+}
+
+/* The card beside the words */
+.hero2__card {
+  justify-self: end;
+  width: min(100%, 360px);
+  padding: 22px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(16px) saturate(1.2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hero2__slide--light .hero2__card {
+  border-color: rgba(6, 19, 43, 0.15);
+  background: rgba(255, 255, 255, 0.35);
+  color: var(--midnight);
+}
+.hero2.is-ready .hero2__card {
+  opacity: 0;
+}
+.hero2.is-ready .hero2__slide.is-active .hero2__card {
+  animation: cardIn 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.45s both, cardFloat 6s ease-in-out 1.5s infinite alternate;
+}
+.hero2__card-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--gold);
+}
+.hero2__slide--light .hero2__card-label {
+  color: var(--midnight);
+}
+.hero2__card-big {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.hero2__card-where {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--mist);
+}
+.hero2__card-where svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--gold);
+}
+.hero2__card-go {
+  white-space: nowrap;
+  font-weight: 700;
+  color: var(--white);
+}
+.hero2__live {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3ddc84;
+  box-shadow: 0 0 0 0 rgba(61, 220, 132, 0.6);
+  animation: pulse 2s ease-out infinite;
+}
+.hero2__card--date {
+  align-items: center;
+  justify-content: center;
+  width: 220px;
+  aspect-ratio: 1;
+  padding: 0;
+  border-radius: 50%;
+  text-align: center;
+  gap: 0;
+}
+.hero2__date-day {
+  font-family: var(--font-display);
+  font-size: 84px;
+  font-weight: 800;
+  line-height: 0.9;
+}
+.hero2__date-month {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+}
+.hero2__card--series {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  text-decoration: none;
+}
+.hero2__card--series:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--white);
+}
+.hero2__play {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--midnight);
+  box-shadow: 0 0 0 8px rgba(224, 170, 30, 0.18);
+}
+.hero2__card--verse {
+  margin: 0;
+  gap: 14px;
+}
+.hero2__card--verse blockquote {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.hero2__card--verse figcaption {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--gold);
+}
+
+/* Progress bars, labels and buttons */
+.hero2__bar {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 36px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+.hero2__steps {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 12px;
+  flex: 1;
+  max-width: 760px;
+}
+.hero2__step {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 0;
+  border: 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.hero2__step[aria-current='true'],
+.hero2__step:hover {
+  color: var(--white);
+}
+.hero2__step-track {
+  position: relative;
+  display: block;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+.hero2__step-fill {
+  position: absolute;
+  inset: 0;
+  width: 0;
+  background: var(--gold);
+  border-radius: inherit;
+}
+.hero2__step.is-done .hero2__step-fill {
+  width: 100%;
+}
+.hero2__step[aria-current='true'] .hero2__step-fill {
+  animation: stepFill var(--slide-ms, 7000ms) linear both;
+}
+.hero2.is-paused .hero2__step[aria-current='true'] .hero2__step-fill,
+.hero2:has(:focus-visible) .hero2__step[aria-current='true'] .hero2__step-fill {
+  animation-play-state: paused;
+}
+/* Resting the mouse on it holds it (phones keep "hover" after a tap, so not there). */
+@media (hover: hover) {
+  .hero2:hover .hero2__step[aria-current='true'] .hero2__step-fill {
+    animation-play-state: paused;
+  }
+}
+.hero2.is-manual .hero2__step[aria-current='true'] .hero2__step-fill {
+  animation: none;
+  width: 100%;
+}
+.hero2__step-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hero2__nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hero2__count {
+  margin-right: 8px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.6);
+  font-variant-numeric: tabular-nums;
+}
+.hero2__count span {
+  color: var(--white);
+  font-size: 20px;
+}
+.hero2__btn {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--white);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.hero2__btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+.hero2__btn--solid {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--midnight);
+}
+.hero2__btn--solid:hover {
+  background: #f0bb32;
+}
+.hero2__btn:focus-visible,
+.hero2__step:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+/* Pause shows two bars; while paused it shows a play triangle. */
+.hero2__pause-icon {
+  width: 12px;
+  height: 14px;
+  border-left: 4px solid currentColor;
+  border-right: 4px solid currentColor;
+}
+.hero2.is-paused .hero2__pause-icon {
+  width: 0;
+  height: 0;
+  border-left: 12px solid currentColor;
+  border-right: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  margin-left: 3px;
+}
+
+/* The moving strip of words under the hero */
+.ticker {
+  overflow: hidden;
+  background: var(--gold);
+  color: var(--midnight);
+  border-top: 1px solid rgba(6, 19, 43, 0.1);
+}
+.ticker__track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  padding: 14px 0;
+  animation: ticker 38s linear infinite;
+}
+.ticker__group {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding-right: 28px;
+}
+.ticker__item {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.ticker__crown {
+  flex: none;
+}
+.ticker:hover .ticker__track {
+  animation-play-state: paused;
+}
+
+/* Phones and small tablets: words first, card under them, controls along the bottom. */
+@media (max-width: 900px) {
+  .hero2__inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .hero2__card {
+    justify-self: start;
+  }
+  .hero2__card--date {
+    width: 150px;
+  }
+  .hero2__date-day {
+    font-size: 56px;
+  }
+  .hero2__slide {
+    min-height: 0;
+    align-items: flex-start;
+    padding: 48px 0 132px;
+  }
+  .hero2__slide--photo .hero2__bg::after {
+    background: linear-gradient(0deg, rgba(4, 12, 30, 0.92) 0%, rgba(4, 12, 30, 0.6) 55%, rgba(4, 12, 30, 0.35) 100%);
+  }
+  .hero2__step-label {
+    display: none;
+  }
+  .hero2__bar {
+    bottom: 24px;
+    align-items: center;
+  }
+  .hero2__steps {
+    gap: 6px;
+  }
+  .hero2__step {
+    padding: 14px 0;
+  }
+}
+@media (max-width: 480px) {
+  .hero2__copy {
+    gap: 18px;
+  }
+  .hero2__ctas .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  .hero2__count {
+    display: none;
+  }
+  .hero2__btn {
+    width: 42px;
+    height: 42px;
+  }
+  .hero2__card-big {
+    font-size: 22px;
+  }
+  .hero2__card--verse blockquote {
+    font-size: 18px;
+  }
+  .ticker__item {
+    font-size: 17px;
+  }
+}
+
+@keyframes glowDrift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(6vmax, 4vmax, 0) scale(1.15);
+  }
+}
+@keyframes kenBurns {
+  from {
+    transform: scale(1.12);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes crownFloat {
+  from {
+    transform: rotate(-8deg) translateY(0);
+  }
+  to {
+    transform: rotate(-4deg) translateY(-18px);
+  }
+}
+@keyframes lineUp {
+  from {
+    transform: translateY(110%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateX(40px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes cardFloat {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-10px);
+  }
+}
+@keyframes stepFill {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+@keyframes pulse {
+  to {
+    box-shadow: 0 0 0 10px rgba(61, 220, 132, 0);
+  }
+}
+@keyframes ticker {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Less motion: no drifting, rising or scrolling; slides simply change. */
+@media (prefers-reduced-motion: reduce) {
+  .hero2__glow span,
+  .hero2__slide.is-active .hero2__photo,
+  .hero2__slide.is-active .hero2__crown,
+  .hero2__live,
+  .ticker__track {
+    animation: none !important;
+  }
+  .hero2__photo {
+    transform: none;
+  }
+  .hero2.is-ready .hero2__line > span,
+  .hero2.is-ready .hero2__in,
+  .hero2.is-ready .hero2__card {
+    transform: none;
+    opacity: 1;
+  }
+  .hero2.is-ready .hero2__slide.is-active .hero2__line > span,
+  .hero2.is-ready .hero2__slide.is-active .hero2__in,
+  .hero2.is-ready .hero2__slide.is-active .hero2__card {
+    animation: none;
+  }
+  .hero2.is-ready .hero2__slide {
+    transition: none;
+  }
+  .ticker__track {
+    width: auto;
+    justify-content: center;
+  }
+  .ticker__group {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0 16px;
+  }
+  .ticker__group + .ticker__group {
+    display: none;
+  }
+}

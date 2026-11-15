@@ -44,7 +44,7 @@ class HomeSliderTest extends TestCase
     {
         $this->get(route('home'))->assertOk()
             ->assertSee('Young. Royal.')->assertSee('Royal Youth')->assertSee('I am His.')
-            ->assertSee('/ 04', false)->assertSee('1 PETER 2:9');
+            ->assertSee('/04', false)->assertSee('1 PETER 2:9');
     }
 
     public function test_staff_change_words_add_a_slide_with_a_picture_and_reorder(): void
@@ -62,11 +62,11 @@ class HomeSliderTest extends TestCase
         Storage::disk('public')->assertExists($slides[1]['photo']);
 
         $page = $this->get(route('home'))->assertOk();
-        $page->assertSee('Come home.<br />', false)->assertSee('Sundays at 9')->assertSee('/ 05', false)
+        $page->assertSee('>Come home.</span></span><span class="hero2__line"><span style="--d: 2">You belong.</span>', false)->assertSee('Sundays at 9')->assertSee('/05', false)
             ->assertSee('https://example.com/register', false)->assertSee(PageContent::photoUrl($slides[1]['photo']), false)
             ->assertDontSee('Young. Royal.');
         // The first slide is the page's main heading.
-        $this->assertStringContainsString('<h1 class="display slide__title">Back to school', $page->getContent());
+        $this->assertMatchesRegularExpression('#<h1 class="display hero2__title"><span class="hero2__line"><span style="--d: 1">Back to school</span></span>#', $page->getContent());
     }
 
     public function test_hidden_and_past_slides_stay_off_and_bad_links_are_refused(): void
@@ -75,7 +75,7 @@ class HomeSliderTest extends TestCase
             1 => ['hidden' => '1'],
             3 => ['show_until' => now()->subDay()->toDateString()],
         ]))->assertSessionHasNoErrors();
-        $this->get(route('home'))->assertDontSee('<span class="accent">Convention</span>', false)->assertDontSee('I am His.')->assertSee('/ 02', false);
+        $this->get(route('home'))->assertDontSee('>Convention</span>', false)->assertDontSee('I am His.')->assertSee('/02', false);
 
         $this->put(route('admin.pages.update', 'home'), $this->form([0 => ['primary_link' => 'javascript:alert(1)']]))->assertSessionHasErrors('slides.0.primary_link');
         $this->put(route('admin.pages.update', 'home'), $this->form([0 => ['primary_label' => 'Go', 'primary_link' => '']]))->assertSessionHasErrors('slides.0.primary_link');
