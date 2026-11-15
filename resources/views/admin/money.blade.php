@@ -43,7 +43,7 @@
                             <input type="date" name="received_on" value="{{ old('received_on', today()->toDateString()) }}" max="{{ today()->toDateString() }}" required>
                             @error('received_on') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
-                        <label class="field">How it came in
+                        <label class="field"><span>How it came in <x-tip text="Cash counted at church, a bank transfer, or a card payment on the church POS." /></span>
                             <select name="method" required>
                                 @foreach (\App\Models\Income::METHODS as $key => $label)
                                     <option value="{{ $key }}" @selected(old('method', 'cash') === $key)>{{ $label }}</option>

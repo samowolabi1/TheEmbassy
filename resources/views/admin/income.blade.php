@@ -103,7 +103,7 @@
     </section>
 
     <section class="box" id="categories">
-        <h2>Categories</h2>
+        <h2>Categories <x-tip text="The choices staff see when they record money. Renaming one moves past entries and budgets with it. Untick In use to hide one." /></h2>
         <p class="box__note">Staff choose from these when they record money. Renaming one updates past entries too. Hide one you no longer use; its history stays.</p>
         @if ($errors->categories->any())
             <p class="field-error">{{ $errors->categories->first() }}</p>

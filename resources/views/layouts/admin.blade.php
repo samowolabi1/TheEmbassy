@@ -63,6 +63,7 @@
         ],
         'SYSTEM' => [
             ['id' => 'settings', 'area' => 'settings', 'label' => 'Settings & roles', 'route' => 'admin.settings.edit'],
+            ['id' => 'help', 'label' => 'Help centre', 'route' => 'admin.help'],
         ],
     ];
     $nav = collect($nav)
@@ -128,5 +129,6 @@
             @yield('content')
         </main>
     </div>
+    @include('admin.partials.help-panel')
 </body>
 </html>

@@ -52,7 +52,7 @@
     @if ($super)
         <div class="row">
             <section class="box form grow" id="award">
-                <h2>Give or take {{ TokenName::many() }}</h2>
+                <h2>Give or take {{ TokenName::many() }} <x-tip text="Giving moves them from the treasury to the member. Taking back returns them to the treasury, for example when something was given by mistake." /></h2>
                 <form method="POST" action="{{ route('admin.tokens.award') }}" class="form">
                     @csrf
                     <div class="form-row">
@@ -81,7 +81,7 @@
             </section>
 
             <section class="box form side-col">
-                <h2>Create or destroy {{ TokenName::many() }}</h2>
+                <h2>Create or destroy {{ TokenName::many() }} <x-tip text="Rewards are paid from the treasury. Create more when it runs low. Destroying removes unused ones from the treasury for good; members' balances are never touched." /></h2>
                 <span class="box__note">New {{ TokenName::many() }} go into the treasury, ready to be earned. Destroying takes unused {{ TokenName::many() }} out of the treasury for good.</span>
                 <form method="POST" action="{{ route('admin.tokens.mint') }}" class="form" data-confirm="Create these {{ TokenName::many() }} in the treasury?">
                     @csrf
@@ -214,7 +214,7 @@
             </section>
             @if ($frozen->isNotEmpty())
                 <section class="box box--flush">
-                    <div class="box__head"><h2>Wallets on hold</h2></div>
+                    <div class="box__head"><h2>Wallets on hold <x-tip text="Members whose wallet is on hold keep their balance but can't spend or send until you release it." /></h2></div>
                     @foreach ($frozen as $acc)
                         <a href="{{ route('admin.tokens.index', ['member' => $acc->user?->member?->id]) }}" class="list-item" style="color: var(--ink)">
                             <span class="list-item__main"><span class="list-item__title">{{ $acc->label() }}</span><span class="list-item__meta">{{ $acc->frozen_reason ?: 'No reason given' }}</span></span>

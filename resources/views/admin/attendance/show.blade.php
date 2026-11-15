@@ -43,7 +43,7 @@
 
     <div class="row">
         <section class="box box--flush grow">
-            <div class="box__head" style="padding-bottom: 0"><h2>Mark members present</h2><span class="box__note">For members without a phone or account</span></div>
+            <div class="box__head" style="padding-bottom: 0"><h2>Mark members present <x-tip text="For members who couldn't check in on their phone. Ticking them counts them as present, just like checking in." /></h2><span class="box__note">For members without a phone or account</span></div>
             <form method="GET" action="{{ route('admin.attendance.show', $service) }}" class="box__head filters-bar" role="search">
                 <label class="field filters-bar__search"><span class="sr-only">Search members</span>
                     <input type="search" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Find a member">
@@ -74,7 +74,7 @@
         </section>
 
         <section class="box side-col">
-            <h2>Headcount</h2>
+            <h2>Headcount <x-tip text="Everyone at the service, members or not: the number counted in the room, and the number watching online." /></h2>
             <form method="POST" action="{{ route('admin.attendance.update', $service) }}" class="form">
                 @csrf
                 @method('PUT')

@@ -31,7 +31,7 @@
     </div>
 
     <section class="box box--flush">
-        <div class="box__head"><h2>Reports</h2></div>
+        <div class="box__head"><h2>Reports <x-tip text="Messages members flagged. Remove deletes the message; Remove and mute also stops the person posting for a while; Keep it dismisses the report." /></h2></div>
         @forelse ($reports->groupBy('community_message_id') as $group)
             @php $report = $group->first(); $message = $report->message; @endphp
             <div class="list-item list-item--report">
@@ -151,7 +151,7 @@
             </section>
 
             <section class="box box--flush">
-                <div class="box__head"><h2>Muted members</h2></div>
+                <div class="box__head"><h2>Muted members <x-tip text="They can still read the community but can't post messages or reviews until the mute ends or you unmute them." /></h2></div>
                 @forelse ($muted as $user)
                     <div class="list-item">
                         <span class="list-item__main">

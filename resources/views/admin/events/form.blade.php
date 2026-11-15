@@ -64,13 +64,13 @@
                         <input type="text" name="types[{{ $i }}][name]" value="{{ old("types.$i.name", $type?->name ?? ($i === 0 && ! $event->exists ? 'Free entry' : '')) }}" maxlength="60" placeholder="e.g. Regular, VIP">
                     </label>
                     <div class="form-row" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 90px), 1fr))">
-                        <label class="field">Price
+                        <label class="field"><span>Price <x-tip text="0 makes it free: people just reserve a place. Paid tickets are paid online, or with Crowns by members." /></span>
                             <input type="number" data-money name="types[{{ $i }}][price]" value="{{ old("types.$i.price", $type ? $type->price / 100 : 0) }}" min="0" step="1">
                         </label>
-                        <label class="field">Places
+                        <label class="field"><span>Places <x-tip text="How many of this ticket can be booked. Leave empty for no limit." /></span>
                             <input type="number" name="types[{{ $i }}][quantity]" value="{{ old("types.$i.quantity", $type?->quantity) }}" min="1" placeholder="No limit">
                         </label>
-                        <label class="field">Per order
+                        <label class="field"><span>Per order <x-tip text="The most of this ticket one person can book at a time." /></span>
                             <input type="number" name="types[{{ $i }}][max_per_order]" value="{{ old("types.$i.max_per_order", $type?->max_per_order ?? 10) }}" min="1" max="50">
                         </label>
                     </div>

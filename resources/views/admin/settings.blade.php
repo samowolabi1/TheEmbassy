@@ -12,7 +12,7 @@
 
     <section class="box box--flush">
         <div class="box__head">
-            <h2>Staff</h2>
+            <h2>Staff <x-tip text="People who can sign in to this dashboard. Each role only sees its own areas; the table below shows what each role can open." /></h2>
             <span class="box__note">Each role only sees its own areas. Administrators see everything, including this page, except giving and the {{ TokenName::one() }} treasury, which are for the pastor in charge (super admin).</span>
         </div>
         @error('staff') <p class="flash flash--error" role="alert" style="margin: 0 20px">{{ $message }}</p> @enderror

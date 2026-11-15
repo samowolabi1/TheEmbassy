@@ -40,7 +40,7 @@
     <div class="row">
         <section class="box box--navy declaration-form" id="declaration" style="flex: 1 1 420px">
             <div class="box__head">
-                <h2>Weekly declaration</h2>
+                <h2>Weekly declaration <x-tip text="Members say it from their account during the week and earn a reward. It also goes in the Monday email." /></h2>
                 <span class="pill {{ $declaration->week_of->isSameDay($thisWeek) ? 'pill--ok' : 'pill--scheduled' }}">
                     {{ $declaration->week_of->isSameDay($thisWeek) ? 'This week' : ($declaration->week_of->isFuture() ? 'Upcoming' : 'Past') }}
                 </span>

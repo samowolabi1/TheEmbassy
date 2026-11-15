@@ -44,11 +44,11 @@
                     @error('join_url') <span class="field-error">{{ $message }}</span> @enderror
                 </label>
                 <fieldset class="field" style="border: 0; padding: 0; margin: 0">
-                    <legend style="margin-bottom: 6px">Members check themselves in</legend>
+                    <legend style="margin-bottom: 6px">Members check themselves in <x-tip text="At church: members open /check-in during the service and type the code on the screen (and their location is checked if it's set up). Online: members join from their account or type the code shown on the stream." /></legend>
                     <label class="login__remember"><input type="checkbox" name="in_person_checkin" value="1" @checked(old('in_person_checkin', true))>At church (within the venue radius)</label>
                     <label class="login__remember"><input type="checkbox" name="online_checkin" value="1" @checked(old('online_checkin', true))>Online (joining from their account, or the code on the stream)</label>
                 </fieldset>
-                <label class="field">Repeat weekly for
+                <label class="field"><span>Repeat weekly for <x-tip text="Adds the same service on the same day each week, so Sundays are always ready for check-in." /></span>
                     <select name="repeat">
                         @foreach ([0 => 'Just this once', 4 => '4 more weeks', 8 => '8 more weeks', 12 => '12 more weeks'] as $weeks => $label)
                             <option value="{{ $weeks }}">{{ $label }}</option>

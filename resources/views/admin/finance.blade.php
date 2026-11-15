@@ -145,7 +145,7 @@
 
     <div class="row">
         <section class="box grow" id="record-gift">
-            <h2>Record cash offering</h2>
+            <h2>Record cash offering <x-tip text="For gifts received outside online giving, so every gift is counted under its fund. Only the pastor in charge sees these." /></h2>
             <form method="POST" action="{{ route('admin.gifts.store') }}" class="form">
                 @csrf
                 <div class="form-row">

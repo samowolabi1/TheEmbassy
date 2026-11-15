@@ -363,6 +363,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(['auth', 'can:access-admin'])->group(function () {
         Route::post('/logout', [Admin\AuthController::class, 'destroy'])->name('logout');
         Route::get('/', Admin\DashboardController::class)->name('dashboard');
+        Route::get('/help', Admin\HelpController::class)->name('help');
 
         Route::middleware('can:manage,"members"')->group(function () {
             Route::get('/members/export', [Admin\MemberController::class, 'export'])->name('members.export');

@@ -50,7 +50,7 @@
     @if ($pastors->isNotEmpty())
         <div class="row">
             <section class="box grow">
-                <h2>Add visiting hours</h2>
+                <h2>Add visiting hours <x-tip text="A weekly time when a pastor sees members, split into visits of the length you choose. Members can book the open ones." /></h2>
                 <form method="POST" action="{{ route('admin.appointments.hours.store') }}" class="form">
                     @csrf
                     <div class="form-row">
@@ -97,7 +97,7 @@
             </section>
 
             <section class="box" style="flex: 0 1 340px">
-                <h2>Time off</h2>
+                <h2>Time off <x-tip text="Days a pastor is away. Their visiting hours are hidden from members on those days." /></h2>
                 <form method="POST" action="{{ route('admin.appointments.time-off.store') }}" class="form">
                     @csrf
                     <label class="field">Pastor

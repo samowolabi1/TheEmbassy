@@ -66,7 +66,7 @@
     <div class="row">
         <section class="box grow">
             <div class="box__head">
-                <h2>Subscription prices</h2>
+                <h2>Subscription prices <x-tip text="What sellers pay to keep their shop on the market. Leave a plan empty to stop offering it." /></h2>
                 <span class="box__note">Sellers only see plans that are on and priced. Price changes apply to new subscriptions.</span>
             </div>
             <form method="POST" action="{{ route('admin.market.plans') }}" class="form">
@@ -152,7 +152,7 @@
     </section>
 
     <section class="box box--flush">
-        <div class="box__head"><h2>Coupons</h2></div>
+        <div class="box__head"><h2>Coupons <x-tip text="Codes sellers type when paying a subscription, for a percentage off. Each can have a limit on uses." /></h2></div>
         @forelse ($coupons as $coupon)
             <div class="list-item">
                 <span class="list-item__main">
