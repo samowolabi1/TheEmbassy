@@ -37,7 +37,7 @@ class ServerCheck
         if (extension_loaded('gd')) {
             $add('PHP', 'Pictures saved as WebP', Images::webp() ? 'ok' : 'warn', Images::webp() ? 'Supported' : 'Not supported: pictures are saved as JPEG instead (larger files)', 'Ask your host for GD with WebP support.');
         }
-        foreach (['exif' => 'Phone photos are turned the right way up', 'gmp' => 'App notifications send faster', 'intl' => 'Better number and date formatting'] as $ext => $why) {
+        foreach (['zip' => 'Reports download as Excel workbooks', 'exif' => 'Phone photos are turned the right way up', 'gmp' => 'App notifications send faster', 'intl' => 'Better number and date formatting'] as $ext => $why) {
             $add('PHP', "Extension: {$ext} (optional)", extension_loaded($ext) ? 'ok' : 'warn', extension_loaded($ext) ? 'Installed' : "Missing. {$why} with it.", "Turn on {$ext} in Select PHP Version › Extensions, if offered.");
         }
 

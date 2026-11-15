@@ -2178,3 +2178,8 @@ input[type='file'] {
 .outreach-reach.is-loading {
   opacity: 0.6;
 }
+
+/* Reports: one card per module. */
+.report-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 16px; }
+.report-card { display: flex; flex-direction: column; gap: 10px; margin: 0; }
+.report-card h2 { margin: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }

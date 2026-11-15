@@ -58,6 +58,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage-welfare', fn (User $user, Unit $unit) => $unit->isWelfare() && ($unit->isLedBy($user->member) || $user->canManage('welfare')));
         // Giving records and totals, and control of the token currency, belong to the pastor in charge (super admin) alone.
         Gate::define('see-giving', fn (User $user) => $user->isSuperAdmin());
+        // Reports across the whole church, exported to Excel: administrators and the pastor in charge only.
+        Gate::define('run-reports', fn (User $user) => $user->isAdmin());
         Gate::define('manage-treasury', fn (User $user) => $user->isSuperAdmin());
         Gate::define('join-community', fn (User $user) => $user->canJoinCommunity());
         Gate::define('run-shop', fn (User $user) => $user->shop?->isApproved() ?? false);

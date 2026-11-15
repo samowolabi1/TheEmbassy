@@ -476,6 +476,28 @@ Use the full path to PHP if the host asks for it (e.g. `/usr/local/bin/php` or `
 
 Repeat the steps above on a new server, with the new church's `CHURCH_*` and `BRAND_*` values in `.env` and its logo in `public/images/`. Everything else (address, bank accounts, leaders, links, staff) is set in admin, so the code doesn't change between churches.
 
+## Reports (Excel)
+
+Admin › **Reports**, for administrators and the pastor in charge only (nobody else sees the page or can download). Choose the dates (or This month, Last month, This quarter, This year, Last year) and download a report as an Excel workbook (`.xlsx`). Each has a **Summary** sheet with the key figures, then sheets with every record behind them; header rows stay in view, every column can be filtered and sorted, money is in naira and dates are real dates Excel can sort. Text is stored as text, so nothing in a cell can run as a formula.
+
+| Report | Summary | Sheets |
+| --- | --- | --- |
+| Members | totals by status, role, gender, training, unit and fellowship; new members in the dates | Members |
+| Attendance | services, average and highest headcount, check-ins, first-timers, members who came and didn't | Services, Members (attendance rate) |
+| Follow-up & visitation | first-timers, follow-ups by reason and outcome, days to complete, visits | First-timers, Follow-ups, Visits |
+| Units | heads, workers, ministers, meetings, requests to join | Units, Unit members |
+| Giving (pastor in charge only) | total, by fund, method and month | Gifts |
+| Income & expenses | income, expenses, balance, pending, by category | Income, Expenses |
+| Welfare | cases, amounts requested and approved, by category; package applications | Cases, Package applications |
+| Tribe Market | shops, subscriptions, money and Crowns paid, discounts | Shops, Subscriptions |
+| Events & tickets | tickets, check-ins, money taken | Events, Orders |
+| Library | lent, returned, late, overdue, most borrowed | Loans |
+| Crowns | movements by kind | Movements |
+| Message centre | messages, people reached each way | Messages |
+| Feedback, testimonies & appointments | average rating, suggestions, testimonies, appointments by status | Service ratings, Suggestions, Testimonies, Appointments |
+
+Workbooks are made by the app itself (no extra package), using PHP's `zip` extension, which shared hosts include; Settings & roles › Server check shows whether it's on.
+
 ## Running it
 
 ### On your computer

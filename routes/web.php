@@ -417,6 +417,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Pastors reach welfare cases through the welfare unit's area.
         Route::get('/welfare', [Admin\UnitController::class, 'welfare'])->middleware('can:manage,"welfare"')->name('welfare');
 
+        // Reports to Excel: administrators and the pastor in charge.
+        Route::middleware('can:run-reports')->group(function () {
+            Route::get('/reports', [Admin\ReportController::class, 'index'])->name('reports.index');
+            Route::get('/reports/{report}', [Admin\ReportController::class, 'download'])->middleware('throttle:20,1')->name('reports.download');
+        });
+
         // Any staff member can register a first-timer or a new member.
         Route::get('/register', [Admin\RegisterController::class, 'index'])->name('register.index');
         Route::post('/register/first-timer', [Admin\RegisterController::class, 'firstTimer'])->middleware('throttle:30,1')->name('register.first-timer');

@@ -75,6 +75,16 @@ return [
             ],
         ],
 
+        'reports' => [
+            'title' => 'Reports',
+            'about' => 'Excel workbooks for each part of church life, for the dates you choose. Administrators and the pastor in charge only.',
+            'faqs' => [
+                ['What\'s in a report?', 'A Summary sheet with the key figures for the dates chosen, then sheets with every record behind them. Headers stay in view and every column can be filtered and sorted.'],
+                ['Why can\'t I see the giving report?', 'Giving records are private to the pastor in charge, so only they can download it.'],
+                ['Can I open them without Excel?', 'Yes: the files open in Google Sheets, Numbers and LibreOffice too.'],
+            ],
+        ],
+
         'register' => [
             'title' => 'Register someone',
             'about' => 'For any staff member: fill in a first-timer\'s welcome card, or put a new member on the register, at the door or after a service.',
@@ -438,6 +448,11 @@ return [
         'admin.visits.index' => [
             ['.tabs', 'Coming up and done', 'Visits still to make, the ones you\'re going on, and reports from visits made.'],
             ['#new-visit', 'Plan a visit', 'Choose the person, why, when and who\'s going. Everyone going is emailed and reminded the day before.'],
+        ],
+
+        'admin.reports.index' => [
+            ['box:Dates', 'Choose the dates', 'Pick a range, or one of the quick choices such as This month or Last year.'],
+            ['.report-grid', 'Download', 'Each card downloads one Excel workbook for those dates.'],
         ],
 
         'admin.register.index' => [

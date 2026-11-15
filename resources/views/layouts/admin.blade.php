@@ -7,6 +7,7 @@
     $nav = [
         'OVERVIEW' => [
             ['id' => 'dashboard', 'label' => 'Dashboard', 'route' => 'admin.dashboard'],
+            ...($user->isAdmin() ? [['id' => 'reports', 'label' => 'Reports', 'route' => 'admin.reports.index']] : []),
         ],
         'PEOPLE' => [
             ['id' => 'register', 'label' => 'Register someone', 'route' => 'admin.register.index'],
