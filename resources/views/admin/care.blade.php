@@ -4,7 +4,7 @@
     <header class="page-head">
         <div class="stack" style="gap: 4px">
             <h1>Follow-up &amp; care</h1>
-            <span class="page-head__sub">First-timers are called within {{ (int) config('church.care.first_timer_days') }} days, new members are welcomed, and anyone who misses {{ (int) config('church.care.absent_after') }} Sundays in a row is checked on.@if ($overdue) <strong style="color: #a6531a">{{ $overdue }} overdue.</strong>@endif</span>
+            <span class="page-head__sub">First-timers are called within {{ (int) config('church.care.first_timer_days') }} days, new members are welcomed, and anyone who misses {{ (int) config('church.care.absent_after') }} Sunday services in a row is checked on. Unit heads see their own members' follow-ups.@if ($overdue) <strong style="color: #a6531a">{{ $overdue }} overdue.</strong>@endif</span>
         </div>
         <div class="actions"><a href="#new-follow-up" class="btn btn--gold"><x-icon name="plus" :size="16" />Add a follow-up</a></div>
     </header>
@@ -34,9 +34,20 @@
                     <span class="prayer-card__when">{{ $f->done_at ? 'Done '.$f->done_at->format('j M') : 'By '.$f->due_on->format('D j M') }}</span>
                 </div>
                 @if ($f->note)<p class="prayer-card__text">{{ $f->note }}</p>@endif
+                @if ($f->logLines())
+                    <ul class="check-list" style="margin: 0">
+                        @foreach ($f->logLines() as $line)<li class="box__note" style="margin: 0">{{ $line }}</li>@endforeach
+                    </ul>
+                @endif
+                @if (! $f->done_at && $f->script())
+                    <details class="training-edit"><summary class="box__link" style="cursor: pointer">What to say</summary><p class="box__note" style="margin: 6px 0 0">{{ $f->script() }}</p></details>
+                @endif
+                @if ($f->visits->isNotEmpty())
+                    <span class="prayer-card__contact">Visit: {{ $f->visits->map(fn ($v) => $v->scheduled_at->format('D j M').' ('.($v->status === 'planned' ? 'planned' : $v->status).')')->join(', ') }}</span>
+                @endif
                 <span class="prayer-card__contact">
                     {{ $f->phone() ?? 'No phone' }}
-                    @if ($member?->unit) · {{ $member->unit->name }}@endif
+                    @if ($member?->unitNames()) · {{ $member->unitNames() }}@endif
                     @if ($member?->fellowship) · {{ $member->fellowship->name }}@endif
                     @if ($f->firstTimer?->invited_by) · invited by {{ $f->firstTimer->invited_by }}@endif
                 </span>
@@ -50,6 +61,7 @@
                             @php($wa = $member?->whatsappUrl() ?? (new \App\Models\Member(['phone' => $f->phone()]))->whatsappUrl())
                             @if ($wa)<a href="{{ $wa }}" class="btn btn--ghost btn--xs" target="_blank" rel="noopener">WhatsApp</a>@endif
                         @endif
+                        <a href="{{ route('admin.visits.index', ['follow_up' => $f->id]) }}#new-visit" class="btn btn--ghost btn--xs">Plan a visit</a>
                         <form method="POST" action="{{ route('admin.care.assign', $f) }}" style="display: flex; gap: 6px">
                             @csrf
                             <label class="sr-only" for="assign-{{ $f->id }}">Assign {{ $f->personName() }}</label>

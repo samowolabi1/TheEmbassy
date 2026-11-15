@@ -27,6 +27,7 @@ class ReminderController extends Controller
             'service' => ['first_name' => 'Ada', 'service' => 'Sunday service', 'day' => 'today', 'time' => '9:00 AM', 'church' => config('church.short_name')],
             'greeting' => ['first_name' => 'Ada', 'service' => 'Sunday service', 'church' => config('church.short_name')],
             'feedback' => ['first_name' => 'Ada', 'service' => 'Sunday service', 'church' => config('church.short_name')],
+            'missed' => ['first_name' => 'Ada', 'weeks' => (string) Reminders::settings('missed')['timing'], 'church' => config('church.short_name')],
             'market' => ['name' => 'Tolu', 'shop' => 'Tolu\'s Kitchen', 'market' => config('church.brand.market_name'), 'end_date' => now()->addWeek()->format('l j F'), 'days_left' => '7 days left'],
         ];
         $hours = Reminders::settings('service')['timing'];
@@ -53,7 +54,7 @@ class ReminderController extends Controller
         abort_unless(isset(Reminders::KINDS[$kind]), 404);
         $meta = Reminders::KINDS[$kind];
         $data = $request->validateWithBag($kind, [
-            'timing' => ['required', 'integer', 'min:'.($kind === 'market' ? 1 : 0), 'max:'.$meta['max']],
+            'timing' => ['required', 'integer', 'min:'.(in_array($kind, ['market', 'missed'], true) ? 1 : 0), 'max:'.$meta['max']],
             'text' => ['required', 'string', 'max:450'],
         ], ['text.required' => 'Write the message.']);
 

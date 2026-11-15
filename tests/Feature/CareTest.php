@@ -69,6 +69,7 @@ class CareTest extends TestCase
 
     public function test_members_who_miss_three_sundays_in_a_row_are_flagged_once(): void
     {
+        config(['church.care.absent_after' => 3]);
         $away = Member::factory()->active()->create(['name' => 'Away Member', 'joined_on' => today()->subYear(), 'last_attended_on' => today()->subMonths(2)]);
         $services = $this->sundays(3);
         $regular = Member::factory()->active()->create(['joined_on' => today()->subYear()]);
@@ -81,11 +82,12 @@ class CareTest extends TestCase
 
         $followUp = FollowUp::sole();
         $this->assertSame($away->id, $followUp->member_id);
-        $this->assertStringContainsString('Missed the last 3 Sundays', $followUp->note);
+        $this->assertStringContainsString('Missed the last 3 Sunday services', $followUp->note);
     }
 
     public function test_one_or_two_missed_sundays_are_not_flagged(): void
     {
+        config(['church.care.absent_after' => 3]);
         Member::factory()->active()->create(['joined_on' => today()->subYear()]);
         $services = $this->sundays(3);
         $member = Member::factory()->active()->create(['joined_on' => today()->subYear()]);
@@ -129,14 +131,17 @@ class CareTest extends TestCase
         $this->assertSame('returned', FollowUp::sole()->outcome);
     }
 
-    public function test_the_threshold_is_set_by_the_church(): void
+    public function test_the_threshold_is_two_services_and_set_by_the_church(): void
     {
-        config(['church.care.absent_after' => 2]);
+        $this->assertSame(2, config('church.care.absent_after'));
         Member::factory()->active()->create(['joined_on' => today()->subYear()]);
         $this->sundays(2);
-
+        config(['church.care.absent_after' => 3]);
         $this->artisan('care:scan');
+        $this->assertSame(0, FollowUp::where('reason', 'absent')->count());
 
+        config(['church.care.absent_after' => 2]);
+        $this->artisan('care:scan');
         $this->assertSame(1, FollowUp::where('reason', 'absent')->count());
     }
 

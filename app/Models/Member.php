@@ -70,6 +70,7 @@ class Member extends Model
             'training_answered_at' => 'datetime',
             'notify_sms' => 'boolean',
             'rank_changed_at' => 'datetime',
+            'missed_message_at' => 'datetime',
         ];
     }
 

@@ -191,9 +191,23 @@ Set the venue under **Settings & roles › Attendance check-in**. The easiest wa
 | --- | --- | --- |
 | First-timers (cards from `/welcome` or typed in) | when the card is added | within 2 days |
 | Members who joined online, once approved | on approval | within a week |
-| Active members who've missed Sundays | after 3 in a row (adjustable) | the next day |
+| Visitors who come back (a card matching an earlier one by phone or email) | when the card is added | within 2 days: "Second visit", inviting them to join |
+| Active members who've missed Sunday services | after 2 in a row (adjustable) | the same day |
 
-Only Sundays where attendance was actually taken count as missed, members aren't counted as missing Sundays before they joined, and anyone seen at any service since (midweek included) isn't flagged. When someone comes back, their follow-up closes itself. Staff assign follow-ups to each other (the person gets an email), call or WhatsApp from the list, and record how it went. Member profiles show attendance over the last eight Sundays and their follow-up history. `php artisan care:scan` runs every morning from the scheduler.
+Only Sundays where attendance was actually taken count as missed, members aren't counted as missing Sundays before they joined, and anyone seen at any service since (midweek included) isn't flagged. When someone comes back, their follow-up closes itself. Staff assign follow-ups to each other (the person gets an email), call or WhatsApp from the list, and record how it went. Each follow-up has **What to say**, a short call script for its kind, edited in Settings & roles › Follow-up & visitation. Member profiles show attendance over the last eight Sundays, their follow-up history and their visits.
+
+**When someone misses services** (2 Sunday services in a row to start; Settings & roles › Follow-up & visitation):
+- a follow-up is raised for the care team;
+- the heads of the member's units are emailed, and see it under **Follow-up** in their unit area, where they can call, see the call script and note how it went ("No answer" keeps it open for the team; pastoral notes stay private to the care team);
+- the member gets a **"We missed you"** message, once per absence, by email (and WhatsApp or app notification if chosen). Its wording, how many missed services, and the ways it's sent are on Reminders & greetings, where it can be switched off.
+
+**Keeping it moving:** each morning, staff with overdue follow-ups get one email listing them; every Monday at 7:30 the pastors get a summary (follow-ups raised, done and reached, overdue and unassigned, visits made and planned, first-timers and "we missed you" messages). Both can be switched off in Settings & roles.
+
+**Visitation** (admin › Visitation, for the care team): plan a visit to a member, or to anyone by name (a visitor, someone in hospital), with why (pastoral, not seen lately, welcome, hospital, bereavement, celebration, welfare, prayer), when, the address, notes and who's going. Everyone going is emailed when it's planned or moved and reminded the day before; "Let them know we're coming" tells the person too. Afterwards, record how it went with a short report. "Plan a visit" on a follow-up links the two, and recording the visit as made closes the follow-up. Tabs show visits coming up, your own, done and cancelled; the sidebar counts your visits in the next week.
+
+**Registering people:** any staff member (ushers, media, finance and so on) can use **Register someone** in the sidebar to fill in a first-timer's welcome card or add a new member. Staff who look after the register add approved members (with their unit); anyone else's wait for the church office to approve them, and a chosen unit becomes a request.
+
+`php artisan care:scan` runs every morning at 7 and `php artisan care:weekly` on Monday mornings, from the scheduler.
 
 ## Units and their heads of department
 

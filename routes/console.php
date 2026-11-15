@@ -3,6 +3,7 @@
 use App\Models\Member;
 use App\Models\Setting;
 use App\Models\User;
+use App\Services\Care\CareNotices;
 use App\Services\Care\FollowUps;
 use App\Services\Celebrations\Birthdays;
 use App\Services\Content\InlineImages;
@@ -79,10 +80,17 @@ Artisan::command('market:remind', function (SubscriptionReminders $reminders) {
     $this->info("Sent {$sent['ending']} renewal reminders and {$sent['lapsed']} lapsed notices.");
 })->purpose('Email sellers whose market subscription is ending or has just ended');
 
-Artisan::command('care:scan', function (FollowUps $followUps) {
+Artisan::command('care:scan', function (FollowUps $followUps, CareNotices $notices) {
     $result = $followUps->scanAbsences();
     $this->info("Raised {$result['raised']} follow-ups for members not seen lately; closed {$result['closed']} for members who are back.");
-})->purpose('Raise follow-ups for members who have missed several Sundays, and close them when they return');
+    $this->info('Sent "we missed you" to '.$followUps->missedMessages().' members.');
+    $this->info('Emailed '.$notices->overdueDigest().' staff about overdue follow-ups.');
+    $this->info('Sent reminders for '.$notices->visitReminders().' visits.');
+})->purpose('Raise follow-ups for members who have missed Sundays (and tell them we missed them), remind staff of overdue follow-ups and visits');
+
+Artisan::command('care:weekly', function (CareNotices $notices) {
+    $this->info('Sent the weekly follow-up summary to '.$notices->weeklySummary().' pastors.');
+})->purpose('Email the pastors a summary of follow-up and visitation for the week');
 
 Artisan::command('units:remind', function (DutyReminders $reminders) {
     $this->info('Sent '.$reminders->send().' rota reminders.');
@@ -186,6 +194,7 @@ $task('youtube:sync')->everyMinute()->withoutOverlapping();
 $task('social:publish')->everyMinute()->withoutOverlapping();
 $task('units:remind')->dailyAt('09:00')->timezone('Africa/Lagos');
 $task('care:scan')->dailyAt('07:00')->timezone('Africa/Lagos');
+$task('care:weekly')->weeklyOn(1, '07:30')->timezone('Africa/Lagos');
 $task('market:remind')->dailyAt('08:00')->timezone('Africa/Lagos');
 $task('messages:send')->everyMinute()->withoutOverlapping(30);
 $task('newsletter:queue')->weeklyOn(1, (string) config('church.newsletter.send_at', '07:00'))->timezone('Africa/Lagos')

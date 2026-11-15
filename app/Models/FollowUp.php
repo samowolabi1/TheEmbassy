@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Someone to contact: a first-timer to welcome, a member who's been away, a new member to settle in.
@@ -16,6 +17,7 @@ class FollowUp extends Model
 {
     public const REASONS = [
         'first_timer' => 'First-timer',
+        'second_visit' => 'Second visit',
         'absent' => 'Not seen lately',
         'new_member' => 'New member',
         'other' => 'Pastoral care',
@@ -95,6 +97,41 @@ class FollowUp extends Model
     public function reasonLabel(): string
     {
         return self::REASONS[$this->reason] ?? 'Follow-up';
+    }
+
+    /**
+     * What to say on this kind of call (Settings & roles › Follow-up & visitation).
+     */
+    public function script(): ?string
+    {
+        $text = trim((string) config('church.care.scripts.'.$this->reason, ''));
+
+        return $text !== '' ? $text : null;
+    }
+
+    /**
+     * @return HasMany<Visit, $this>
+     */
+    public function visits(): HasMany
+    {
+        return $this->hasMany(Visit::class);
+    }
+
+    /**
+     * Note something on a follow-up that stays open, e.g. "no answer".
+     */
+    public function addToLog(User $by, string $line): void
+    {
+        $entry = now()->format('j M').' · '.($by->member?->name ?? $by->name).': '.trim($line);
+        $this->forceFill(['log' => trim(($this->log ? $this->log."\n" : '').$entry)])->save();
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function logLines(): array
+    {
+        return array_values(array_filter(explode("\n", (string) $this->log)));
     }
 
     public function isOverdue(): bool

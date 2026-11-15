@@ -13,6 +13,7 @@ use App\Models\Testimony;
 use App\Models\Unit;
 use App\Models\UnitRequest;
 use App\Models\User;
+use App\Models\Visit;
 use App\Services\Care\FollowUps;
 use App\Services\Tokens\Ledger;
 use App\Services\Tokens\Rewards;
@@ -71,6 +72,7 @@ class MemberDemoSeeder extends Seeder
         $this->ranks();
         $this->secondUnits();
         $this->unitRequests();
+        $this->visits();
 
         mt_srand();
         $this->command?->info($made->isNotEmpty() ? "Made {$made->count()} demo members." : 'The demo members are already there.');
@@ -105,6 +107,31 @@ class MemberDemoSeeder extends Seeder
             $m?->forceFill(['rank' => 'minister', 'baptised' => true, 'believers_class' => true, 'workers_training' => true, 'sod' => true, 'bible_college' => $college,
                 'training_answered_at' => now()->subMonths(8)])->save();
             $m?->forceFill(['rank_changed_at' => now()->subMonths(8)])->save();
+        }
+    }
+
+    /**
+     * A few pastoral visits: two coming up, two made with reports. Only done once.
+     */
+    private function visits(): void
+    {
+        $staff = User::whereIn('role', ['super', 'pastor', 'secretary'])->orderBy('id')->get();
+        if (Visit::exists() || $staff->isEmpty()) {
+            return;
+        }
+        $members = Member::where('status', Member::ACTIVE)->whereHas('user', fn ($u) => $u->where('email', 'like', 'member%@demo.test'))->inRandomOrder()->take(4)->get();
+        $plans = [
+            ['absent', now()->addDays(2)->setTime(17, 30), null, null],
+            ['hospital', now()->addDays(4)->setTime(11, 0), null, null],
+            ['celebration', now()->subDays(5)->setTime(16, 0), 'prayed', 'New baby girl, mother and child well. Prayed and dedicated the home. They\'d like the baby dedicated next month.'],
+            ['new_member', now()->subDays(10)->setTime(18, 0), 'visited', 'Warm family. Interested in the choir; husband works Sundays so joins online. Invited to the house fellowship.'],
+        ];
+        foreach ($members as $i => $m) {
+            [$purpose, $at, $outcome, $report] = $plans[$i];
+            $visit = Visit::create(['member_id' => $m->id, 'name' => $m->name, 'phone' => $m->phone, 'address' => $purpose === 'hospital' ? 'LUTH, Idi-Araba, Ward 4' : $m->address, 'purpose' => $purpose, 'scheduled_at' => $at]);
+            $visit->forceFill(['created_by' => $staff->first()->id, 'status' => $outcome ? 'done' : 'planned', 'outcome' => $outcome, 'report' => $report,
+                'done_by' => $outcome ? $staff->first()->id : null, 'done_at' => $outcome ? $at->copy()->addHours(2) : null])->save();
+            $visit->visitors()->sync($staff->take(2)->pluck('id'));
         }
     }
 

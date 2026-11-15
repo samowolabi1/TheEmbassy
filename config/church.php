@@ -107,6 +107,12 @@ return [
             'email' => true, 'whatsapp' => false, 'push' => true,
             'text' => 'How was {service} today, {first_name}? Tell us what blessed you and what we can do better. It takes a minute.',
         ],
+        'missed' => [
+            'enabled' => true,
+            'services_missed' => 2,
+            'email' => true, 'whatsapp' => false, 'push' => true,
+            'text' => 'Hi {first_name}, we missed you at church! We hope you and your family are well. If there\'s anything we can pray about or help with, just reply. We\'d love to see you this Sunday, or join us online from the app.',
+        ],
         'market' => [
             'enabled' => true,
             'days_before' => 7,
@@ -137,10 +143,22 @@ return [
 
     'care' => [
         // Raise a follow-up when an active member has missed this many Sunday services in a row.
-        'absent_after' => 3,
+        'absent_after' => 2,
         // Days to call a first-timer, and to welcome a newly approved member.
         'first_timer_days' => 2,
         'new_member_days' => 7,
+        // What to say on each kind of call: shown on the follow-up. Edited on Settings & roles.
+        'scripts' => [
+            'first_timer' => 'Thank them for visiting and ask how they found the service. Ask if they have a prayer request, invite them back this Sunday, and tell them about the house fellowship near them.',
+            'second_visit' => "Say how glad you are they came back. Ask if they'd like to join the church family, and tell them about the believers' class and the units they could serve in.",
+            'new_member' => "Welcome them to the family. Help them choose a unit and a house fellowship, tell them about the believers' class, and show them the app.",
+            'absent' => "Say you've missed them, not that they've been absent. Ask how they and their family are, if anything has happened, and how you can pray. Offer a visit if they'd like one.",
+            'other' => 'Listen first. Pray with them, and agree what happens next.',
+        ],
+        // Email staff each morning about follow-ups assigned to them that are overdue.
+        'overdue_digest' => true,
+        // Email the pastors a summary of follow-up and visits every Monday morning.
+        'weekly_summary' => true,
     ],
 
     // YouTube broadcasts the app creates once the channel is connected.

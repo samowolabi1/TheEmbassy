@@ -21,6 +21,7 @@ use Throwable;
  *  - a reminder before each service, to every approved member;
  *  - a thank-you greeting after it, to the members who were there;
  *  - a feedback request a little later, to those who were there and haven't said how it was;
+ *  - "we missed you" to members who've missed Sunday services in a row (see FollowUps, run daily);
  *  - market renewal reminders (see SubscriptionReminders), which use deliver() here too.
  *
  * Staff switch each one on or off, set the timing, choose email (the default), WhatsApp and/or
@@ -33,6 +34,7 @@ class Reminders
         'service' => ['label' => 'Service reminder', 'timing' => 'hours_before', 'unit' => 'hours before the service starts', 'max' => 48],
         'greeting' => ['label' => 'Thank-you greeting', 'timing' => 'minutes_after', 'unit' => 'minutes after the service ends', 'max' => 720],
         'feedback' => ['label' => 'Feedback request', 'timing' => 'hours_after', 'unit' => 'hours after the service ends', 'max' => 48],
+        'missed' => ['label' => '"We missed you" message', 'timing' => 'services_missed', 'unit' => 'Sunday services missed in a row', 'max' => 12],
         'market' => ['label' => 'Market renewal reminder', 'timing' => 'days_before', 'unit' => 'days before a subscription ends', 'max' => 30],
     ];
 
@@ -41,6 +43,7 @@ class Reminders
         'service' => ['first_name', 'service', 'day', 'time', 'church'],
         'greeting' => ['first_name', 'service', 'church'],
         'feedback' => ['first_name', 'service', 'church'],
+        'missed' => ['first_name', 'weeks', 'church'],
         'market' => ['name', 'shop', 'market', 'end_date', 'days_left'],
     ];
 
@@ -228,7 +231,7 @@ class Reminders
             ?? new Service(['kind' => 'sunday', 'starts_at' => now()->next('Sunday')->setTime(9, 0)]);
         $vars = $kind === 'market'
             ? ['name' => Member::firstNameOf($user->name), 'shop' => 'Your shop', 'market' => config('church.brand.market_name'), 'end_date' => now()->addDays(max(1, $s['timing']))->format('l j F'), 'days_left' => self::daysLeft(max(1, $s['timing']))]
-            : [...$this->serviceVars($service, null), 'first_name' => Member::firstNameOf($user->name)];
+            : [...$this->serviceVars($service, null), 'first_name' => Member::firstNameOf($user->name), 'weeks' => (string) max(1, $s['timing'])];
         $body = self::render($s['text'], $vars);
         $title = '[Test] '.self::KINDS[$kind]['label'];
         $went = [];

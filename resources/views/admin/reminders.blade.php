@@ -39,6 +39,7 @@
                                 'service' => 'Sent to every approved member before each service on the Attendance page, so they remember to come or join online.',
                                 'greeting' => 'Sent after a service to the members who checked in or were marked present, to thank them for coming.',
                                 'feedback' => 'Sent after a service to the members who were there and haven\'t yet said how it was. It opens Feedback in their account.',
+                                'missed' => 'Sent once each morning check to approved members who have missed this many Sunday services in a row (only Sundays where attendance was taken count). They get it once per absence, and again only after they\'ve been back. A follow-up for the care team is raised separately (Settings & roles › Follow-up & visitation).',
                                 default => 'Sent to sellers before their subscription ends, so their shop stays on the market. A last reminder the day before and a note when it has ended are optional.',
                             }" />
                         </h2>
@@ -50,7 +51,7 @@
 
                     <label class="field reminder-card__timing">When
                         <span class="reminder-card__when">
-                            <input type="number" name="timing" value="{{ old('timing', $s['timing']) }}" min="{{ $k['key'] === 'market' ? 1 : 0 }}" max="{{ $k['max'] }}" required class="select-sm" style="width: 90px">
+                            <input type="number" name="timing" value="{{ old('timing', $s['timing']) }}" min="{{ in_array($k['key'], ['market', 'missed'], true) ? 1 : 0 }}" max="{{ $k['max'] }}" required class="select-sm" style="width: 90px">
                             <span>{{ $k['unit'] }}</span>
                         </span>
                     </label>

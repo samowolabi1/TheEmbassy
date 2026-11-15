@@ -56,7 +56,31 @@ return [
             'faqs' => [
                 ['Where do follow-ups come from?', 'Most are made automatically: first-timer cards, newly approved members, and members who miss Sundays in a row (the number is set in Settings & roles). You can also add one by hand.'],
                 ['Someone came back to church. Do I close their follow-up?', 'No need: when someone who was missed checks in again, their follow-up closes itself.'],
-                ['How do I share the work?', 'Assign each follow-up to someone on the team. They get an email, and it shows under their name.'],
+                ['How do I share the work?', 'Assign each follow-up to someone on the team. They get an email, and it shows under their name. Each morning, anyone with overdue follow-ups gets one email listing them, and every Monday the pastors get a summary of the week.'],
+                ['Do unit heads see follow-ups?', 'Yes: unit heads see follow-ups for people in their unit under Follow-up in their unit area, can call them and note how it went. "No answer" keeps it open for the team. Pastoral notes stay private to the care team.'],
+                ['What happens when someone misses services?', 'After the number of Sunday services set in Settings & roles (2 to start), a follow-up is raised, their unit heads are emailed, and the member gets a "We missed you" message, once per absence. Change or switch off that message on Reminders & greetings.'],
+                ['What is a second visit?', 'When a first-timer\'s card matches an earlier one (same phone or email), they\'ve come back. The follow-up becomes "Second visit": a call inviting them to join the family.'],
+                ['Is there a script for calls?', 'Press "What to say" on any follow-up. Change the wording for each kind of call in Settings & roles › Follow-up & visitation.'],
+            ],
+        ],
+
+        'visits' => [
+            'title' => 'Visitation',
+            'area' => 'care',
+            'about' => 'Pastoral visits to members and visitors: at home, in hospital, after a bereavement or a new baby. Plan who goes and when, then write a short report.',
+            'faqs' => [
+                ['Who hears about a visit?', 'Everyone going is emailed when it\'s planned (or moved) and again the day before. Tick "Let them know we\'re coming" to tell the person too, by email and WhatsApp.'],
+                ['Can a visit come from a follow-up?', 'Yes: press "Plan a visit" on a follow-up. When the visit is recorded as made, the follow-up closes with your report.'],
+                ['Someone isn\'t on the register. Can I still visit them?', 'Yes: leave Member empty and type their name, with an address such as a hospital ward.'],
+            ],
+        ],
+
+        'register' => [
+            'title' => 'Register someone',
+            'about' => 'For any staff member: fill in a first-timer\'s welcome card, or put a new member on the register, at the door or after a service.',
+            'faqs' => [
+                ['Why is the new member waiting for approval?', 'Members added by staff who don\'t look after the register wait for the church office, like anyone who joins online. A unit you chose for them goes to the office as a request.'],
+                ['The visitor has been before. What happens?', 'If their phone or email matches an earlier card, the care team gets a "Second visit" follow-up instead of a first call.'],
             ],
         ],
 
@@ -409,6 +433,16 @@ return [
             ['.tabs', 'Open and done', 'Follow-ups still to do, and the ones already done with their outcomes.'],
             ['.box--flush', 'Who to call', 'Call or WhatsApp straight from the list, assign it to someone, and record how it went.'],
             ['#new-follow-up', 'Add one yourself', 'Most follow-ups are made automatically, but you can add one for anyone.'],
+        ],
+
+        'admin.visits.index' => [
+            ['.tabs', 'Coming up and done', 'Visits still to make, the ones you\'re going on, and reports from visits made.'],
+            ['#new-visit', 'Plan a visit', 'Choose the person, why, when and who\'s going. Everyone going is emailed and reminded the day before.'],
+        ],
+
+        'admin.register.index' => [
+            ['#visitor', 'A first-timer', 'Their welcome card. The care team is asked to call them within a couple of days.'],
+            ['#member', 'A new member', 'Puts them on the register. The church office approves them if you don\'t look after the register.'],
         ],
 
         'admin.attendance.index' => [

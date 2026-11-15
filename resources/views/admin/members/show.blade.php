@@ -115,6 +115,20 @@
                 <p class="empty-state">No follow-ups yet.</p>
             @endforelse
         </section>
+
+        <section class="box box--flush">
+            <div class="box__head"><h2>Visits</h2><a href="{{ route('admin.visits.index') }}#new-visit" class="box__link">Plan a visit</a></div>
+            @forelse (\App\Models\Visit::where('member_id', $member->id)->with('visitors')->latest('scheduled_at')->take(6)->get() as $v)
+                <div class="list-item">
+                    <span class="list-item__main">
+                        <span class="list-item__title">{{ $v->purposeLabel() }} · {{ $v->scheduled_at->format('j M Y') }}</span>
+                        <span class="list-item__meta">{{ $v->status === 'done' ? (\App\Models\Visit::OUTCOMES[$v->outcome] ?? 'Done') : ucfirst($v->status) }} · {{ $v->visitors->pluck('name')->join(', ') }}@if ($v->report) · {{ \Illuminate\Support\Str::limit($v->report, 140) }}@endif</span>
+                    </span>
+                </div>
+            @empty
+                <p class="empty-state">No visits yet.</p>
+            @endforelse
+        </section>
     @endif
 
     <form method="POST" action="{{ route('admin.members.destroy', $member) }}" data-confirm="Remove {{ $member->name }} from the register? Their giving records stay." style="align-self: flex-start">

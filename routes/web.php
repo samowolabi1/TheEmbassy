@@ -226,6 +226,8 @@ Route::middleware(['auth', 'can:lead-unit,unit'])->prefix('units/{unit}')->name(
     Route::delete('/members/{member}', [Unit\UnitController::class, 'removeMember'])->name('members.remove');
     Route::post('/members/{member}/training', [Unit\UnitController::class, 'training'])->name('members.training');
     Route::get('/attendance', [Unit\UnitController::class, 'attendance'])->name('attendance');
+    Route::get('/follow-ups', [Unit\FollowUpController::class, 'index'])->name('follow-ups');
+    Route::post('/follow-ups/{followUp}', [Unit\FollowUpController::class, 'update'])->middleware('throttle:30,1')->name('follow-ups.update');
     Route::get('/messages', [Unit\UnitController::class, 'messages'])->name('messages');
     Route::post('/messages', [Unit\UnitController::class, 'sendMessage'])->middleware('throttle:10,1')->name('messages.send');
     Route::get('/rota', [Unit\RotaController::class, 'index'])->name('rota');
@@ -405,10 +407,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/care', [Admin\CareController::class, 'store'])->name('care.store');
             Route::post('/care/{followUp}/assign', [Admin\CareController::class, 'assign'])->name('care.assign');
             Route::post('/care/{followUp}/done', [Admin\CareController::class, 'complete'])->name('care.complete');
+            Route::get('/visits', [Admin\VisitController::class, 'index'])->name('visits.index');
+            Route::post('/visits', [Admin\VisitController::class, 'store'])->name('visits.store');
+            Route::put('/visits/{visit}', [Admin\VisitController::class, 'update'])->name('visits.update');
+            Route::post('/visits/{visit}/done', [Admin\VisitController::class, 'complete'])->name('visits.complete');
+            Route::post('/visits/{visit}/cancel', [Admin\VisitController::class, 'cancel'])->name('visits.cancel');
         });
 
         // Pastors reach welfare cases through the welfare unit's area.
         Route::get('/welfare', [Admin\UnitController::class, 'welfare'])->middleware('can:manage,"welfare"')->name('welfare');
+
+        // Any staff member can register a first-timer or a new member.
+        Route::get('/register', [Admin\RegisterController::class, 'index'])->name('register.index');
+        Route::post('/register/first-timer', [Admin\RegisterController::class, 'firstTimer'])->middleware('throttle:30,1')->name('register.first-timer');
+        Route::post('/register/member', [Admin\RegisterController::class, 'member'])->middleware('throttle:30,1')->name('register.member');
 
         Route::middleware('can:manage,"units"')->group(function () {
             Route::get('/units', [Admin\UnitController::class, 'index'])->name('units.index');

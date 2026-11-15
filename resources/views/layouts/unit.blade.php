@@ -4,6 +4,7 @@
     $nav = $user->can('lead-unit', $unit) ? [
         ['id' => 'overview', 'label' => 'Overview', 'route' => 'unit.show'],
         ['id' => 'members', 'label' => 'Members', 'route' => 'unit.members'],
+        ['id' => 'follow-ups', 'label' => 'Follow-up', 'route' => 'unit.follow-ups'],
         ['id' => 'attendance', 'label' => 'Attendance', 'route' => 'unit.attendance'],
         ['id' => 'meetings', 'label' => 'Meetings', 'route' => 'unit.meetings.index'],
         ['id' => 'rota', 'label' => 'Rota', 'route' => 'unit.rota'],

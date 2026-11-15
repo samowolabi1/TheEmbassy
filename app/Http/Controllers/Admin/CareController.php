@@ -32,7 +32,7 @@ class CareController extends Controller
         return view('admin.care', [
             'tab' => $tab,
             'tabs' => collect(self::TABS)->map(fn ($label, $key) => ['label' => $label, 'count' => $key === 'done' ? null : $this->filter($query(), $key, $me)->count()]),
-            'followUps' => $this->filter($query(), $tab, $me)->with('member.unit', 'member.fellowship', 'firstTimer', 'assignee', 'doer')
+            'followUps' => $this->filter($query(), $tab, $me)->with('member.units', 'member.fellowship', 'firstTimer', 'assignee', 'doer', 'visits')
                 ->when($tab === 'done', fn ($q) => $q->latest('done_at'), fn ($q) => $q->orderBy('due_on')->orderBy('id'))
                 ->paginate(20)->withQueryString(),
             'carers' => $this->carers(),
