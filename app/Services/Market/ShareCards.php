@@ -2,6 +2,7 @@
 
 namespace App\Services\Market;
 
+use App\Models\Post;
 use App\Models\Product;
 use App\Models\Shop;
 use BaconQrCode\Renderer\GDLibRenderer;
@@ -64,6 +65,34 @@ class ShareCards
             'url' => $this->url($shop),
             'cta' => 'Visit the shop',
         ]));
+    }
+
+    /**
+     * A blog article: its title, the author's name, the cover photo, the topic and the church's
+     * name, so the post is recognisable wherever the link or picture is shared.
+     */
+    public function post(Post $post, string $format): string
+    {
+        $key = 'share-card:a:'.md5(json_encode([$post->id, $post->updated_at, $post->authorName(), $format, config('church.short_name'), $post->url()]));
+
+        return Cache::remember($key, now()->addWeek(), fn () => $this->draw($format, [
+            'title' => $post->title,
+            'badge' => mb_strtoupper((string) $post->topic) ?: 'BLOG',
+            'byline' => 'by '.$post->authorName(),
+            'text' => $post->dek ?: $post->summary(),
+            'images' => array_filter([$post->cover_path]),
+            'url' => $post->url(),
+            'cta' => 'Read the article',
+            'brand' => config('church.short_name'),
+        ]));
+    }
+
+    /**
+     * The words to post with an article: its title, who wrote it, and the link.
+     */
+    public static function postCaption(Post $post): string
+    {
+        return '📖 "'.$post->title.'" by '.$post->authorName()."\n".Str::limit(preg_replace('/\s+/', ' ', $post->dek ?: $post->summary()), 200)."\n\nRead it 👉 ".$post->url();
     }
 
     /**
@@ -161,7 +190,7 @@ class ShareCards
      */
     private function story(GdImage $img, array $c, array $photos): void
     {
-        $this->brand($img, 60, 70);
+        $this->brand($img, 60, 70, $c['brand'] ?? null);
         $this->photos($img, $photos, 60, 150, 960, 960, 44, $c['title']);
         $this->badge($img, $c['badge'], 96, 1040, 40);
         $y = 1215;
@@ -193,15 +222,17 @@ class ShareCards
         $this->photos($img, $photos, 0, 0, 630, 630, 0, $c['title']);
         $this->badge($img, $c['badge'], 680, 70, 30);
         $y = 210;
-        foreach ($this->lines($c['title'], 'Poppins-Black.ttf', 48, 480, 3) as $line) {
-            $this->text($img, $line, 'Poppins-Black.ttf', 48, 680, $y, '#ffffff');
-            $y += 58;
+        // Long titles get a little smaller so more of them fits.
+        $size = mb_strlen($c['title']) > 40 ? 42 : 48;
+        foreach ($this->lines($c['title'], 'Poppins-Black.ttf', $size, 480, $size === 48 ? 3 : 4) as $line) {
+            $this->text($img, $line, 'Poppins-Black.ttf', $size, 680, $y, '#ffffff');
+            $y += $size + 10;
         }
         $this->text($img, $c['byline'], 'Poppins-SemiBold.ttf', 24, 680, $y + 4, self::GOLD, 480);
         if (filled($c['text'])) {
             $this->text($img, Str::limit(preg_replace('/\s+/', ' ', $c['text']), 48), 'PlusJakartaSans.ttf', 20, 680, $y + 44, self::SOFT, 480);
         }
-        $this->brand($img, 680, 560);
+        $this->brand($img, 680, 560, $c['brand'] ?? null, 400);
     }
 
     /**
@@ -210,12 +241,12 @@ class ShareCards
     private function footer(GdImage $img, array $c, int $x, int $y, int $w, int $h, int $qr): void
     {
         $this->rounded($img, $x, $y, $w, $h, 28, '#13306a');
-        $this->brand($img, $x + 30, $y + 50);
+        $this->brand($img, $x + 30, $y + 50, $c['brand'] ?? null);
         $this->text($img, $c['cta'].' · scan or tap the link', 'Poppins-Medium.ttf', 22, $x + 30, $y + 104, self::SOFT, $w - $qr - 80);
         $this->qrBlock($img, $c['url'], $x + $w - $qr - 10, $y + (int) (($h - $qr) / 2), $qr);
     }
 
-    private function brand(GdImage $img, int $x, int $y): void
+    private function brand(GdImage $img, int $x, int $y, ?string $label = null, int $maxWidth = 520): void
     {
         $path = public_path(config('church.brand.logo'));
         $logo = is_file($path) ? @imagecreatefromstring((string) file_get_contents($path)) : false;
@@ -226,7 +257,13 @@ class ShareCards
             imagecopyresampled($img, $logo, (int) (($x + 26) * self::S - imagesx($logo) * $scale / 2), (int) (($y - 10) * self::S - imagesy($logo) * $scale / 2), 0, 0,
                 (int) (imagesx($logo) * $scale), (int) (imagesy($logo) * $scale), imagesx($logo), imagesy($logo));
         }
-        $this->text($img, config('church.brand.market_name'), 'Poppins-Black.ttf', 30, $x + 68, $y, '#ffffff', 520);
+        // Long names (like a church's full name) get smaller rather than cut off.
+        $name = $label ?? config('church.brand.market_name');
+        $size = 30;
+        while ($size > 18 && ($b = imagettfbbox($size, 0, $this->font('Poppins-Black.ttf'), $name))[2] - $b[0] > $maxWidth) {
+            $size -= 1;
+        }
+        $this->text($img, $name, 'Poppins-Black.ttf', $size, $x + 68, $y, '#ffffff', $maxWidth);
     }
 
     private function qrBlock(GdImage $img, string $url, int $x, int $y, int $size): void

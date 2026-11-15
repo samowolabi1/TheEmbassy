@@ -59,6 +59,7 @@
 }
 .share {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 .share__btn {
@@ -315,5 +316,37 @@
 @media (max-width: 640px) {
   .article-image--plain {
     height: 200px;
+  }
+}
+
+/* Share this article: the picture with its title and author, ready for status or a post. */
+.share-article {
+  max-width: 760px;
+  margin: 40px auto 0;
+  padding: 0 24px;
+}
+.share-article__card {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--white);
+}
+.share-article__card img {
+  width: 100%;
+  border-radius: 14px;
+  display: block;
+}
+.share-article__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+@media (max-width: 600px) {
+  .share-article__card {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

@@ -48,6 +48,7 @@ Route::get('/testimonies', [TestimonyController::class, 'index'])->name('testimo
 Route::get('/testimonies/{testimony}', [TestimonyController::class, 'show'])->name('testimonies.show');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/feed', [BlogController::class, 'feed'])->name('blog.feed');
+Route::get('/blog/{slug}/share/{format}.png', [BlogController::class, 'shareImage'])->where('slug', '[a-z0-9-]+')->whereIn('format', ['square', 'story', 'wide'])->middleware('throttle:60,1')->name('blog.share-image');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->where('slug', '[a-z0-9-]+')->name('blog.show');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
 Route::get('/gallery/{album}', [GalleryController::class, 'show'])->name('gallery.show');

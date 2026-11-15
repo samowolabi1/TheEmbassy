@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Services\Market\ShareCards;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -55,6 +56,22 @@ class BlogController extends Controller
         abort_unless($post->isLive(), 404);
 
         return $this->article($post);
+    }
+
+    /**
+     * A picture for sharing the article (square post, status/story, or the wide link preview),
+     * with its title and author.
+     */
+    public function shareImage(Request $request, string $slug, string $format, ShareCards $cards): Response
+    {
+        $post = Post::firstWhere('slug', $slug);
+        abort_unless($post?->isLive(), 404);
+
+        return response($cards->post($post, $format), 200, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'public, max-age=86400',
+            'Content-Disposition' => ($request->boolean('download') ? 'attachment' : 'inline').'; filename="'.$post->slug.'-'.$format.'.png"',
+        ]);
     }
 
     /**

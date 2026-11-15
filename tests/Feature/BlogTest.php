@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Post;
 use App\Models\User;
+use App\Services\Market\ShareCards;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -177,5 +178,30 @@ class BlogTest extends TestCase
     {
         $this->get('/')->assertSee('Dating with purpose');
         $this->get('/sitemap.xml')->assertOk()->assertSee('/blog/dating-with-purpose')->assertSee('/gallery');
+    }
+
+    public function test_shared_articles_carry_the_title_and_author(): void
+    {
+        $post = Post::factory()->create(['title' => 'Living like royalty', 'author_name' => 'Pastor Femi Adeyemi', 'topic' => 'Purpose', 'published_at' => now()->subDay()]);
+
+        $page = $this->get($post->url())->assertOk()
+            ->assertSee('<meta property="og:title" content="Living like royalty · by Pastor Femi Adeyemi">', false)
+            ->assertSee('<meta name="author" content="Pastor Femi Adeyemi">', false)
+            ->assertSee('content="By Pastor Femi Adeyemi · ', false)
+            ->assertSee('<meta property="og:image" content="'.route('blog.share-image', [$post->slug, 'wide']).'">', false)
+            ->assertSee('Share this article');
+        $whatsApp = 'https://wa.me/?text='.rawurlencode('"Living like royalty" by Pastor Femi Adeyemi '.$post->url());
+        $page->assertSee(e($whatsApp), false)->assertSee('facebook.com/sharer/sharer.php', false)->assertSee('t.me/share/url', false);
+
+        foreach (['wide' => [1200, 630], 'square' => [1080, 1080], 'story' => [1080, 1920]] as $format => $size) {
+            $png = $this->get(route('blog.share-image', [$post->slug, $format]))->assertOk()->assertHeader('Content-Type', 'image/png')->getContent();
+            $this->assertSame($size, array_slice(getimagesizefromstring($png), 0, 2));
+        }
+        $this->get(route('blog.share-image', [$post->slug, 'square']).'?download=1')->assertHeader('Content-Disposition', 'attachment; filename="'.$post->slug.'-square.png"');
+        $this->assertStringContainsString('"Living like royalty" by Pastor Femi Adeyemi', ShareCards::postCaption($post));
+
+        // Drafts have no share picture.
+        $draft = Post::factory()->draft()->create();
+        $this->get(route('blog.share-image', [$draft->slug, 'wide']))->assertNotFound();
     }
 }

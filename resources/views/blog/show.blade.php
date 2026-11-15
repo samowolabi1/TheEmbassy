@@ -2,12 +2,26 @@
     'title' => $post->title,
     'active' => 'blog',
     'description' => $post->summary(),
-    'image' => $post->coverUrl(),
+    // Shared links show the title, the author and a picture with both on it.
+    'ogTitle' => $post->title.' · by '.$post->authorName(),
+    'ogDescription' => 'By '.$post->authorName().' · '.$post->summary(),
+    'image' => $post->isLive() ? route('blog.share-image', [$post->slug, 'wide']) : $post->coverUrl(),
     'ogType' => 'article',
 ])
 
 @push('head')
     <link rel="canonical" href="{{ $post->url() }}">
+    <meta name="author" content="{{ $post->authorName() }}">
+    <meta property="article:author" content="{{ $post->authorName() }}">
+    <meta property="article:section" content="{{ $post->topic }}">
+    @if ($post->published_at)
+        <meta property="article:published_time" content="{{ $post->published_at->toIso8601String() }}">
+    @endif
+    @if ($post->isLive())
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:image:alt" content="{{ $post->title }}, by {{ $post->authorName() }}">
+    @endif
     <link rel="alternate" type="application/rss+xml" title="{{ config('church.short_name') }} blog" href="{{ route('blog.feed') }}">
     @if ($preview)
         <meta name="robots" content="noindex">
@@ -55,10 +69,21 @@
                         <span class="byline__meta"><time datetime="{{ ($post->published_at ?? $post->updated_at)?->toDateString() }}">{{ $post->dateLabel() }}</time> · {{ $post->readingTime() }}</span>
                     </span>
                 </span>
+                @php
+                    $shareLine = '"'.$post->title.'" by '.$post->authorName();
+                    $shareText = rawurlencode($shareLine.' '.$post->url());
+                    $shareUrl = rawurlencode($post->url());
+                @endphp
                 <span class="share">
-                    <a href="https://wa.me/" data-share-href="https://wa.me/?text=" class="icon-circle share__btn" aria-label="Share on WhatsApp" target="_blank" rel="noopener"><x-icon name="whatsapp" /></a>
-                    <a href="https://x.com/intent/post" data-share-href="https://x.com/intent/post?text=" class="icon-circle share__btn" aria-label="Share on X" target="_blank" rel="noopener"><x-icon name="x" :size="18" /></a>
-                    <button type="button" class="icon-circle share__btn" aria-label="Copy link" data-copy="{{ $post->url() }}" data-copy-label="Copy link"><x-icon name="link" /></button>
+                    @if ($post->isLive())
+                        <button type="button" class="icon-circle share__btn" aria-label="Share" data-share-native data-share-title="{{ $post->title }}" data-share-text="{{ $shareLine }} {{ $post->url() }}" data-share-image="{{ route('blog.share-image', [$post->slug, 'square']) }}" hidden><x-icon name="share" :size="18" /></button>
+                    @endif
+                    <a href="https://wa.me/?text={{ $shareText }}" class="icon-circle share__btn" aria-label="Share on WhatsApp" target="_blank" rel="noopener"><x-icon name="whatsapp" /></a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ $shareUrl }}&amp;quote={{ rawurlencode($shareLine) }}" class="icon-circle share__btn" aria-label="Share on Facebook" target="_blank" rel="noopener"><x-icon name="facebook" :size="18" /></a>
+                    <a href="https://x.com/intent/post?text={{ rawurlencode($shareLine) }}&amp;url={{ $shareUrl }}" class="icon-circle share__btn" aria-label="Share on X" target="_blank" rel="noopener"><x-icon name="x" :size="18" /></a>
+                    <a href="https://t.me/share/url?url={{ $shareUrl }}&amp;text={{ rawurlencode($shareLine) }}" class="icon-circle share__btn" aria-label="Share on Telegram" target="_blank" rel="noopener"><x-icon name="telegram" :size="18" /></a>
+                    <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ $shareUrl }}" class="icon-circle share__btn" aria-label="Share on LinkedIn" target="_blank" rel="noopener"><x-icon name="linkedin" :size="18" /></a>
+                    <button type="button" class="icon-circle share__btn" aria-label="Copy link" data-copy="{{ $shareLine }} {{ $post->url() }}" data-copy-label="Copy link"><x-icon name="link" /></button>
                 </span>
             </div>
         </header>
@@ -90,6 +115,24 @@
                 </span>
             </div>
         </div>
+
+        @if ($post->isLive())
+            <section class="share-article" aria-labelledby="share-article-title">
+                <div class="share-article__card">
+                    <img src="{{ route('blog.share-image', [$post->slug, 'square']) }}" alt="Share picture: {{ $post->title }}, by {{ $post->authorName() }}" loading="lazy" width="220" height="220">
+                    <div class="stack" style="gap: 10px">
+                        <h2 id="share-article-title" class="h2 h2--sm" style="margin: 0">Share this article</h2>
+                        <p class="field-hint" style="margin: 0">The picture shows the title and {{ $post->authorName() }}'s name. Post it to WhatsApp status, Instagram or Facebook with the link.</p>
+                        <div class="share-article__actions">
+                            <button type="button" class="btn btn--gold btn--sm" data-share-native data-share-title="{{ $post->title }}" data-share-text="{{ \App\Services\Market\ShareCards::postCaption($post) }}" data-share-image="{{ route('blog.share-image', [$post->slug, 'square']) }}" hidden>Share</button>
+                            <a href="{{ route('blog.share-image', [$post->slug, 'square']) }}?download=1" class="btn btn--outline btn--sm" download>Square picture</a>
+                            <a href="{{ route('blog.share-image', [$post->slug, 'story']) }}?download=1" class="btn btn--outline btn--sm" download>Status picture</a>
+                            <button type="button" class="btn btn--outline btn--sm" data-copy="{{ \App\Services\Market\ShareCards::postCaption($post) }}" data-copy-label="Copy caption">Copy caption</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        @endif
     </article>
 
     @if ($related->isNotEmpty())

@@ -17,8 +17,11 @@
     @endif
     <title>{{ $title }}</title>
     <meta name="description" content="{{ $description }}">
-    <meta property="og:title" content="{{ $title }}">
-    <meta property="og:description" content="{{ $description }}">
+    <meta property="og:site_name" content="{{ config('church.short_name') }}">
+    <meta property="og:title" content="{{ $ogTitle ?? $title }}">
+    <meta property="og:description" content="{{ $ogDescription ?? $description }}">
+    <meta name="twitter:title" content="{{ $ogTitle ?? $title }}">
+    <meta name="twitter:description" content="{{ $ogDescription ?? $description }}">
     <meta property="og:type" content="{{ $ogType ?? 'website' }}">
     <meta property="og:url" content="{{ url()->current() }}">
     @isset($image)
