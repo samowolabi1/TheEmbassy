@@ -68,6 +68,8 @@ Sign-in is limited to five wrong attempts a minute per email. The site uses Lago
 
 ## Admin dashboard
 
+**The sidebar** can be hidden on a computer with the arrow at its top (a "Menu" button brings it back; the choice is remembered), and each group (People, Money, Content…) folds with a tap on its name. The group with the page you're on always stays open. On phones the menu folds away behind the menu button at the top. The same works in the unit leaders' area and the sellers' area.
+
 **Help on every page.** A **Help** button sits in the corner of every admin page. It opens a panel that says what the page is for, answers the questions people usually ask about it, links to related guides, and offers **Take the tour**: a short walkthrough that highlights each part of the page in turn (Next, Back, Skip; arrow keys and Escape work too). The first time someone opens a page with a tour, a small "New to this page? Take a quick tour" note offers it once.
 - **Help centre** (admin › Help centre, for all staff): step-by-step guides for common jobs (approve a member, run Sunday check-in, follow up a first-timer, record the offering, log spending, the month's summary, send an announcement, set up an event, lend a library book, add staff, publish a testimony, give Crowns) with **Show me around** buttons that open the page and start its tour, plus every page's questions, with a search box. People only see guides and questions for the areas their role covers.
 - **Tooltips**: a small ⓘ beside fields and sections that need a word of explanation. Hover, focus or tap it.

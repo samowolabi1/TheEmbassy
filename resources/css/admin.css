@@ -1826,10 +1826,8 @@ input[type='file'] {
   text-transform: none;
   letter-spacing: normal;
   white-space: normal;
-  opacity: 0;
-  visibility: hidden;
+  display: none;
   pointer-events: none;
-  transition: opacity 0.12s ease;
 }
 .tip__text--placed {
   position: fixed;
@@ -1839,8 +1837,7 @@ input[type='file'] {
 .tip__button:hover + .tip__text,
 .tip__button:focus-visible + .tip__text,
 .tip__button.is-open + .tip__text {
-  opacity: 1;
-  visibility: visible;
+  display: block;
 }
 
 .help-search {
@@ -1987,4 +1984,159 @@ input[type='file'] {
   border-radius: 6px;
   background: var(--line-soft);
   font-size: 12px;
+}
+
+/* ---------- Sidebar: collapse, phone menu, foldable groups ---------- */
+.side__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.side__top .side__brand {
+  flex: 1;
+  min-width: 0;
+}
+.side__btn {
+  display: none;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ice);
+  cursor: pointer;
+}
+.side__btn:hover,
+.side__btn:focus-visible {
+  background: var(--navy-2);
+  color: var(--white);
+}
+.side__group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.side__items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.side__fold {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-align: left;
+  cursor: pointer;
+}
+.side__fold:hover {
+  color: var(--ice);
+}
+.side__fold svg {
+  transform: rotate(90deg);
+  transition: transform 0.15s ease;
+}
+.side__group.is-folded .side__fold svg {
+  transform: none;
+}
+.side__group.is-folded .side__items {
+  display: none;
+}
+.side-open {
+  display: none;
+}
+
+@media (min-width: 901px) {
+  .side {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    flex: 0 0 248px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  .js .side__collapse {
+    display: grid;
+  }
+  .side-collapsed .side {
+    display: none;
+  }
+  .js.side-collapsed .side-open {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 35;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--navy);
+    color: var(--white);
+    font: inherit;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 8px 24px rgba(10, 29, 63, 0.25);
+    cursor: pointer;
+  }
+  .side-collapsed .admin-main {
+    padding-top: 72px;
+  }
+}
+
+@media (max-width: 900px) {
+  .js .side__menu {
+    display: grid;
+  }
+  .side__menu svg + svg,
+  .side.is-open .side__menu svg:first-child {
+    display: none;
+  }
+  .side.is-open .side__menu svg + svg {
+    display: block;
+  }
+  /* With the menu button, the nav is a fold-out list instead of a sideways strip. */
+  .js .side__nav,
+  .js .side__user {
+    display: none;
+  }
+  .js .side.is-open .side__nav {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+  }
+  .js .side.is-open .side__user {
+    display: flex;
+  }
+  .js .side.is-open .side__label {
+    display: flex;
+  }
+  .js .side .side__link {
+    white-space: normal;
+  }
+  .side__group {
+    display: contents;
+  }
+  .js .side .side__group {
+    display: flex;
+  }
+  .side__group .side__items {
+    display: contents;
+  }
+  .js .side .side__group .side__items {
+    display: flex;
+  }
+  .js .side .side__group.is-folded .side__items {
+    display: none;
+  }
 }

@@ -173,13 +173,14 @@ for (const button of document.querySelectorAll('[data-tip]')) {
         text.style.left = `${left}px`;
         text.style.top = `${top}px`;
     };
-    button.addEventListener('mouseenter', fit);
-    button.addEventListener('focus', fit);
+    // Measured once it's showing (the hover or focus style shows it).
+    button.addEventListener('mouseenter', () => requestAnimationFrame(fit));
+    button.addEventListener('focus', () => requestAnimationFrame(fit));
     // Tapping on a phone toggles it; tapping elsewhere or Escape hides it.
     button.addEventListener('click', (e) => {
         e.preventDefault();
         button.classList.toggle('is-open');
-        fit();
+        requestAnimationFrame(fit);
     });
     button.addEventListener('blur', () => button.classList.remove('is-open'));
     button.addEventListener('keydown', (e) => {

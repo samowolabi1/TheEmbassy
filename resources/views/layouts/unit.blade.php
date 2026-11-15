@@ -36,16 +36,20 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Cinzel:wght@700;800&display=swap">
     @vite(['resources/css/admin.css', 'resources/js/admin.js'])
     @include('partials.theme')
+    @include('partials.side-state')
 </head>
 <body class="admin">
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="admin-shell">
         <aside class="side">
-            <a href="{{ $nav ? route($nav[0]['route'], $unit) : route('account') }}" class="side__brand">
-                <span class="side__logo"><img src="{{ asset(config('church.brand.logo')) }}" alt="" width="40" height="38"></span>
-                <span class="side__words"><span class="side__name">{{ $unit->name }}</span><span class="side__role">{{ $unit->isLedBy($user->member) ? ($unit->hod_member_id === $user->member?->id ? 'Head of department' : 'Assistant HOD') : ($user->member?->unit_id === $unit->id ? 'Team member' : 'Unit area') }}</span></span>
-            </a>
-            <nav class="side__nav" aria-label="{{ $unit->name }}">
+            <div class="side__top">
+                <a href="{{ $nav ? route($nav[0]['route'], $unit) : route('account') }}" class="side__brand">
+                    <span class="side__logo"><img src="{{ asset(config('church.brand.logo')) }}" alt="" width="40" height="38"></span>
+                    <span class="side__words"><span class="side__name">{{ $unit->name }}</span><span class="side__role">{{ $unit->isLedBy($user->member) ? ($unit->hod_member_id === $user->member?->id ? 'Head of department' : 'Assistant HOD') : ($user->member?->unit_id === $unit->id ? 'Team member' : 'Unit area') }}</span></span>
+                </a>
+                @include('partials.side-controls')
+            </div>
+            <nav class="side__nav" id="side-nav" aria-label="{{ $unit->name }}">
                 @foreach ($nav as $item)
                     <a href="{{ route($item['route'], $unit) }}" class="side__link" @if ($item['id'] === $active) aria-current="page" @endif>{{ $item['label'] }}@if ($item['badge'] ?? null) <span class="side__badge"><span class="sr-only">new: </span>{{ $item['badge'] }}</span>@endif</a>
                 @endforeach
@@ -67,6 +71,7 @@
                 </form>
             </div>
         </aside>
+        @include('partials.side-reopen')
         <main id="main" class="admin-main">
             @if (session('status'))
                 <p class="flash" role="status">{{ session('status') }}</p>

@@ -58,3 +58,51 @@ for (const toggle of document.querySelectorAll('.switch input')) {
     const label = toggle.nextElementSibling;
     toggle.addEventListener('change', () => (label.textContent = toggle.checked ? 'On' : 'Off'));
 }
+
+// Sidebar: hide it on computers (remembered), open and close it as a menu on phones, and fold
+// its groups (remembered; the group with the current page stays open).
+{
+    const root = document.documentElement;
+    const side = document.querySelector('.side');
+    const store = (key, value) => {
+        try {
+            if (value === undefined) return localStorage.getItem(key);
+            localStorage.setItem(key, value);
+        } catch { /* private browsing */ }
+        return null;
+    };
+    document.querySelector('[data-side-collapse]')?.addEventListener('click', () => {
+        root.classList.add('side-collapsed');
+        store('side-collapsed', '1');
+        document.querySelector('[data-side-expand]')?.focus();
+    });
+    document.querySelector('[data-side-expand]')?.addEventListener('click', () => {
+        root.classList.remove('side-collapsed');
+        store('side-collapsed', '0');
+        document.querySelector('[data-side-collapse]')?.focus();
+    });
+    const menu = document.querySelector('[data-side-menu]');
+    menu?.addEventListener('click', () => {
+        const open = side.classList.toggle('is-open');
+        menu.setAttribute('aria-expanded', String(open));
+        menu.setAttribute('aria-label', open ? 'Close the menu' : 'Open the menu');
+    });
+
+    let folded = [];
+    try { folded = JSON.parse(store('side-folded') || '[]'); } catch { folded = []; }
+    for (const group of document.querySelectorAll('[data-side-group]')) {
+        const button = group.querySelector('[data-side-fold]');
+        const key = group.dataset.sideGroup;
+        const set = (closed) => {
+            group.classList.toggle('is-folded', closed);
+            button.setAttribute('aria-expanded', String(!closed));
+        };
+        set(folded.includes(key) && !('current' in group.dataset));
+        button.addEventListener('click', () => {
+            const closed = !group.classList.contains('is-folded');
+            set(closed);
+            folded = closed ? [...new Set([...folded, key])] : folded.filter((k) => k !== key);
+            store('side-folded', JSON.stringify(folded));
+        });
+    }
+}

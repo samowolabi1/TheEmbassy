@@ -85,19 +85,26 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Cinzel:wght@700;800&display=swap">
     @vite(['resources/css/admin.css', 'resources/js/admin.js'])
     @include('partials.theme')
+    @include('partials.side-state')
 </head>
 <body class="admin">
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="admin-shell">
         <aside class="side">
-            <a href="{{ route('admin.dashboard') }}" class="side__brand">
-                <span class="side__logo"><img src="{{ asset(config('church.brand.logo')) }}" alt="" width="40" height="38"></span>
-                <span class="side__words"><span class="side__name">{{ config('church.brand.wordmark') }}</span><span class="side__role">Church admin</span></span>
-            </a>
+            <div class="side__top">
+                <a href="{{ route('admin.dashboard') }}" class="side__brand">
+                    <span class="side__logo"><img src="{{ asset(config('church.brand.logo')) }}" alt="" width="40" height="38"></span>
+                    <span class="side__words"><span class="side__name">{{ config('church.brand.wordmark') }}</span><span class="side__role">Church admin</span></span>
+                </a>
+                @include('partials.side-controls')
+            </div>
 
-            <nav class="side__nav" aria-label="Admin">
+            <nav class="side__nav" id="side-nav" aria-label="Admin">
                 @foreach ($nav as $group => $items)
-                    <span class="side__label">{{ $group }}</span>
+                    @php($hasCurrent = collect($items)->contains('id', $active))
+                    <div class="side__group" data-side-group="{{ \Illuminate\Support\Str::slug($group) }}" @if ($hasCurrent) data-current @endif>
+                    <button type="button" class="side__label side__fold" data-side-fold aria-expanded="true">{{ $group }}<x-icon name="chevron-right" :size="14" /></button>
+                    <div class="side__items">
                     @foreach ($items as $item)
                         @if (\Illuminate\Support\Facades\Route::has($item['route']))
                             <a href="{{ route($item['route'], $item['params'] ?? []) }}" class="side__link" @if ($item['id'] === $active) aria-current="page" @endif>
@@ -110,6 +117,8 @@
                             <span class="side__link side__link--soon">{{ $item['label'] }} <span class="side__soon">SOON</span></span>
                         @endif
                     @endforeach
+                    </div>
+                    </div>
                 @endforeach
             </nav>
 
@@ -122,6 +131,7 @@
                 </form>
             </div>
         </aside>
+        @include('partials.side-reopen')
 
         <main id="main" class="admin-main">
             @if (session('status'))
