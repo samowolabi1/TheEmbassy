@@ -64,7 +64,7 @@
                                 @endforeach
                             </select>
                         </label>
-                        <label class="field">{{ TokenName::title() }} <input type="number" name="amount" value="{{ old('amount') }}" required min="1" step="1"></label>
+                        <label class="field">{{ TokenName::title() }} <input type="number" data-money="{{ TokenName::icon() }}" name="amount" value="{{ old('amount') }}" required min="1" step="1"></label>
                     </div>
                     <fieldset class="choice-group">
                         <legend class="sr-only">Give or take</legend>
@@ -86,7 +86,7 @@
                 <form method="POST" action="{{ route('admin.tokens.mint') }}" class="form" data-confirm="Create these {{ TokenName::many() }} in the treasury?">
                     @csrf
                     <div class="form-row">
-                        <label class="field">Create <input type="number" name="amount" required min="1" step="1" placeholder="e.g. 100000"></label>
+                        <label class="field">Create <input type="number" data-money="{{ TokenName::icon() }}" name="amount" required min="1" step="1" placeholder="e.g. 100000"></label>
                         <label class="field">Note <input type="text" name="note" required maxlength="150" placeholder="e.g. Rewards for December"></label>
                     </div>
                     <div><button type="submit" class="btn btn--gold btn--xs">Create {{ TokenName::many() }}</button></div>
@@ -96,7 +96,7 @@
                     <form method="POST" action="{{ route('admin.tokens.burn') }}" class="form" style="padding-top: 8px" data-confirm="Destroy these {{ TokenName::many() }} for good?">
                         @csrf
                         <div class="form-row">
-                            <label class="field">Destroy <input type="number" name="amount" required min="1" max="{{ $books['treasury'] }}" step="1"></label>
+                            <label class="field">Destroy <input type="number" data-money="{{ TokenName::icon() }}" name="amount" required min="1" max="{{ $books['treasury'] }}" step="1"></label>
                             <label class="field">Note <input type="text" name="note" required maxlength="150"></label>
                         </div>
                         <div><button type="submit" class="btn btn--danger btn--xs">Destroy {{ TokenName::many() }}</button></div>
@@ -124,12 +124,12 @@
                 </label>
             </div>
             <div class="form-row">
-                <label class="field">Value of 1 {{ TokenName::one() }} (₦)
-                    <input type="number" name="naira_per_token" value="{{ old('naira_per_token', config('tokens.naira_per_token')) }}" required min="0.01" step="0.01">
+                <label class="field">Value of 1 {{ TokenName::one() }}
+                    <input type="number" data-money name="naira_per_token" value="{{ old('naira_per_token', config('tokens.naira_per_token')) }}" required min="0.01" step="0.01">
                     <span class="field__hint">Prices subscriptions and tickets in {{ TokenName::many() }}. Changing it doesn't change anyone's balance.</span>
                 </label>
                 <label class="field">Most a member can send in a day
-                    <input type="number" name="daily_limit" value="{{ old('daily_limit', config('tokens.transfers.daily_limit')) }}" required min="1" step="1">
+                    <input type="number" data-money="{{ TokenName::icon() }}" name="daily_limit" value="{{ old('daily_limit', config('tokens.transfers.daily_limit')) }}" required min="1" step="1">
                 </label>
             </div>
             <label class="login__remember"><input type="checkbox" name="enabled" value="1" @checked(config('tokens.enabled'))>Members earn {{ TokenName::many() }} for activities</label>
@@ -137,7 +137,7 @@
             <div class="grid-auto" style="--min: 220px; --gap: 12px 16px">
                 @foreach ($rules as $key => $rule)
                     <label class="field">{{ $rule['label'] }}
-                        <input type="number" name="rules[{{ $key }}]" value="{{ old('rules.'.$key, $rule['amount']) }}" required min="0" step="1">
+                        <input type="number" data-money="{{ TokenName::icon() }}" name="rules[{{ $key }}]" value="{{ old('rules.'.$key, $rule['amount']) }}" required min="0" step="1">
                         <span class="field__hint">{{ $rule['text'] }}. 0 turns it off.</span>
                     </label>
                 @endforeach

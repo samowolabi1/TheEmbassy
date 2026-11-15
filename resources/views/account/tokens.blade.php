@@ -79,7 +79,7 @@
                             @error('to') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
                         <label class="field">{{ TokenName::title() }}
-                            <input type="number" name="amount" value="{{ old('amount') }}" required min="1" max="{{ max(1, min($balance, $dailyLimit - $sentToday)) }}" step="1">
+                            <input type="number" data-money="{{ TokenName::icon() }}" name="amount" value="{{ old('amount') }}" required min="1" max="{{ max(1, min($balance, $dailyLimit - $sentToday)) }}" step="1">
                             @error('amount') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
                     </div>

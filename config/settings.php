@@ -40,8 +40,8 @@ return [
     'welfare' => [
         'title' => 'Welfare',
         'fields' => [
-            'church.welfare.approval_limit' => ['label' => 'The welfare HOD can approve up to (₦)', 'type' => 'number', 'rules' => ['integer', 'min:0', 'max:100000000'], 'hint' => 'Anything above this needs a pastor to approve.'],
-            'church.welfare.monthly_budget' => ['label' => 'Monthly welfare budget (₦, optional)', 'type' => 'number', 'rules' => ['integer', 'min:0', 'max:1000000000']],
+            'church.welfare.approval_limit' => ['money' => true, 'label' => 'The welfare HOD can approve up to (₦)', 'type' => 'number', 'rules' => ['integer', 'min:0', 'max:100000000'], 'hint' => 'Anything above this needs a pastor to approve.'],
+            'church.welfare.monthly_budget' => ['money' => true, 'label' => 'Monthly welfare budget (₦, optional)', 'type' => 'number', 'rules' => ['integer', 'min:0', 'max:1000000000']],
         ],
     ],
 
@@ -76,7 +76,7 @@ return [
             'tokens.name.many' => ['label' => 'Name for more than one', 'type' => 'text', 'rules' => ['string', 'max:20']],
             'tokens.name.icon' => ['label' => 'Icon', 'type' => 'text', 'rules' => ['string', 'max:8']],
             'tokens.enabled' => ['label' => 'Members earn tokens for activities', 'type' => 'checkbox'],
-            'tokens.naira_per_token' => ['label' => 'Value of 1 token (₦)', 'type' => 'number', 'rules' => ['numeric', 'between:0.01,100000']],
+            'tokens.naira_per_token' => ['money' => true, 'label' => 'Value of 1 token (₦)', 'type' => 'number', 'rules' => ['numeric', 'between:0.01,100000']],
             'tokens.transfers.enabled' => ['label' => 'Members can send tokens to each other', 'type' => 'checkbox'],
             'tokens.transfers.daily_limit' => ['label' => 'Most tokens a member can send in a day', 'type' => 'number', 'rules' => ['integer', 'between:1,10000000']],
             'tokens.rules.attend_in_person' => ['label' => 'Coming to church (per service)', 'type' => 'number', 'rules' => ['integer', 'between:0,100000']],

@@ -22,6 +22,6 @@
 </div>
 <div class="form-row">
     <label class="field">Bought on <input type="date" name="purchased_on" value="{{ old('purchased_on', $item->purchased_on?->toDateString()) }}"></label>
-    <label class="field">Value (₦) <input type="number" name="value" value="{{ old('value', $item->value ? $item->value / 100 : '') }}" min="0" step="1"></label>
+    <label class="field">Value <input type="number" data-money name="value" value="{{ old('value', $item->value ? $item->value / 100 : '') }}" min="0" step="1"></label>
 </div>
 <label class="field">Notes <input type="text" name="notes" value="{{ old('notes', $item->notes) }}" maxlength="2000"></label>

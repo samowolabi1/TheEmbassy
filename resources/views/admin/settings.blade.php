@@ -120,7 +120,7 @@
                             </label>
                         @else
                             <label class="field">{{ $field['label'] }}
-                                <input type="{{ $field['type'] }}" name="{{ $input }}" value="{{ old($input, $values[$key]) }}" maxlength="500">
+                                <input type="{{ $field['type'] }}" name="{{ $input }}" value="{{ old($input, $values[$key]) }}" @if (! empty($field['money'])) data-money min="0" @else maxlength="500" @endif>
                                 @isset($field['hint']) <span class="field__hint">{{ $field['hint'] }}</span> @endisset
                                 @error($input) <span class="field-error">{{ $message }}</span> @enderror
                             </label>

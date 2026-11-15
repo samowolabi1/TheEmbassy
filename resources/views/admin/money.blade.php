@@ -33,8 +33,8 @@
                             </select>
                             @error('category') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
-                        <label class="field">Amount (₦)
-                            <input type="number" name="amount" value="{{ old('amount') }}" required min="1" step="0.01" inputmode="decimal">
+                        <label class="field">Amount
+                            <input type="number" data-money name="amount" value="{{ old('amount') }}" required min="1" step="0.01" inputmode="decimal">
                             @error('amount') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
                     </div>
@@ -76,8 +76,8 @@
                             </select>
                             @error('category') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
-                        <label class="field">Amount (₦)
-                            <input type="number" name="amount" value="{{ old('amount') }}" required min="1" step="0.01" inputmode="decimal">
+                        <label class="field">Amount
+                            <input type="number" data-money name="amount" value="{{ old('amount') }}" required min="1" step="0.01" inputmode="decimal">
                             @error('amount') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
                         <label class="field">Date spent

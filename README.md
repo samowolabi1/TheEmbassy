@@ -64,6 +64,8 @@ php artisan admin:revoke pastor@example.com                       # removes staf
 
 Sign-in is limited to five wrong attempts a minute per email. The site uses Lagos time (`APP_TIMEZONE`).
 
+**Forms:** every password box has an eye button inside it to show or hide what's typed. Money boxes show the ₦ sign inside and add commas as you type (₦1,234,567.89); Crown amounts show 👑 (or whatever icon the currency has). The server still receives a plain number, and without JavaScript they're ordinary number boxes. To format a new money box, add `data-money` to its `<input type="number">` (or `data-money="👑"` for another sign); a `step` with decimals allows kobo.
+
 ## Admin dashboard
 
 Staff sign in at `/admin`. Every area in the design's sidebar is built:

@@ -54,7 +54,7 @@
                         @csrf
                         <input type="hidden" name="action" value="approve">
                         <label class="field">Amount to give (₦, 0 for support without money)
-                            <input type="number" name="amount" value="{{ old('amount', $case->amount_approved !== null ? $case->amount_approved / 100 : ($case->amount_requested ? $case->amount_requested / 100 : 0)) }}" min="0" step="1">
+                            <input type="number" data-money name="amount" value="{{ old('amount', $case->amount_approved !== null ? $case->amount_approved / 100 : ($case->amount_requested ? $case->amount_requested / 100 : 0)) }}" min="0" step="1">
                         </label>
                         <label class="field">Note (optional) <input type="text" name="note" maxlength="255"></label>
                         <button type="submit" class="btn btn--navy">Approve</button>
@@ -72,8 +72,8 @@
                 @if ($case->amount_approved > $paid)
                     <form method="POST" action="{{ route('unit.welfare.pay', [$unit, $case]) }}" class="form">
                         @csrf
-                        <label class="field">Amount given (₦)
-                            <input type="number" name="amount" value="{{ ($case->amount_approved - $paid) / 100 }}" min="1" step="1" required>
+                        <label class="field">Amount given
+                            <input type="number" data-money name="amount" value="{{ ($case->amount_approved - $paid) / 100 }}" min="1" step="1" required>
                             @error('amount') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
                         <label class="field">How

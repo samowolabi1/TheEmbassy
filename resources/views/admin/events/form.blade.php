@@ -64,8 +64,8 @@
                         <input type="text" name="types[{{ $i }}][name]" value="{{ old("types.$i.name", $type?->name ?? ($i === 0 && ! $event->exists ? 'Free entry' : '')) }}" maxlength="60" placeholder="e.g. Regular, VIP">
                     </label>
                     <div class="form-row" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 90px), 1fr))">
-                        <label class="field">Price (₦)
-                            <input type="number" name="types[{{ $i }}][price]" value="{{ old("types.$i.price", $type ? $type->price / 100 : 0) }}" min="0" step="1">
+                        <label class="field">Price
+                            <input type="number" data-money name="types[{{ $i }}][price]" value="{{ old("types.$i.price", $type ? $type->price / 100 : 0) }}" min="0" step="1">
                         </label>
                         <label class="field">Places
                             <input type="number" name="types[{{ $i }}][quantity]" value="{{ old("types.$i.quantity", $type?->quantity) }}" min="1" placeholder="No limit">

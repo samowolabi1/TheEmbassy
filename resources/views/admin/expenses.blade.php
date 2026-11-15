@@ -83,8 +83,8 @@
                             @endforeach
                         </select>
                     </label>
-                    <label class="field">Amount (₦)
-                        <input type="number" name="amount" value="{{ old('amount') }}" required min="1" step="0.01">
+                    <label class="field">Amount
+                        <input type="number" data-money name="amount" value="{{ old('amount') }}" required min="1" step="0.01">
                         @error('amount') <span class="field-error">{{ $message }}</span> @enderror
                     </label>
                     <label class="field">Date
@@ -126,7 +126,7 @@
                         @if ($line['budget'])
                             <div class="meter" role="img" aria-label="{{ $pct }}% of budget used"><span style="width: {{ $pct }}%"></span></div>
                         @endif
-                        <input id="budget-{{ $i }}" type="number" name="budgets[{{ $i }}]" value="{{ $line['budget'] ? $line['budget'] / 100 : '' }}" min="0" step="1" placeholder="No budget" class="select-sm" style="width: 100%">
+                        <input id="budget-{{ $i }}" type="number" data-money name="budgets[{{ $i }}]" value="{{ $line['budget'] ? $line['budget'] / 100 : '' }}" min="0" step="1" placeholder="No budget" class="select-sm" style="width: 100%">
                     </div>
                 @endforeach
                 <button type="submit" class="btn btn--navy btn--xs">Save budgets</button>

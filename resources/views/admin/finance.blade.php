@@ -77,7 +77,7 @@
                         @csrf
                         @method('PUT')
                         <label class="field">Name <input type="text" name="name" value="{{ $fund->name }}" required maxlength="60"></label>
-                        <label class="field">Target in ₦ (optional) <input type="number" name="target" value="{{ $fund->target ? $fund->target / 100 : '' }}" min="1" step="1"></label>
+                        <label class="field">Target (optional) <input type="number" data-money name="target" value="{{ $fund->target ? $fund->target / 100 : '' }}" min="1" step="1"></label>
                         <label class="field">Description <input type="text" name="description" value="{{ $fund->description }}" maxlength="255"></label>
                         <label class="login__remember"><input type="checkbox" name="is_active" value="1" @checked($fund->is_active)>Offer on the Give page</label>
                         <label class="login__remember"><input type="checkbox" name="online" value="1" @checked($fund->online)>Can also be given through Paystack (donations; leave off for tithes and offerings)</label>
@@ -91,7 +91,7 @@
                     @csrf
                     <label class="field">Name <input type="text" name="name" required maxlength="60"></label>
                     @error('name', 'fund') <span class="field-error">{{ $message }}</span> @enderror
-                    <label class="field">Target in ₦ (optional) <input type="number" name="target" min="1" step="1"></label>
+                    <label class="field">Target (optional) <input type="number" data-money name="target" min="1" step="1"></label>
                     <label class="login__remember"><input type="checkbox" name="online" value="1" checked>Can also be given through Paystack</label>
                     <button type="submit" class="btn btn--navy btn--xs">Add fund</button>
                 </form>
@@ -156,8 +156,8 @@
                             @endforeach
                         </select>
                     </label>
-                    <label class="field">Amount (₦)
-                        <input type="number" name="amount" value="{{ old('amount') }}" required min="1" step="0.01">
+                    <label class="field">Amount
+                        <input type="number" data-money name="amount" value="{{ old('amount') }}" required min="1" step="0.01">
                         @error('amount', 'gift') <span class="field-error">{{ $message }}</span> @enderror
                     </label>
                 </div>

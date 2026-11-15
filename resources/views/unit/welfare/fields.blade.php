@@ -13,8 +13,8 @@
             <option value="urgent" @selected(old('urgency') === 'urgent')>Urgent</option>
         </select>
     </label>
-    <label class="field">Amount needed, if any (₦)
-        <input type="number" name="amount_requested" value="{{ old('amount_requested') }}" min="0" step="1">
+    <label class="field">Amount needed, if any
+        <input type="number" data-money name="amount_requested" value="{{ old('amount_requested') }}" min="0" step="1">
         @error('amount_requested') <span class="field-error">{{ $message }}</span> @enderror
     </label>
 </div>

@@ -12,3 +12,4 @@ import './gallery';
 import './app-shell';
 import './community';
 import './join';
+import './fields';

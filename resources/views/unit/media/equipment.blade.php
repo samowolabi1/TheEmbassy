@@ -31,7 +31,7 @@
                             <label class="sr-only" for="fix-{{ $issue->id }}">What was done</label>
                             <input id="fix-{{ $issue->id }}" type="text" name="resolution" required maxlength="255" placeholder="What was done" class="select-sm" style="min-width: 200px">
                             <label class="sr-only" for="cost-{{ $issue->id }}">Cost</label>
-                            <input id="cost-{{ $issue->id }}" type="number" name="cost" min="0" step="1" placeholder="Cost ₦ (optional)" class="select-sm" style="width: 150px">
+                            <input id="cost-{{ $issue->id }}" type="number" data-money name="cost" min="0" step="1" placeholder="Cost (optional)" class="select-sm" style="width: 150px">
                             <button type="submit" class="btn btn--navy btn--xs">Mark fixed</button>
                         </form>
                     @endif

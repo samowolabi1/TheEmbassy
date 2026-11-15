@@ -80,7 +80,7 @@
                                     <td style="font-weight: 700">{{ $plan->name }}</td>
                                     <td>
                                         <label class="sr-only" for="plan-price-{{ $plan->id }}">{{ $plan->name }} price in naira</label>
-                                        <input id="plan-price-{{ $plan->id }}" type="number" name="plans[{{ $plan->id }}][price]" value="{{ old('plans.'.$plan->id.'.price', $plan->price ? $plan->price / 100 : '') }}" min="0" step="1" placeholder="0" style="width: 100%; max-width: 130px">
+                                        <input id="plan-price-{{ $plan->id }}" type="number" data-money name="plans[{{ $plan->id }}][price]" value="{{ old('plans.'.$plan->id.'.price', $plan->price ? $plan->price / 100 : '') }}" min="0" step="1" placeholder="0" style="width: 100%; max-width: 130px">
                                     </td>
                                     <td>
                                         <input type="hidden" name="plans[{{ $plan->id }}][is_active]" value="0">
