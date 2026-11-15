@@ -111,9 +111,7 @@ if (smsText) {
     const count = document.querySelector('[data-sms-count]');
     const share = document.querySelector('[data-whatsapp-share]');
     const sync = () => {
-        const n = [...smsText.value].length;
-        const pages = n <= 160 ? 1 : Math.ceil(n / 153);
-        count.textContent = `${n} characters · ${pages} SMS ${pages === 1 ? 'page' : 'pages'} per person.`;
+        count.textContent = `${[...smsText.value].length} of 480 characters.`;
         if (share) share.href = `https://wa.me/?text=${encodeURIComponent(smsText.value)}`;
     };
     smsText.addEventListener('input', sync);

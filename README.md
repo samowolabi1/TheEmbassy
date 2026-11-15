@@ -90,7 +90,7 @@ Staff sign in at `/admin`. Every area in the design's sidebar is built:
 - **Library**: the lending desk (hand books over, take them back, chase overdue ones, the waiting list) and the book catalogue. See [The church library](#the-church-library-and-book-reviews).
 - **Tribe Market**: shop applications, shops and subscription status, plan prices, coupons, and subscription payments with CSV export.
 - **Content & announcements**, **Notice board**, **Events & tickets**, **Prayer requests**, **Contact messages**.
-- **Sending announcements**: "Send" on a live announcement texts it to active members (through Termii; members can turn texts off in their account), notifies every phone that turned on app notifications, or opens WhatsApp with the message ready to post in the church groups or channel. The page shows the SMS length and pages, how many people each channel reaches, and progress. Sending the same announcement twice in a day needs an extra tick.
+- **Sending announcements**: "Send" on a live announcement emails it to approved members (ticked to start), sends it on WhatsApp to members who haven't turned WhatsApp off in their account, notifies every phone that turned on app notifications, or opens WhatsApp with the message ready to post in the church groups or channel. The page shows how many people each way reaches, and progress. Sending the same announcement twice in a day needs an extra tick. Text messages are no longer sent, to save fees.
 - **Blog**: write articles in Markdown with a formatting toolbar (headings, bold, links, lists, scripture cards, the "reflect" box) and pictures uploaded straight into the text; a cover photo with a description for screen readers; draft, publish now or schedule for later; preview before publishing; feature one article at the top of the blog. Changing an article's address keeps the old one working (it redirects). Raw HTML and unsafe links are removed when an article is saved.
 - **Pages**: the About page (headline, story and photo, mission, vision, values, leaders with photos, beliefs, first-timer questions), and on the home page, the testimony and the **slider** at the top. Each slide has:
   - **Words:** a small label (outline or gold), a title (with line breaks), a highlighted gold line and a short text.
@@ -259,7 +259,7 @@ The app sends these by itself. Staff with the "Reminders & greetings" area (past
 
 For each one, staff can:
 - switch it on or off and set when it goes;
-- choose app notification, text message (through Termii; only to members who allow texts) and/or email;
+- choose email (ticked to start), WhatsApp (only to members who haven't turned it off) and/or app notification;
 - write the wording, using fill-ins like `{first_name}`, `{service}`, `{day}`, `{time}`, `{shop}` and `{end_date}`, with a live "How it reads" preview;
 - send themselves a test.
 
@@ -410,9 +410,9 @@ The web server's document root is `public/`, and `storage/` and `bootstrap/cache
 
 **7. YouTube (optional).** In Google Cloud: create a project, enable the YouTube Data API v3, set up the OAuth consent screen (External), and create an OAuth client of type "Web application" with `https://<site>/youtube/callback` as an authorised redirect URI. Put the client ID and secret in Settings & roles › YouTube broadcasts (or `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`), then the media HOD connects the channel from Service setup & streaming. While the consent screen is in "Testing", Google ends the sign-in after 7 days and the page will ask to connect again; publish the app (Google reviews the YouTube permission, which can take a few weeks) for a lasting connection. Live streaming must be turned on for the channel in YouTube Studio.
 
-**8. Text messages and app notifications.**
+**8. Notifications: email, WhatsApp and app notifications.** Admin › Settings & roles › Notifications has three church-wide switches. **Email** is on to start and is the default for every notification: reminders, updates about visits, library books, testimonies, prayer replies, suggestion answers, birthdays and announcements. Receipts, tickets and password emails always go. **WhatsApp** is off until it's set up. **App notifications** are free and can be switched off. Text messages are not used, to save fees.
+- WhatsApp: create a WhatsApp Business account and app on Meta for Developers, add the church's number, and create a message template in WhatsApp Manager (category Utility, e.g. named `church_notice`) whose body is just `{{1}}`. Once Meta approves it, put a permanent access token, the phone number ID, the template name and its language code in Settings & roles › Notifications, and switch WhatsApp on. Meta charges per message the church starts, much less than SMS. Members can turn WhatsApp off in their account.
 - App notifications: run `php artisan push:keys` once on the server (it saves the keys in Settings). Installing PHP's `gmp` extension makes sending them much faster. Notifications need HTTPS.
-- Text messages: open a [Termii](https://termii.com) account, register a sender ID (the name texts come from, e.g. RoyalTribe; approval takes a few days), fund the balance, and put the API key, sender ID and base URL from the Termii dashboard in Settings & roles › Text messages. The "generic" route doesn't reach numbers on Do-Not-Disturb; the "dnd" route does but costs more and Termii must enable it for the account. Each text is charged per 160 characters (153 for longer messages).
 
 **9. Uploads.** Gallery uploads send several photos at once, so raise PHP's limits to match: `upload_max_filesize = 16M`, `post_max_size = 200M`, `max_file_uploads = 40`, and `memory_limit = 256M` for resizing large photos (plus `client_max_body_size 200m;` on nginx). The upload page tells staff to send fewer photos if a limit is hit.
 
@@ -506,7 +506,7 @@ Four demo staff record and check them, signing in at `/admin/login` with the pas
 - **Member side:** sign up at `/join`, then approve yourself in admin › Members (waiting for approval), and sign in at `/login`.
 - **Market seller:** apply at `/market/open-a-shop`, then approve the shop in admin › Tribe Market.
 - **Emails** aren't sent locally (`MAIL_MAILER=log`). They're written to `storage/logs/laravel.log`, including password reset and welcome links.
-- **Optional services:** Paystack, SMS (Termii), push notifications, YouTube and Facebook/Instagram are off until their keys are set (in `.env`, or later in admin › Settings & roles). Everything else works without them.
+- **Optional services:** Paystack, WhatsApp notifications, push notifications, YouTube and Facebook/Instagram are off until their keys are set (in `.env`, or later in admin › Settings & roles). Everything else works without them.
 
 **Starting over:** `php artisan migrate:fresh --seed`, then `admin:create` again. **Updating** after pulling new code: `composer install && npm install && npm run build && php artisan migrate`.
 
@@ -541,7 +541,7 @@ Anything still in `[brackets]` is a placeholder waiting for real details; most d
 - `routes/web.php`: all routes; `routes/console.php`: `admin:create`, `admin:revoke`, `care:scan`, `units:remind`, `social:publish`, `youtube:sync`, `market:remind`, `newsletter:queue`, `messages:send`, `push:keys`, `blog:prune-images`, `tokens:daily` and the schedule
 - `app/Http/Controllers/`: public pages and forms, `Account/` (members), `Vendor/` (sellers), `Admin/` (dashboard)
 - `app/Models/`: people (`User`, `Member`, `Unit`, `Fellowship`, `FirstTimer`, `Service`), money (`Payment`, `Fund`, `Gift`, `BankAccount`, `Expense`, `Budget`), tokens (`TokenAccount`, `TokenTransfer`, `TokenOrder`), events and notices (`Event`, `TicketType`, `TicketOrder`, `Ticket`, `Notice`), the market (`Shop`, `Product`, `Enquiry`, `VendorPlan`, `VendorSubscription`, `Coupon`), messaging (`NewsletterSubscriber`, `NewsletterIssue`, `Broadcast`, `PushSubscription`), community (`CommunityRoom`, `CommunityMessage`, `CommunityReaction`, `CommunityVote`, `CommunityRead`, `CommunityReport`, `Quiz`, `QuizQuestion`, `QuizAttempt`), content (`Announcement`, `Declaration`, `Post`, `PageContent`, `GalleryAlbum`, `GalleryItem`, `Sermon`, `SermonSeries`, `PrayerRequest`, `ContactMessage`, `Setting`)
-- `app/Services/`: Paystack and payment settlement, shop approval and seller reminders, the sermon library, `Messaging/` (weekly email, Termii texts, web push, the broadcaster), `Content/Markdown` (safe article rendering) and `Content/Images` (photo resizing)
+- `app/Services/`: Paystack and payment settlement, shop approval and seller reminders, the sermon library, `Messaging/` (weekly email, WhatsApp, web push, reminders, the broadcaster), `Content/Markdown` (safe article rendering) and `Content/Images` (photo resizing)
 - `resources/views/`: `layouts/` (site, admin, seller), `partials/`, `components/`, `pages/`, `account/`, `blog/`, `market/`, `vendor/`, `admin/`, `mail/`
 - `resources/css/`: `base.css` holds the design tokens; `partials/` and `pages/` hold the rest; `admin.css` is the dashboard's own stylesheet
 - `resources/js/`: mobile menu, carousel, filters, share/copy buttons, countdown, give form, gallery viewer, community chat and quiz, the app shell (install button, notifications); in admin, the article editor and gallery uploads

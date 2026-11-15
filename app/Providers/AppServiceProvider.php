@@ -5,9 +5,12 @@ namespace App\Providers;
 use App\Models\Setting;
 use App\Models\Unit;
 use App\Models\User;
+use App\Support\Notify;
 use App\Support\TokenName;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\AliasLoader;
+use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +32,9 @@ class AppServiceProvider extends ServiceProvider
         Setting::applyToConfig();
         // The reward currency's name in Blade: TokenName::many(), TokenName::count(5)…
         AliasLoader::getInstance()->alias('TokenName', TokenName::class);
+
+        // Email notifications can be switched off church-wide; receipts, tickets and the like still go.
+        Event::listen(MessageSending::class, fn (MessageSending $e) => ! $e->message->getHeaders()->has('X-Church-Notification') || Notify::on('email') ? null : false);
 
         Gate::define('access-admin', fn (User $user) => $user->isStaff());
         Gate::define('manage', fn (User $user, string $area) => $user->canManage($area));

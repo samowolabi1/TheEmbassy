@@ -9,6 +9,7 @@ use App\Models\Member;
 use App\Models\PushSubscription;
 use App\Models\User;
 use App\Services\Messaging\WebPush;
+use App\Services\Messaging\WhatsApp;
 use App\Services\Tokens\Rewards;
 use App\Support\TokenName;
 use Illuminate\Support\Facades\DB;
@@ -200,5 +201,6 @@ class Lending
         if ($member->user && $this->push->configured()) {
             $this->push->send(PushSubscription::where('user_id', $member->user_id)->get(), ['title' => $subject, 'body' => $message, 'url' => $url, 'tag' => 'library']);
         }
+        app(WhatsApp::class)->toMember($member, $subject, $message, $url);
     }
 }

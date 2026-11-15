@@ -8,8 +8,9 @@ use App\Models\Service;
 use App\Models\Setting;
 use App\Models\Shop;
 use App\Services\Messaging\Reminders;
-use App\Services\Messaging\Termii;
 use App\Services\Messaging\WebPush;
+use App\Services\Messaging\WhatsApp;
+use App\Support\Notify;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -20,7 +21,7 @@ use Illuminate\View\View;
  */
 class ReminderController extends Controller
 {
-    public function index(Reminders $reminders, WebPush $push, Termii $sms): View
+    public function index(Reminders $reminders, WebPush $push, WhatsApp $whatsapp): View
     {
         $samples = [
             'service' => ['first_name' => 'Ada', 'service' => 'Sunday service', 'day' => 'today', 'time' => '9:00 AM', 'church' => config('church.short_name')],
@@ -33,8 +34,11 @@ class ReminderController extends Controller
         return view('admin.reminders', [
             'kinds' => collect(Reminders::KINDS)->map(fn ($k, $key) => [...$k, 'key' => $key, 'settings' => Reminders::settings($key), 'placeholders' => Reminders::PLACEHOLDERS[$key], 'sample' => $samples[$key],
                 'sent' => ReminderLog::where('kind', $key)->where('created_at', '>=', now()->subDays(30))->count()]),
-            'pushReady' => $push->configured(),
-            'smsReady' => $sms->configured(),
+            'ways' => [
+                'email' => ['label' => 'Email', 'on' => Notify::on('email'), 'ready' => true],
+                'whatsapp' => ['label' => 'WhatsApp', 'on' => Notify::on('whatsapp'), 'ready' => $whatsapp->configured()],
+                'push' => ['label' => 'App notification', 'on' => Notify::on('push'), 'ready' => $push->configured()],
+            ],
             'upcoming' => Service::whereNotNull('starts_at')->where('starts_at', '>', now())->orderBy('starts_at')->take(4)->get()
                 ->map(fn (Service $s) => ['service' => $s, 'remind_at' => $s->starts_at->copy()->subHours($hours), 'sent' => $s->reminder_sent_at]),
             'ending' => Shop::approved()->whereHas('subscriptions', fn ($q) => $q->where('status', 'active')->whereBetween('ends_at', [now(), now()->addDays(14)]))->get()
@@ -57,9 +61,9 @@ class ReminderController extends Controller
         $values = [
             $prefix.'enabled' => $request->boolean('enabled') ? '1' : '0',
             $prefix.$meta['timing'] => (string) $data['timing'],
-            $prefix.'push' => $request->boolean('push') ? '1' : '0',
-            $prefix.'sms' => $request->boolean('sms') ? '1' : '0',
             $prefix.'email' => $request->boolean('email') ? '1' : '0',
+            $prefix.'whatsapp' => $request->boolean('whatsapp') ? '1' : '0',
+            $prefix.'push' => $request->boolean('push') ? '1' : '0',
             $prefix.'text' => trim($data['text']),
         ];
         if ($kind === 'market') {
@@ -79,6 +83,6 @@ class ReminderController extends Controller
 
         return redirect()->to(route('admin.reminders.index').'#'.$kind)->with('status', $went
             ? 'Test sent to you by '.collect($went)->join(', ', ' and ').'.'
-            : 'Nothing could be sent to you: turn on a way of sending, and allow app notifications on this device or add your phone or email.');
+            : 'Nothing could be sent to you: tick a way of sending that is switched on in Settings & roles, and make sure your account has an email (or a phone number for WhatsApp).');
     }
 }

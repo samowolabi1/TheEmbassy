@@ -16,7 +16,7 @@
         <div class="card inbox__settings">
             <span>
                 <strong>Get them on your phone too.</strong>
-                {{ $smsOn ? 'Texts are on for church announcements.' : 'Texts are off.' }}
+                {{ $smsOn ? 'WhatsApp messages from the church are on.' : 'WhatsApp messages from the church are off.' }}
                 <a href="{{ route('account') }}#details" class="accent-bronze">Change</a>
             </span>
             <span class="app-actions">

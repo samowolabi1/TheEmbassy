@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\IsNotification;
 use App\Models\Appointment;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -14,7 +15,7 @@ use Illuminate\Queue\SerializesModels;
  */
 class AppointmentUpdate extends Mailable
 {
-    use Queueable, SerializesModels;
+    use IsNotification, Queueable, SerializesModels;
 
     public function __construct(public Appointment $appointment, public string $headline, public string $body, public bool $forStaff) {}
 

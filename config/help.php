@@ -160,7 +160,7 @@ return [
             'area' => 'content',
             'about' => 'Announcements on the website and in the app, and the weekly declaration members say from their accounts.',
             'faqs' => [
-                ['How do I send an announcement to members\' phones?', 'Publish it, then use "Send" on it: you can text members, notify everyone who installed the app, or share it to WhatsApp.'],
+                ['How do I send an announcement to members\' phones?', 'Publish it, then use "Send" on it: you can email members, send it on WhatsApp, notify everyone who installed the app, or share it to a WhatsApp group.'],
                 ['Can I schedule an announcement?', 'Yes: choose "Schedule" and pick when it should appear.'],
                 ['What is the weekly declaration?', 'A short confession for the week. Members say it from their account (and earn rewards for it), and it goes in the Monday email.'],
             ],
@@ -323,7 +323,7 @@ return [
             'faqs' => [
                 ['Who gets the service reminder?', 'Every approved member, before each service on the Attendance page. Add services there (repeating weekly for Sundays) and the reminders follow.'],
                 ['Who gets the thank-you and the feedback request?', 'Only members who were at the service: those who checked in or were marked present. The feedback request skips anyone who has already said how it was.'],
-                ['How are they sent?', 'By app notification, text message and/or email, as you tick for each one. Members also find them in Messages in the app. Text messages cost money per text and only go to members who allow texts.'],
+                ['How are they sent?', 'By email (ticked to start), WhatsApp and/or app notification, as you tick for each one, and only while that way is switched on in Settings & roles › Notifications. Members also find them in Messages in the app. WhatsApp is charged by Meta per message and only goes to members who haven\'t turned it off.'],
                 ['Can I change the wording?', 'Yes. Words in curly brackets, like {first_name} or {time}, are filled in for each person. "How it reads" shows the result as you type.'],
                 ['I turned one on. Will old services get it?', 'No. Only services that are coming up (for reminders) or just ended (for thank-yous and feedback) get them, and each service only once.'],
                 ['How do I check it works?', 'Press "Send me a test" on any card. It sends the saved message to you only.'],
@@ -346,6 +346,7 @@ return [
             'faqs' => [
                 ['How do I add a staff member?', 'Under Staff, add their email and pick a role. Each role only sees its own areas; the table shows what each role can open.'],
                 ['Why can\'t I see the giving or currency settings?', 'Those belong to the pastor in charge (super admin) and are on the Giving and treasury pages.'],
+                ['How do members get notifications?', 'By email to start: it\'s the default for every notification. Under Notifications you can also switch on WhatsApp (once the WhatsApp Business details are added; Meta charges per message) and switch app notifications on or off. Text messages aren\'t used.'],
                 ['Where do I change the address on the map?', 'Under Church details. The map and "Get directions" follow the address.'],
             ],
         ],
@@ -609,7 +610,7 @@ return [
             'steps' => [
                 'Open Content & announcements and write it under "New announcement". Watch the phone preview.',
                 'Publish it.',
-                'In "All announcements", press Send on it and choose text messages, app notifications or WhatsApp.',
+                'In "All announcements", press Send on it and choose email, WhatsApp and/or app notifications.',
             ],
         ],
         'new-event' => [

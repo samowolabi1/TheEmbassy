@@ -57,7 +57,17 @@ return [
     // Google sign-in for the church's YouTube channel, so broadcasts are created automatically.
     // Create an OAuth client (type "Web application") in Google Cloud with the YouTube Data API
     // enabled, and add {APP_URL}/youtube/callback as an authorised redirect URI.
-    // Bulk SMS for announcements (termii.com). Use the base URL shown in the Termii dashboard.
+    // WhatsApp Business Platform (Meta's Cloud API): notifications by WhatsApp. Messages use one
+    // approved template whose body is {{1}}. Set in admin › Settings & roles › Notifications.
+    'whatsapp' => [
+        'token' => env('WHATSAPP_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'template' => env('WHATSAPP_TEMPLATE', 'church_notice'),
+        'language' => env('WHATSAPP_LANGUAGE', 'en'),
+        'version' => env('WHATSAPP_API_VERSION', 'v21.0'),
+    ],
+
+    // Bulk SMS (termii.com): no longer used; text messages are switched off to save fees. Use the base URL shown in the Termii dashboard.
     'termii' => [
         'api_key' => env('TERMII_API_KEY'),
         'sender_id' => env('TERMII_SENDER_ID'),

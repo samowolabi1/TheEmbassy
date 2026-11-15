@@ -10,6 +10,7 @@ use App\Models\PastorTimeOff;
 use App\Models\PushSubscription;
 use App\Models\User;
 use App\Services\Messaging\WebPush;
+use App\Services\Messaging\WhatsApp;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -203,6 +204,7 @@ class Appointments
                 'title' => $subject, 'body' => $message, 'url' => route('account.appointments'), 'tag' => 'appointment-'.$appointment->id,
             ]);
         }
+        app(WhatsApp::class)->toMember($member, $subject, $message, route('account.appointments'));
     }
 
     /**

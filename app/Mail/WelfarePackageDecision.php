@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\IsNotification;
 use App\Models\WelfarePackageApplication;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -14,7 +15,7 @@ use Illuminate\Queue\SerializesModels;
  */
 class WelfarePackageDecision extends Mailable
 {
-    use Queueable, SerializesModels;
+    use IsNotification, Queueable, SerializesModels;
 
     public function __construct(public WelfarePackageApplication $application) {}
 

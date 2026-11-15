@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\IsNotification;
 use App\Models\UnitMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -14,7 +15,7 @@ use Illuminate\Queue\SerializesModels;
  */
 class UnitMessageMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use IsNotification, Queueable, SerializesModels;
 
     public function __construct(public UnitMessage $unitMessage) {}
 

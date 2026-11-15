@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\IsNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -13,7 +14,7 @@ use Illuminate\Queue\SerializesModels;
  */
 class ReminderMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use IsNotification, Queueable, SerializesModels;
 
     public function __construct(public string $headline, public string $body, public ?string $url = null, public string $button = 'Open the app') {}
 

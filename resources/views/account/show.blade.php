@@ -223,7 +223,7 @@
                     <label class="field">Address or area
                         <input type="text" name="address" value="{{ old('address', $member->address) }}" maxlength="255">
                     </label>
-                    <label class="check"><input type="checkbox" name="notify_sms" value="1" @checked(old('notify_sms', $member->notify_sms))>Text me church announcements</label>
+                    <label class="check"><input type="checkbox" name="notify_sms" value="1" @checked(old('notify_sms', $member->notify_sms))>Send me church messages on WhatsApp</label>
                     <button type="submit" class="btn btn--navy" style="align-self: flex-start">Save details</button>
                 </fieldset>
             </form>

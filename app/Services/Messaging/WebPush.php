@@ -3,6 +3,7 @@
 namespace App\Services\Messaging;
 
 use App\Models\PushSubscription;
+use App\Support\Notify;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Minishlink\WebPush\Subscription;
@@ -27,6 +28,10 @@ class WebPush
      */
     public function send(Collection $subscriptions, array $notification): array
     {
+        // Switched off church-wide in Settings & roles › Notifications.
+        if (! Notify::on('push')) {
+            return ['sent' => 0, 'failed' => 0];
+        }
         if (! $this->configured() || $subscriptions->isEmpty()) {
             return ['sent' => 0, 'failed' => $subscriptions->count()];
         }

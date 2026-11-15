@@ -2,12 +2,15 @@
 
 namespace App\Services\Celebrations;
 
+use App\Mail\ReminderMail;
 use App\Models\BirthdayCelebration;
 use App\Models\CommunityMessage;
 use App\Models\CommunityRoom;
 use App\Models\Member;
 use App\Models\PushSubscription;
+use App\Services\Messaging\Reminders;
 use App\Services\Messaging\WebPush;
+use App\Services\Messaging\WhatsApp;
 use GdImage;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Collection;
@@ -92,6 +95,11 @@ class Birthdays
                 'url' => route('account').'#birthday',
                 'tag' => 'birthday',
             ]);
+        }
+        $wish = 'The whole '.config('church.short_name').' family celebrates you today. May this new year bring you God\'s favour, joy and fruitfulness. Your birthday card is ready to download and share.';
+        app(WhatsApp::class)->toMember($member, 'Happy birthday, '.$member->firstName().'! 🎉', $wish, route('account').'#birthday');
+        if ($email = $member->user?->email ?? $member->email) {
+            app(Reminders::class)->mail($email, new ReminderMail('Happy birthday, '.$member->firstName().'! 🎉', $wish, route('account').'#birthday', 'See your birthday card'));
         }
 
         return $celebration;

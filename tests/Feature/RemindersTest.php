@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Models\VendorSubscription;
 use App\Services\Messaging\Reminders;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -85,13 +86,21 @@ class RemindersTest extends TestCase
         $this->assertSame(0, ReminderLog::count());
     }
 
-    public function test_reminders_can_also_go_by_email(): void
+    public function test_reminders_go_by_email_to_start_and_by_whatsapp_when_switched_on(): void
     {
-        $ada = Member::factory()->active()->create();
-        config(['church.reminders.service.email' => '1']);
+        $ada = Member::factory()->active()->create(['phone' => '0803 111 2222']);
+        Member::factory()->active()->create(['phone' => '0803 333 4444', 'notify_sms' => false]);
+        Http::fake(['graph.facebook.com/*' => Http::response(['messages' => [['id' => 'w']]])]);
         $this->service(['starts_at' => now()->addHour()]);
         $this->artisan('reminders:send');
         Mail::assertSent(ReminderMail::class, fn ($m) => $m->hasTo($ada->user->email) && str_contains($m->body, 'We can\'t wait to worship with you'));
+        Http::assertNothingSent();
+
+        config(['church.reminders.service.whatsapp' => '1', 'church.notify.whatsapp' => '1', 'services.whatsapp.token' => 't', 'services.whatsapp.phone_number_id' => '123456', 'services.whatsapp.template' => 'church_notice']);
+        $this->service(['held_on' => today()->addDay(), 'starts_at' => now()->addMinutes(90)]);
+        $this->artisan('reminders:send');
+        Http::assertSentCount(1); // the member who turned WhatsApp off is skipped
+        Http::assertSent(fn ($r) => $r['to'] === '2348031112222');
     }
 
     public function test_staff_manage_every_reminder(): void
@@ -99,11 +108,11 @@ class RemindersTest extends TestCase
         $office = User::factory()->create(['role' => 'secretary']);
         $this->actingAs($office)->get(route('admin.reminders.index'))->assertOk()
             ->assertSee('Service reminder')->assertSee('Thank-you greeting')->assertSee('Feedback request')->assertSee('Market renewal reminder')
-            ->assertSee('Hi Ada! Sunday service is today at 9:00 AM.');
+            ->assertSee('Hi Ada! Sunday service is today at 9:00 AM.')->assertDontSee('Text message')->assertSee('WhatsApp: off');
 
-        $this->put(route('admin.reminders.update', 'service'), ['timing' => 12, 'push' => '1', 'email' => '1', 'text' => 'Good evening {first_name}! See you {day} at {time}.'])->assertSessionHasNoErrors();
+        $this->put(route('admin.reminders.update', 'service'), ['timing' => 12, 'push' => '1', 'whatsapp' => '1', 'text' => 'Good evening {first_name}! See you {day} at {time}.'])->assertSessionHasNoErrors();
         $s = Reminders::settings('service');
-        $this->assertSame([false, 12, true, false, true, 'Good evening {first_name}! See you {day} at {time}.'], [$s['enabled'], $s['timing'], $s['push'], $s['sms'], $s['email'], $s['text']]);
+        $this->assertSame([false, 12, false, true, true, 'Good evening {first_name}! See you {day} at {time}.'], [$s['enabled'], $s['timing'], $s['email'], $s['whatsapp'], $s['push'], $s['text']]);
         $this->put(route('admin.reminders.update', 'greeting'), ['enabled' => '1', 'timing' => 5000, 'text' => ''])->assertSessionHasErrors(['timing', 'text'], null, 'greeting');
         $this->put(route('admin.reminders.update', 'nonsense'), ['timing' => 1, 'text' => 'x'])->assertNotFound();
 

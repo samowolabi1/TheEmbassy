@@ -9,6 +9,7 @@ use App\Models\ReminderLog;
 use App\Models\Service;
 use App\Models\ServiceFeedback;
 use App\Models\User;
+use App\Support\Notify;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -22,8 +23,8 @@ use Throwable;
  *  - a feedback request a little later, to those who were there and haven't said how it was;
  *  - market renewal reminders (see SubscriptionReminders), which use deliver() here too.
  *
- * Staff switch each one on or off, set the timing, choose app notification, text message and/or
- * email, and write the wording on admin › Reminders & greetings. Each service is only handled once
+ * Staff switch each one on or off, set the timing, choose email (the default), WhatsApp and/or
+ * app notification, and write the wording on admin › Reminders & greetings. Each service is only handled once
  * per kind, and only recent services count, so turning something on never floods old services.
  */
 class Reminders
@@ -43,10 +44,10 @@ class Reminders
         'market' => ['name', 'shop', 'market', 'end_date', 'days_left'],
     ];
 
-    public function __construct(private WebPush $push, private Termii $sms) {}
+    public function __construct(private WebPush $push, private WhatsApp $whatsapp) {}
 
     /**
-     * @return array{enabled: bool, timing: int, push: bool, sms: bool, email: bool, text: string}
+     * @return array{enabled: bool, timing: int, email: bool, whatsapp: bool, push: bool, text: string}
      */
     public static function settings(string $kind): array
     {
@@ -56,9 +57,9 @@ class Reminders
         return [
             'enabled' => self::on($c['enabled'] ?? false),
             'timing' => max(0, (int) ($c[$timing] ?? 0)),
-            'push' => self::on($c['push'] ?? false),
-            'sms' => self::on($c['sms'] ?? false),
             'email' => self::on($c['email'] ?? false),
+            'whatsapp' => self::on($c['whatsapp'] ?? false),
+            'push' => self::on($c['push'] ?? false),
             'text' => (string) ($c['text'] ?? ''),
             'final' => self::on($c['final'] ?? false),
             'lapsed' => self::on($c['lapsed'] ?? false),
@@ -183,38 +184,32 @@ class Reminders
     {
         $reached = 0;
         $rows = [];
-        $channels = collect(['push', 'sms', 'email'])->filter(fn ($c) => $s[$c])->join(',');
-        $texts = [];
+        $channels = collect(['email', 'whatsapp', 'push'])->filter(fn ($c) => $s[$c])->join(',');
 
         foreach ($members as $member) {
             $body = self::render($s['text'], $vars($member));
             $got = false;
-            if ($s['push'] && $member->user && $this->push->configured()) {
+            $email = $member->user?->email ?? $member->email;
+            if ($s['email'] && $email && Notify::on('email')) {
+                $got = $this->mail($email, new ReminderMail($title, $body, $url)) || $got;
+            }
+            if ($s['whatsapp']) {
+                $got = $this->whatsapp->toMember($member, $title, $body, $url) || $got;
+            }
+            if ($s['push'] && $member->user && Notify::on('push') && $this->push->configured()) {
                 $subs = PushSubscription::where('user_id', $member->user_id)->get();
                 if ($subs->isNotEmpty()) {
                     $this->push->send($subs, ['title' => $title, 'body' => $body, 'url' => $url, 'tag' => "reminder-{$kind}"]);
                     $got = true;
                 }
             }
-            if ($s['sms'] && $member->notify_sms && $member->phone) {
-                $texts[$body][] = $member->phone;
-            }
-            $email = $member->user?->email ?? $member->email;
-            if ($s['email'] && $email) {
-                $got = $this->mail($email, new ReminderMail($title, $body, $url)) || $got;
-            }
             if ($member->user_id) {
                 $rows[] = ['kind' => $kind, 'user_id' => $member->user_id, 'service_id' => $service?->id, 'title' => mb_substr($title, 0, 160), 'body' => $body, 'url' => $url, 'channels' => $channels, 'created_at' => now()];
-                $got = true; // it's in their inbox too
+                $got = true; // it's in their Messages too
             }
-            $reached += $got || ($s['sms'] && $member->notify_sms && $member->phone) ? 1 : 0;
+            $reached += $got ? 1 : 0;
         }
 
-        if ($texts && $this->sms->configured()) {
-            foreach ($texts as $body => $numbers) {
-                $this->sms->send($numbers, mb_substr($body, 0, 459));
-            }
-        }
         foreach (array_chunk($rows, 500) as $chunk) {
             ReminderLog::insert($chunk);
         }
@@ -237,15 +232,15 @@ class Reminders
         $body = self::render($s['text'], $vars);
         $title = '[Test] '.self::KINDS[$kind]['label'];
         $went = [];
-        if ($s['push'] && $this->push->configured() && ($subs = PushSubscription::where('user_id', $user->id)->get())->isNotEmpty()) {
+        if ($s['email'] && Notify::on('email') && $user->email && $this->mail($user->email, new ReminderMail($title, $body, route('home')))) {
+            $went[] = 'email';
+        }
+        if ($s['whatsapp'] && $this->whatsapp->ready() && ($number = Member::internationalPhone($user->member?->phone))) {
+            $this->whatsapp->send([$number], $title, $body) && $went[] = 'WhatsApp';
+        }
+        if ($s['push'] && Notify::on('push') && $this->push->configured() && ($subs = PushSubscription::where('user_id', $user->id)->get())->isNotEmpty()) {
             $this->push->send($subs, ['title' => $title, 'body' => $body, 'url' => route('home'), 'tag' => 'reminder-test']);
             $went[] = 'app notification';
-        }
-        if ($s['sms'] && $this->sms->configured() && $user->member?->phone) {
-            $this->sms->send([$user->member->phone], $body) && $went[] = 'text message';
-        }
-        if ($s['email'] && $user->email && $this->mail($user->email, new ReminderMail($title, $body, route('home')))) {
-            $went[] = 'email';
         }
 
         return $went;

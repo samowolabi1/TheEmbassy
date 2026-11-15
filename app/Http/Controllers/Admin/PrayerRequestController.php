@@ -7,6 +7,7 @@ use App\Mail\PrayerReply;
 use App\Models\PrayerRequest;
 use App\Models\PushSubscription;
 use App\Services\Messaging\WebPush;
+use App\Services\Messaging\WhatsApp;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -82,6 +83,7 @@ class PrayerRequestController extends Controller
                 'title' => 'We\'re praying with you', 'body' => Str::limit($body, 120), 'url' => route('account.prayer'), 'tag' => 'prayer-'.$prayerRequest->id,
             ]);
         }
+        app(WhatsApp::class)->toMember($member, 'We\'re praying with you', Str::limit($body, 600), route('account.prayer'));
 
         return back()->with('status', 'Sent to '.$member->name.'.');
     }

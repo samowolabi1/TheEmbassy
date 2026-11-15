@@ -9,6 +9,7 @@ use App\Models\Service;
 use App\Models\ServiceFeedback;
 use App\Models\Suggestion;
 use App\Services\Messaging\WebPush;
+use App\Services\Messaging\WhatsApp;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -88,6 +89,7 @@ class FeedbackController extends Controller
                     'title' => 'About your suggestion', 'body' => Str::limit($data['response'], 120), 'url' => route('account.feedback').'#suggest', 'tag' => 'suggestion-'.$suggestion->id,
                 ]);
             }
+            app(WhatsApp::class)->toMember($member, 'About your suggestion', Str::limit($data['response'], 600), route('account.feedback').'#suggest');
         }
 
         return back()->with('status', $answered ? 'Saved, and the member has been told.' : 'Saved.');

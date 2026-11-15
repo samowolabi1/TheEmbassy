@@ -33,7 +33,7 @@
                     </div>
                 </div>
             </div>
-            <span class="box__note" style="text-align: center; max-width: 300px">The newest three live announcements show on the home page. Use "Send" on an announcement to text members, notify the app, or share it to WhatsApp.</span>
+            <span class="box__note" style="text-align: center; max-width: 300px">The newest three live announcements show on the home page. Use "Send" on an announcement to email members, send it on WhatsApp, notify the app, or share it to a WhatsApp group.</span>
         </aside>
     </div>
 

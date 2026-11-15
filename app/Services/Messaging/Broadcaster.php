@@ -2,44 +2,57 @@
 
 namespace App\Services\Messaging;
 
+use App\Mail\ReminderMail;
 use App\Models\Broadcast;
 use App\Models\Member;
 use App\Models\PushSubscription;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Throwable;
 
 /**
- * Sends announcements by text message and app notification, a batch per scheduler run.
+ * Sends announcements by email, WhatsApp and app notification, a batch per scheduler run.
+ * (Text messages are no longer sent, to save fees.)
  */
 class Broadcaster
 {
-    /** Numbers per run on the bulk route; the one-at-a-time dnd route sends fewer. */
-    public const SMS_BATCH = 1000;
-
-    public const DND_BATCH = 60;
-
     public const PUSH_BATCH = 500;
 
-    public function __construct(private Termii $sms, private WebPush $push) {}
+    public const EMAIL_BATCH = 100;
+
+    public const WHATSAPP_BATCH = 50;
+
+    public function __construct(private WhatsApp $whatsapp, private WebPush $push) {}
 
     /**
-     * Active members who have a phone number and haven't turned text messages off.
+     * Approved members with an email address (theirs, or their login's).
      *
      * @return Builder<Member>
      */
-    public function smsAudience(): Builder
+    public function emailAudience(): Builder
+    {
+        return Member::where('status', Member::ACTIVE)->where(fn ($q) => $q->whereNotNull('email')->where('email', '!=', '')->orWhereNotNull('user_id'));
+    }
+
+    /**
+     * Approved members with a phone number who haven't turned WhatsApp messages off.
+     *
+     * @return Builder<Member>
+     */
+    public function whatsappAudience(): Builder
     {
         return Member::where('status', Member::ACTIVE)->where('notify_sms', true)->whereNotNull('phone')->where('phone', '!=', '');
     }
 
     /**
-     * How many people each channel would reach now.
+     * How many people each way would reach now.
      *
-     * @return array{sms: int, push: int}
+     * @return array{email: int, whatsapp: int, push: int}
      */
     public function reach(): array
     {
-        return ['sms' => $this->smsAudience()->count(), 'push' => PushSubscription::count()];
+        return ['email' => $this->emailAudience()->count(), 'whatsapp' => $this->whatsappAudience()->count(), 'push' => PushSubscription::count()];
     }
 
     /**
@@ -55,51 +68,62 @@ class Broadcaster
             $broadcast->update(['status' => 'sending', 'started_at' => now()]);
         }
 
-        $smsDone = ! $broadcast->uses('sms') || $this->smsBatch($broadcast);
+        // Text messages are no longer sent; older broadcasts that asked for them just finish.
+        $emailDone = ! $broadcast->uses('email') || $this->emailBatch($broadcast);
+        $whatsappDone = ! $broadcast->uses('whatsapp') || $this->whatsappBatch($broadcast);
         $pushDone = ! $broadcast->uses('push') || $this->pushBatch($broadcast);
 
-        if ($smsDone && $pushDone) {
+        if ($emailDone && $whatsappDone && $pushDone) {
             $broadcast->update(['status' => 'sent', 'finished_at' => now()]);
         }
 
         return true;
     }
 
-    /**
-     * @return bool whether every text has now been sent (or the channel gave up)
-     */
-    private function smsBatch(Broadcast $broadcast): bool
+    private function emailBatch(Broadcast $broadcast): bool
     {
-        if ($broadcast->sms_error) {
-            return true;
-        }
-        $limit = config('services.termii.channel') === 'dnd' ? self::DND_BATCH : self::SMS_BATCH;
-        $members = $this->smsAudience()->where('id', '>', $broadcast->sms_cursor)->orderBy('id')->take($limit)->get(['id', 'phone']);
+        $members = $this->emailAudience()->with('user')->where('id', '>', $broadcast->email_cursor)->orderBy('id')->take(self::EMAIL_BATCH)->get();
         if ($members->isEmpty()) {
             return true;
         }
+        $sent = $failed = 0;
+        $done = [];
+        foreach ($members as $member) {
+            $email = mb_strtolower((string) ($member->user?->email ?? $member->email));
+            if ($email === '' || isset($done[$email])) {
+                continue;
+            }
+            $done[$email] = true;
+            try {
+                Mail::to($email)->send(new ReminderMail($broadcast->title, $broadcast->message, $broadcast->url, 'Read more'));
+                $sent++;
+            } catch (Throwable $e) {
+                $failed++;
+                Log::error('Could not email an announcement', ['broadcast' => $broadcast->id, 'error' => $e->getMessage()]);
+            }
+        }
+        $broadcast->update(['email_cursor' => $members->last()->id, 'email_sent' => $broadcast->email_sent + $sent, 'email_failed' => $broadcast->email_failed + $failed]);
 
-        // One text per number, even if two members share a phone.
-        $phones = $members->map(fn (Member $m) => Member::internationalPhone($m->phone));
-        $invalid = $phones->filter(fn ($p) => $p === null)->count();
-        $numbers = $phones->filter()->unique()->values()->all();
+        return $members->count() < self::EMAIL_BATCH;
+    }
 
-        try {
-            $sent = $this->sms->send($numbers, $broadcast->message);
-        } catch (Throwable $e) {
-            // Stop texting (likely a setup or balance problem) rather than retrying every minute.
-            $broadcast->update(['sms_error' => $e->getMessage(), 'sms_failed' => $broadcast->sms_failed + $members->count()]);
-
+    private function whatsappBatch(Broadcast $broadcast): bool
+    {
+        $members = $this->whatsappAudience()->where('id', '>', $broadcast->whatsapp_cursor)->orderBy('id')->take(self::WHATSAPP_BATCH)->get(['id', 'phone']);
+        if ($members->isEmpty()) {
             return true;
         }
-
+        // One message per number, even if two members share a phone.
+        $phones = $members->map(fn (Member $m) => Member::internationalPhone($m->phone));
+        $numbers = $phones->filter()->unique()->values()->all();
+        $sent = $this->whatsapp->ready() ? $this->whatsapp->send($numbers, $broadcast->title, $broadcast->message) : 0;
         $broadcast->update([
-            'sms_cursor' => $members->last()->id,
-            'sms_sent' => $broadcast->sms_sent + $sent,
-            'sms_failed' => $broadcast->sms_failed + $invalid,
+            'whatsapp_cursor' => $members->last()->id,
+            'whatsapp_sent' => $broadcast->whatsapp_sent + $sent,
+            'whatsapp_failed' => $broadcast->whatsapp_failed + ($members->count() - $sent),
         ]);
 
-        return $members->count() < $limit;
+        return $members->count() < self::WHATSAPP_BATCH;
     }
 
     private function pushBatch(Broadcast $broadcast): bool

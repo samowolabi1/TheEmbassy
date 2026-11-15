@@ -10,10 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * An announcement sent out by text message and app notification. The scheduler sends it in
  * batches, keeping its place so a restart never texts anyone twice.
  */
-#[Fillable(['announcement_id', 'title', 'message', 'url', 'channels', 'status', 'sms_cursor', 'sms_sent', 'sms_failed', 'sms_error', 'push_cursor', 'push_sent', 'push_failed', 'created_by', 'started_at', 'finished_at'])]
+#[Fillable(['announcement_id', 'title', 'message', 'url', 'channels', 'status', 'sms_cursor', 'sms_sent', 'sms_failed', 'sms_error', 'push_cursor', 'push_sent', 'push_failed', 'email_cursor', 'email_sent', 'email_failed', 'whatsapp_cursor', 'whatsapp_sent', 'whatsapp_failed', 'created_by', 'started_at', 'finished_at'])]
 class Broadcast extends Model
 {
-    public const CHANNELS = ['sms' => 'Text message (SMS)', 'push' => 'App notification'];
+    public const CHANNELS = ['email' => 'Email', 'whatsapp' => 'WhatsApp', 'push' => 'App notification', 'sms' => 'Text message (no longer used)'];
 
     /**
      * Get the attributes that should be cast.

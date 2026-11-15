@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\IsNotification;
 use App\Models\PrayerRequest;
 use App\Models\PrayerRequestReply;
 use Illuminate\Bus\Queueable;
@@ -15,7 +16,7 @@ use Illuminate\Queue\SerializesModels;
  */
 class PrayerReply extends Mailable
 {
-    use Queueable, SerializesModels;
+    use IsNotification, Queueable, SerializesModels;
 
     public function __construct(public PrayerRequest $prayer, public PrayerRequestReply $reply) {}
 

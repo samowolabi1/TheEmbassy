@@ -5,6 +5,7 @@ namespace App\Services\Pastoral;
 use App\Mail\TestimonyUpdate;
 use App\Models\Testimony;
 use App\Models\User;
+use App\Services\Messaging\WhatsApp;
 use App\Services\Tokens\Rewards;
 use App\Support\TokenName;
 use Illuminate\Support\Facades\Log;
@@ -54,6 +55,7 @@ class Testimonies
 
     private function tell(Testimony $testimony, string $subject, string $message): void
     {
+        app(WhatsApp::class)->toMember($testimony->member, $subject, $message, route('account.testimonies'));
         $email = $testimony->member->user?->email ?? $testimony->member->email;
         if (! $email) {
             return;

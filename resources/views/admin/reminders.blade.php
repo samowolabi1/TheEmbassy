@@ -8,12 +8,13 @@
         </div>
     </header>
 
-    @unless ($pushReady && $smsReady)
-        <p class="flash flash--warn" role="status" style="margin: 0">
-            @unless ($pushReady) App notifications aren't set up yet, so only text messages, email and the members' inbox are used. @endunless
-            @unless ($smsReady) Text messages need the Termii details in Settings &amp; roles before they can go out. @endunless
-        </p>
-    @endunless
+    <p class="box__note" style="margin: 0">
+        Ways of sending, church-wide:
+        @foreach ($ways as $w)
+            <span @class(['pill', 'pill--live' => $w['on'] && $w['ready'], 'pill--draft' => ! ($w['on'] && $w['ready'])])>{{ $w['label'] }}: {{ ! $w['on'] ? 'off' : ($w['ready'] ? 'on' : 'on, not set up') }}</span>
+        @endforeach
+        @if (auth()->user()->canManage('settings')) <a href="{{ route('admin.settings.edit') }}#notifications" class="box__link">Change in Settings &amp; roles</a> @endif
+    </p>
 
     <div class="stats">
         @foreach ($kinds as $k)
@@ -56,9 +57,9 @@
 
                     <fieldset class="reminder-card__ways">
                         <legend>Send by</legend>
-                        <label class="login__remember"><input type="checkbox" name="push" value="1" @checked($s['push'])>App notification</label>
-                        <label class="login__remember"><input type="checkbox" name="sms" value="1" @checked($s['sms'])>Text message <x-tip text="Costs money per text, through Termii. Only goes to people who allow texts in their account." /></label>
                         <label class="login__remember"><input type="checkbox" name="email" value="1" @checked($s['email'])>Email</label>
+                        <label class="login__remember"><input type="checkbox" name="whatsapp" value="1" @checked($s['whatsapp'])>WhatsApp <x-tip text="Meta charges the church per WhatsApp message it starts (much less than a text). Only goes to people with a phone number who haven't turned WhatsApp off in their account, and only while WhatsApp is switched on in Settings &amp; roles." /></label>
+                        <label class="login__remember"><input type="checkbox" name="push" value="1" @checked($s['push'])>App notification <x-tip text="Free. Reaches members who turned on notifications in the app." /></label>
                     </fieldset>
                     @if ($k['key'] !== 'market')
                         <span class="field__hint">It also appears in each member's Messages in the app.</span>
@@ -81,7 +82,7 @@
                     <div class="actions">
                         <button type="submit" class="btn btn--navy btn--sm">Save</button>
                         <button type="submit" class="btn btn--ghost btn--sm" form="test-{{ $k['key'] }}">Send me a test</button>
-                        <x-tip text="Sends this message, as last saved, to you only, by the ways ticked above. App notifications need notifications allowed on this device." />
+                        <x-tip text="Sends this message, as last saved, to you only, by the ways ticked above that are switched on." />
                     </div>
                 </form>
                 <form method="POST" action="{{ route('admin.reminders.test', $k['key']) }}" id="test-{{ $k['key'] }}" hidden>@csrf</form>

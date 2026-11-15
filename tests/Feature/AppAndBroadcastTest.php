@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ReminderMail;
 use App\Models\Announcement;
 use App\Models\Broadcast;
 use App\Models\Member;
@@ -9,11 +10,11 @@ use App\Models\Post;
 use App\Models\PushSubscription;
 use App\Models\Setting;
 use App\Models\User;
-use App\Services\Messaging\Broadcaster;
 use App\Services\Messaging\WebPush;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -21,13 +22,14 @@ class AppAndBroadcastTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function termii(string $channel = 'generic'): void
+    private function whatsapp(): void
     {
         config([
-            'services.termii.api_key' => 'test-key',
-            'services.termii.sender_id' => 'RoyalTribe',
-            'services.termii.channel' => $channel,
-            'services.termii.base_url' => 'https://termii.test',
+            'church.notify.whatsapp' => '1',
+            'services.whatsapp.token' => 'test-token',
+            'services.whatsapp.phone_number_id' => '1234567890',
+            'services.whatsapp.template' => 'church_notice',
+            'services.whatsapp.language' => 'en',
         ]);
     }
 
@@ -90,59 +92,71 @@ class AppAndBroadcastTest extends TestCase
         $this->get('/')->assertSee('name="push-key"', false);
     }
 
-    public function test_announcements_are_texted_in_batches_to_members_who_want_texts(): void
+    public function test_announcements_go_by_email_and_whatsapp(): void
     {
-        $this->termii();
-        Http::fake(['termii.test/*' => Http::response(['code' => 'ok', 'message' => 'Successfully Sent'])]);
+        Mail::fake();
+        $this->whatsapp();
+        Http::fake(['graph.facebook.com/*' => Http::response(['messages' => [['id' => 'wamid.1']]])]);
         Member::factory()->active()->create(['phone' => '0803 123 4567']);
-        Member::factory()->active()->create(['phone' => '+234 803 123 4567']); // same number: one text
-        Member::factory()->active()->create(['phone' => '08055555555', 'notify_sms' => false]);
+        Member::factory()->active()->create(['phone' => '+234 803 123 4567']); // same number: one WhatsApp
+        Member::factory()->active()->create(['phone' => '08055555555', 'notify_sms' => false]); // turned WhatsApp off
         Member::factory()->create(['phone' => '08066666666']); // pending
         Member::factory()->active()->create(['phone' => '12']); // not a number
         $announcement = Announcement::factory()->create(['title' => 'Choir auditions', 'published_at' => now()->subHour()]);
         $this->actingAs(User::factory()->staff('media')->create());
 
-        $this->get(route('admin.announcements.send', $announcement))->assertOk()->assertSee('Text message to 3 members');
-        $this->post(route('admin.announcements.send.store', $announcement), ['channels' => ['sms'], 'message' => 'Choir auditions this Saturday.'])->assertRedirect();
+        $this->get(route('admin.announcements.send', $announcement))->assertOk()->assertSee('Email to 4 members')->assertSee('WhatsApp to 3 members')
+            ->assertDontSee('Text message')->assertSee('value="email" checked', false);
+        $this->post(route('admin.announcements.send.store', $announcement), ['channels' => ['email', 'whatsapp'], 'message' => 'Choir auditions this Saturday.'])->assertRedirect();
         $this->artisan('messages:send')->assertSuccessful();
 
         $broadcast = Broadcast::first();
-        $this->assertSame('sent', $broadcast->status);
-        $this->assertSame([1, 1], [$broadcast->sms_sent, $broadcast->sms_failed]);
-        Http::assertSent(fn (Request $r) => $r->url() === 'https://termii.test/api/sms/send/bulk'
-            && $r['to'] === ['2348031234567'] && $r['from'] === 'RoyalTribe' && $r['channel'] === 'generic' && $r['sms'] === 'Choir auditions this Saturday.');
+        $this->assertSame(['sent', 4, 1, 2], [$broadcast->status, $broadcast->email_sent, $broadcast->whatsapp_sent, $broadcast->whatsapp_failed]);
+        Mail::assertSent(ReminderMail::class, 4);
+        Http::assertSentCount(1);
+        Http::assertSent(fn (Request $r) => $r->url() === 'https://graph.facebook.com/v21.0/1234567890/messages' && $r['to'] === '2348031234567'
+            && $r['template']['name'] === 'church_notice' && str_contains($r['template']['components'][0]['parameters'][0]['text'], 'Choir auditions this Saturday.')
+            && $r->hasHeader('Authorization', 'Bearer test-token'));
 
         // A second send within a day needs confirming.
-        $this->post(route('admin.announcements.send.store', $announcement), ['channels' => ['sms'], 'message' => 'Again'])->assertSessionHasErrors('again');
+        $this->post(route('admin.announcements.send.store', $announcement), ['channels' => ['email'], 'message' => 'Again'])->assertSessionHasErrors('again');
     }
 
-    public function test_dnd_route_texts_one_at_a_time_and_errors_stop_texting(): void
-    {
-        $this->termii('dnd');
-        Http::fake(['termii.test/*' => Http::sequence()->push(['message' => 'ok'])->push(['message' => 'Insufficient balance'], 400)]);
-        Member::factory()->active()->count(3)->sequence(['phone' => '08011111111'], ['phone' => '08022222222'], ['phone' => '08033333333'])->create();
-        Broadcast::create(['title' => 'T', 'message' => 'Hello', 'channels' => ['sms'], 'status' => 'queued']);
-
-        app(Broadcaster::class)->sendBatch();
-
-        $broadcast = Broadcast::first();
-        $this->assertSame('sent', $broadcast->status);
-        $this->assertStringContainsString('Insufficient balance', $broadcast->sms_error);
-        Http::assertSent(fn (Request $r) => $r->url() === 'https://termii.test/api/sms/send' && $r['channel'] === 'dnd');
-        Http::assertSentCount(2);
-    }
-
-    public function test_sending_needs_a_configured_channel(): void
+    public function test_sending_needs_a_way_that_is_switched_on(): void
     {
         $announcement = Announcement::factory()->create(['published_at' => now()->subHour()]);
         $this->actingAs(User::factory()->admin()->create());
 
-        $this->get(route('admin.announcements.send', $announcement))->assertSee('Set up Termii');
+        // WhatsApp isn't set up; text messages aren't offered at all.
+        $this->get(route('admin.announcements.send', $announcement))->assertSee('Off or not set up');
+        $this->post(route('admin.announcements.send.store', $announcement), ['channels' => ['whatsapp'], 'message' => 'Hi'])->assertSessionHasErrors('channels.0');
         $this->post(route('admin.announcements.send.store', $announcement), ['channels' => ['sms'], 'message' => 'Hi'])->assertSessionHasErrors('channels.0');
+        config(['church.notify.email' => '0']);
+        $this->post(route('admin.announcements.send.store', $announcement), ['channels' => ['email'], 'message' => 'Hi'])->assertSessionHasErrors('channels.0');
         $this->assertSame(0, Broadcast::count());
 
         $this->actingAs(User::factory()->staff('finance')->create());
         $this->get(route('admin.announcements.send', $announcement))->assertForbidden();
+    }
+
+    public function test_the_email_switch_stops_notification_emails_but_not_receipts(): void
+    {
+        config(['mail.default' => 'array']);
+        $transport = fn () => app('mailer')->getSymfonyTransport();
+        Mail::to('ada@example.com')->send(new ReminderMail('Sunday service today', 'See you at 9.'));
+        $this->assertCount(1, $transport()->messages());
+
+        config(['church.notify.email' => '0']);
+        Mail::to('ada@example.com')->send(new ReminderMail('Sunday service today', 'See you at 9.'));
+        Mail::raw('Your receipt', fn ($m) => $m->to('ada@example.com')->subject('Receipt'));
+        $this->assertCount(2, $transport()->messages());
+        $this->assertSame('Receipt', $transport()->messages()->last()->getOriginalMessage()->getSubject());
+    }
+
+    public function test_the_app_notification_switch_stops_push(): void
+    {
+        config(['church.notify.push' => '0', 'services.webpush.public_key' => 'x', 'services.webpush.private_key' => 'y']);
+        $this->assertSame(['sent' => 0, 'failed' => 0], app(WebPush::class)->send(collect([$this->subscription()]), ['title' => 'T', 'body' => 'B']));
     }
 
     public function test_push_notifications_go_to_every_subscription(): void
@@ -161,12 +175,12 @@ class AppAndBroadcastTest extends TestCase
         $this->assertSame([2, 'sent'], [Broadcast::first()->push_sent, Broadcast::first()->status]);
     }
 
-    public function test_members_turn_texts_off_in_their_account(): void
+    public function test_members_turn_whatsapp_off_in_their_account(): void
     {
         $member = Member::factory()->active()->create(['phone' => '08011111111']);
         $this->actingAs($member->user);
 
-        $this->get('/account')->assertSee('Text me church announcements')->assertSee('data-push-toggle', false);
+        $this->get('/account')->assertSee('Send me church messages on WhatsApp')->assertSee('data-push-toggle', false);
         $this->put('/account', ['phone' => '08011111111'])->assertRedirect();
 
         $this->assertFalse($member->fresh()->notify_sms);

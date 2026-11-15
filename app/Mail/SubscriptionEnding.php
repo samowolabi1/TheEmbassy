@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\IsNotification;
 use App\Models\Shop;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -15,7 +16,7 @@ use Illuminate\Support\Carbon;
  */
 class SubscriptionEnding extends Mailable
 {
-    use Queueable, SerializesModels;
+    use IsNotification, Queueable, SerializesModels;
 
     public function __construct(public Shop $shop, public Carbon $until, public ?string $text = null) {}
 
