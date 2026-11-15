@@ -249,6 +249,22 @@ Anyone can send a prayer request from the form on the home page, as before. Memb
 - **Answered:** members tell the church when God answers, with what happened, and are invited to share it as a testimony (the testimony form starts with their request and answer).
 - **The prayer wall** is for approved members only. It shows shared requests from the last 60 days (first name, or no name), and members tap "I prayed" once each so the person knows how many prayed. Staff can take a request off the wall. Members can remove their own requests.
 
+## Reminders and greetings
+
+The app sends these by itself. Staff with the "Reminders & greetings" area (pastors and the church office to start with) manage them on **admin › Reminders & greetings**:
+- **Service reminder:** before each service on the Attendance page (2 hours before to start), to every approved member.
+- **Thank-you greeting:** after the service ends (30 minutes after to start), to the members who checked in or were marked present.
+- **Feedback request:** a little later (3 hours after to start), to the members who were there and haven't said how it was. It opens Feedback in their account.
+- **Market renewal reminder:** sellers are reminded before their subscription ends (7 days before to start). Optionally they also get a last reminder the day before, and a note when it has ended and their shop is hidden. This replaces the old fixed email.
+
+For each one, staff can:
+- switch it on or off and set when it goes;
+- choose app notification, text message (through Termii; only to members who allow texts) and/or email;
+- write the wording, using fill-ins like `{first_name}`, `{service}`, `{day}`, `{time}`, `{shop}` and `{end_date}`, with a live "How it reads" preview;
+- send themselves a test.
+
+Service messages also appear in each member's Messages. The page shows what's coming up, which subscriptions end soon, and what was sent recently. Each service gets each message once, and only recent services count, so switching one on never messages old services. `reminders:send` runs every five minutes from the scheduler; `market:remind` runs daily at 8am.
+
 ## Feedback and suggestions
 
 Members give feedback from **My account › Feedback**:

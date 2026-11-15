@@ -10,6 +10,7 @@ use App\Services\Library\Lending;
 use App\Services\Market\SubscriptionReminders;
 use App\Services\Messaging\Broadcaster;
 use App\Services\Messaging\Newsletter;
+use App\Services\Messaging\Reminders;
 use App\Services\Pastoral\Appointments;
 use App\Services\Social\PostPublisher;
 use App\Services\Tokens\Ledger;
@@ -148,6 +149,11 @@ Artisan::command('library:remind', function (Lending $lending) {
     $this->info("Library: {$r['due']} due-soon reminders, {$r['overdue']} overdue reminders, {$r['released']} uncollected reservations released.");
 })->purpose('Remind members about library books due soon or overdue, and release reservations nobody collected');
 
+Artisan::command('reminders:send', function (Reminders $reminders) {
+    $r = $reminders->run();
+    $this->info("Service reminders reached {$r['service']}, thank-you greetings {$r['greeting']}, feedback requests {$r['feedback']}.");
+})->purpose('Send service reminders, thank-you greetings and feedback requests when they are due');
+
 Artisan::command('appointments:remind', function (Appointments $appointments) {
     $this->info('Reminded '.$appointments->remind().' members of tomorrow\'s visits.');
 })->purpose('Remind members of tomorrow\'s visits with a pastor, and send each pastor their day');
@@ -167,5 +173,6 @@ Schedule::command('newsletter:queue')->weeklyOn(1, (string) config('church.newsl
 Schedule::command('tokens:daily')->dailyAt('06:30')->timezone('Africa/Lagos');
 Schedule::command('birthdays:celebrate')->dailyAt('06:45')->timezone('Africa/Lagos');
 Schedule::command('appointments:remind')->dailyAt('17:00')->timezone('Africa/Lagos');
+Schedule::command('reminders:send')->everyFiveMinutes()->withoutOverlapping(10);
 Schedule::command('library:remind')->dailyAt('10:00')->timezone('Africa/Lagos');
 Schedule::command('blog:prune-images')->weeklyOn(0, '03:00')->timezone('Africa/Lagos');

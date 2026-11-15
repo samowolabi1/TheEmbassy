@@ -426,6 +426,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/money/income', [Admin\MoneyController::class, 'storeIncome'])->middleware('throttle:30,1')->name('money.income.store');
         Route::post('/expenses', [Admin\ExpenseController::class, 'store'])->middleware('throttle:30,1')->name('expenses.store');
 
+        Route::middleware('can:manage,"reminders"')->prefix('reminders')->name('reminders.')->group(function () {
+            Route::get('/', [Admin\ReminderController::class, 'index'])->name('index');
+            Route::put('/{kind}', [Admin\ReminderController::class, 'update'])->name('update');
+            Route::post('/{kind}/test', [Admin\ReminderController::class, 'test'])->middleware('throttle:6,1')->name('test');
+        });
+
         Route::middleware('can:manage,"expenses"')->group(function () {
             Route::get('/income', [Admin\IncomeController::class, 'index'])->name('income.index');
             Route::get('/income/export', [Admin\IncomeController::class, 'export'])->name('income.export');

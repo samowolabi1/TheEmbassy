@@ -1892,3 +1892,99 @@ input[type='file'] {
   flex-direction: column;
   gap: 10px;
 }
+
+/* ---------- Reminders & greetings ---------- */
+.flash--warn {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+.reminder-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.reminder-card__head h2 {
+  margin: 0;
+}
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.switch input {
+  appearance: none;
+  width: 46px;
+  height: 26px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--admin-line);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.switch input::after {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 20px;
+  margin: 3px;
+  border-radius: 999px;
+  background: var(--white);
+  box-shadow: 0 1px 3px rgba(10, 29, 63, 0.25);
+  transition: transform 0.15s ease;
+}
+.switch input:checked {
+  background: var(--ok);
+}
+.switch input:checked::after {
+  transform: translateX(20px);
+}
+.switch input:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+}
+.reminder-card__when {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-weight: 500;
+}
+.reminder-card__ways {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.reminder-card__ways legend {
+  margin-bottom: 6px;
+  font-weight: 700;
+  font-size: 14px;
+}
+.reminder-card__preview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--line-soft);
+  line-height: 1.5;
+}
+.reminder-card__preview-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bronze);
+}
+.reminder-card code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--line-soft);
+  font-size: 12px;
+}

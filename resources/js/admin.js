@@ -45,3 +45,16 @@ if (typeRadios.length) {
     typeRadios.forEach((r) => r.addEventListener('change', sync));
     sync();
 }
+
+// Reminders & greetings: show how each message reads as it's typed, and label the on/off switch.
+for (const area of document.querySelectorAll('[data-reminder-text]')) {
+    const out = area.closest('form').querySelector('[data-reminder-preview]');
+    const sample = JSON.parse(area.dataset.sample || '{}');
+    area.addEventListener('input', () => {
+        out.textContent = area.value.replace(/\{(\w+)\}/g, (m, key) => (key in sample ? sample[key] : m)).trim();
+    });
+}
+for (const toggle of document.querySelectorAll('.switch input')) {
+    const label = toggle.nextElementSibling;
+    toggle.addEventListener('change', () => (label.textContent = toggle.checked ? 'On' : 'Off'));
+}

@@ -41,6 +41,7 @@ class Shop extends Model
             'approved_at' => 'datetime',
             'reminded_for' => 'datetime',
             'lapse_noticed_for' => 'datetime',
+            'final_reminded_for' => 'datetime',
         ];
     }
 

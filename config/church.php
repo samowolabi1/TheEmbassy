@@ -78,6 +78,37 @@ return [
 
     // The church library: how long a loan lasts, how many books a member can have (counting
     // reservations), how often they can renew, and how long a reserved copy is held for them.
+    // Automatic reminders, greetings and feedback requests. Staff change all of these on
+    // admin › Reminders & greetings. {placeholders} are filled in for each person.
+    'reminders' => [
+        'service' => [
+            'enabled' => true,
+            'hours_before' => 2,
+            'push' => true, 'sms' => false, 'email' => false,
+            'text' => 'Hi {first_name}! {service} is {day} at {time}. We can\'t wait to worship with you. Can\'t make it in person? Join online from the app.',
+        ],
+        'greeting' => [
+            'enabled' => true,
+            'minutes_after' => 30,
+            'push' => true, 'sms' => false, 'email' => false,
+            'text' => 'Thank you for worshipping with us today, {first_name}! We pray the word you heard bears fruit all through the week. Have a blessed week.',
+        ],
+        'feedback' => [
+            'enabled' => true,
+            'hours_after' => 3,
+            'push' => true, 'sms' => false, 'email' => false,
+            'text' => 'How was {service} today, {first_name}? Tell us what blessed you and what we can do better. It takes a minute.',
+        ],
+        'market' => [
+            'enabled' => true,
+            'days_before' => 7,
+            'final' => true,
+            'lapsed' => true,
+            'push' => true, 'sms' => false, 'email' => true,
+            'text' => 'Hi {name}, the {market} subscription for {shop} ends on {end_date} ({days_left}). Renew now so your shop stays on the market.',
+        ],
+    ],
+
     'library' => [
         'loan_days' => 14,
         'max_books' => 3,

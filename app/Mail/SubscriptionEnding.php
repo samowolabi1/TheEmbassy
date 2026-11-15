@@ -17,7 +17,7 @@ class SubscriptionEnding extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public Shop $shop, public Carbon $until) {}
+    public function __construct(public Shop $shop, public Carbon $until, public ?string $text = null) {}
 
     public function envelope(): Envelope
     {

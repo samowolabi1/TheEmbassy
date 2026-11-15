@@ -5,6 +5,7 @@ namespace App\Services\Messaging;
 use App\Models\Announcement;
 use App\Models\BirthdayCelebration;
 use App\Models\Broadcast;
+use App\Models\ReminderLog;
 use App\Models\UnitMessage;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -56,7 +57,14 @@ class Inbox
                 'url' => $c->cardUrl(), 'at' => $c->created_at, 'key' => 'c'.$c->id,
             ]) : collect();
 
-        return $broadcasts->concat($announcements)->concat($unit)->concat($birthdays)->sortByDesc(fn ($i) => $i['at']->timestamp)->values();
+        // Service reminders, thank-yous and feedback requests sent to them.
+        $reminders = ReminderLog::where('user_id', $user->id)->whereIn('kind', ['service', 'greeting', 'feedback'])->where('created_at', '>=', $since)->latest()->take(50)->get()
+            ->map(fn (ReminderLog $r) => [
+                'kind' => 'reminder', 'from' => config('church.short_name'), 'title' => $r->title,
+                'body' => $r->body, 'url' => $r->url, 'at' => $r->created_at, 'key' => 'r'.$r->id,
+            ]);
+
+        return $broadcasts->concat($announcements)->concat($unit)->concat($birthdays)->concat($reminders)->sortByDesc(fn ($i) => $i['at']->timestamp)->values();
     }
 
     public function unread(User $user): int

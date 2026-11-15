@@ -316,6 +316,20 @@ return [
             ],
         ],
 
+        'reminders' => [
+            'title' => 'Reminders & greetings',
+            'area' => 'reminders',
+            'about' => 'Messages the app sends by itself: service reminders, thank-yous to the people who came, feedback requests, and renewal reminders for market sellers.',
+            'faqs' => [
+                ['Who gets the service reminder?', 'Every approved member, before each service on the Attendance page. Add services there (repeating weekly for Sundays) and the reminders follow.'],
+                ['Who gets the thank-you and the feedback request?', 'Only members who were at the service: those who checked in or were marked present. The feedback request skips anyone who has already said how it was.'],
+                ['How are they sent?', 'By app notification, text message and/or email, as you tick for each one. Members also find them in Messages in the app. Text messages cost money per text and only go to members who allow texts.'],
+                ['Can I change the wording?', 'Yes. Words in curly brackets, like {first_name} or {time}, are filled in for each person. "How it reads" shows the result as you type.'],
+                ['I turned one on. Will old services get it?', 'No. Only services that are coming up (for reminders) or just ended (for thank-yous and feedback) get them, and each service only once.'],
+                ['How do I check it works?', 'Press "Send me a test" on any card. It sends the saved message to you only.'],
+            ],
+        ],
+
         'messages' => [
             'title' => 'Contact messages',
             'area' => 'messages',
@@ -506,6 +520,13 @@ return [
         'admin.prayer-requests.index' => [
             ['.tabs', 'Requests', 'New and read requests.'],
             ['.box--flush', 'Reply', 'Reply to encourage members; they get it by email and on their phone.'],
+        ],
+
+        'admin.reminders.index' => [
+            ['.stats', 'What went out', 'How many people each kind of message reached in the last 30 days.'],
+            ['#service', 'Each message', 'Switch it on or off, choose when it goes and how it\'s sent, and write the words. "How it reads" previews it.'],
+            ['box:Coming up', 'Coming up', 'The next services and when their reminder goes out.'],
+            ['box:Subscriptions ending soon', 'Sellers to remind', 'Shops whose subscription ends in the next two weeks.'],
         ],
 
         'admin.messages.index' => [
