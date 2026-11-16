@@ -82,7 +82,7 @@ class GivingTest extends TestCase
         $this->confirm($payment)->assertRedirect($gift->url());
         $this->assertSame(Gift::PAID, $gift->fresh()->status);
         Mail::assertSent(GiftReceipt::class, fn ($mail) => $mail->hasTo('tolu@example.com'));
-        $this->get($gift->url())->assertSee('God bless you, Tolu')->assertSee('₦25,000');
+        $this->get($gift->url())->assertOk()->assertSee('God bless you, Tolu')->assertSee('₦25,000');
     }
 
     public function test_a_signed_in_members_gift_is_linked_to_them(): void
@@ -147,7 +147,7 @@ class GivingTest extends TestCase
 
         $this->put(route('admin.accounts.update', $account), [...$account->only(['currency', 'bank_name', 'account_name', 'account_number', 'use_for'])]);
         $this->assertFalse($account->fresh()->is_active);
-        $this->get(route('give'))->assertDontSee('Access Bank');
+        $this->get(route('give'))->assertOk()->assertDontSee('Access Bank');
 
         $this->delete(route('admin.accounts.destroy', $account))->assertRedirect();
         $this->assertModelMissing($account);
@@ -171,16 +171,16 @@ class GivingTest extends TestCase
         foreach (['finance', 'pastor', 'admin'] as $role) {
             $staff = User::factory()->staff($role)->create();
             $this->actingAs($staff)->get(route('admin.finance.index'))->assertOk()->assertDontSee('₦7,777')->assertDontSee('Ada Obi');
-            $this->get(route('admin.dashboard'))->assertDontSee('₦7,777')->assertDontSee('Latest gifts');
+            $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('₦7,777')->assertDontSee('Latest gifts');
             $this->get(route('admin.finance.export'))->assertForbidden();
             $this->delete(route('admin.gifts.destroy', $gift))->assertForbidden();
         }
         $this->actingAs(User::factory()->staff('pastor')->create())->get(route('admin.members.show', $member))->assertOk()->assertDontSee('₦7,777');
 
         // The administrator sees it all.
-        $this->actingAs($this->admin())->get(route('admin.finance.index'))->assertSee('₦7,777')->assertSee('Ada Obi');
-        $this->get(route('admin.dashboard'))->assertSee('Latest gifts');
-        $this->get(route('admin.members.show', $member))->assertSee('₦7,777');
+        $this->actingAs($this->admin())->get(route('admin.finance.index'))->assertOk()->assertSee('₦7,777')->assertSee('Ada Obi');
+        $this->get(route('admin.dashboard'))->assertOk()->assertSee('Latest gifts');
+        $this->get(route('admin.members.show', $member))->assertOk()->assertSee('₦7,777');
         $this->assertStringContainsString('Ada Obi', $this->get(route('admin.finance.export'))->streamedContent());
     }
 
@@ -201,7 +201,7 @@ class GivingTest extends TestCase
         $gift->status = Gift::PAID;
         $gift->save();
 
-        $this->get(route('give'))->assertSee('₦250,000')->assertSee('of ₦1,000,000')->assertSee('1 giver so far')->assertDontSee('[raised]');
+        $this->get(route('give'))->assertOk()->assertSee('₦250,000')->assertSee('of ₦1,000,000')->assertSee('1 giver so far')->assertDontSee('[raised]');
     }
 
     // ---- Admin: giving ----
@@ -220,10 +220,10 @@ class GivingTest extends TestCase
         $this->assertSame('Sunday offering', $gift->name);
         $this->assertStringStartsWith('CASH-', $gift->code);
 
-        $this->get(route('admin.finance.index'))->assertSee('recorded to Offering'); // their own confirmation, once
-        $this->get(route('admin.finance.index'))->assertDontSee('₦342,500')->assertDontSee($gift->code);
+        $this->get(route('admin.finance.index'))->assertOk()->assertSee('recorded to Offering'); // their own confirmation, once
+        $this->get(route('admin.finance.index'))->assertOk()->assertDontSee('₦342,500')->assertDontSee($gift->code);
         $this->actingAs($this->admin());
-        $this->get(route('admin.finance.index'))->assertSee('₦342,500')->assertSee('Bro. Femi &amp; Sis. Ada', false);
+        $this->get(route('admin.finance.index'))->assertOk()->assertSee('₦342,500')->assertSee('Bro. Femi &amp; Sis. Ada', false);
         $csv = $this->get(route('admin.finance.export'))->streamedContent();
         $this->assertStringContainsString('342500.00', $csv);
     }
@@ -234,7 +234,7 @@ class GivingTest extends TestCase
         $this->actingAs($this->admin())->get(route('admin.finance.index'));
         $this->post(route('admin.gifts.store'), ['fund_id' => Fund::first()->id, 'amount' => '1000', 'method' => 'cash', 'given_on' => today()->toDateString()]);
 
-        $this->get(route('admin.finance.index'))->assertSee('₦1,000');
+        $this->get(route('admin.finance.index'))->assertOk()->assertSee('₦1,000');
     }
 
     public function test_online_gifts_cannot_be_deleted(): void
@@ -309,6 +309,6 @@ class GivingTest extends TestCase
         $expense->status = Expense::APPROVED;
         $expense->save();
 
-        $this->get(route('admin.expenses.index', ['month' => $month]))->assertSee('₦120,000')->assertSee('of ₦100,000')->assertSee('budget-line__over');
+        $this->get(route('admin.expenses.index', ['month' => $month]))->assertOk()->assertSee('₦120,000')->assertSee('of ₦100,000')->assertSee('budget-line__over');
     }
 }

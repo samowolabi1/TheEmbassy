@@ -15,7 +15,7 @@ class SermonsTest extends TestCase
 
     public function test_examples_show_until_the_church_adds_messages(): void
     {
-        $this->get(route('watch'))->assertSee('A royal priesthood')->assertSee('Crowned');
+        $this->get(route('watch'))->assertOk()->assertSee('A royal priesthood')->assertSee('Crowned');
     }
 
     public function test_media_team_adds_a_series_and_messages_that_replace_the_examples(): void
@@ -33,10 +33,10 @@ class SermonsTest extends TestCase
         }
         $this->post(route('admin.sermons.store'), ['title' => 'Draft talk', 'kind' => 'podcast', 'preached_on' => today()->toDateString(), 'swatch' => 'ice']);
 
-        $this->get(route('watch'))
+        $this->get(route('watch'))->assertOk()
             ->assertSee('Building on the rock')->assertSee('Kingdom Builders · Week 2')->assertSee('Sunday service: Kingdom Builders, week 2')
             ->assertDontSee('A royal priesthood')->assertDontSee('Draft talk');
-        $this->get('/')->assertSee('Week 2: Building on the rock')->assertSee('Matthew 7:24 · 40 min');
+        $this->get('/')->assertOk()->assertSee('Week 2: Building on the rock')->assertSee('Matthew 7:24 · 40 min');
     }
 
     public function test_only_one_series_is_now_showing(): void
@@ -56,7 +56,7 @@ class SermonsTest extends TestCase
         $this->post(route('admin.sermons.live'), ['video_id' => 'dQw4w9WgXcQ', 'is_live' => '1'])->assertRedirect();
         Setting::applyToConfig();
 
-        $this->get(route('watch'))->assertSee('youtube-nocookie.com/embed/dQw4w9WgXcQ', false)->assertSee('LIVE ON YOUTUBE');
+        $this->get(route('watch'))->assertOk()->assertSee('youtube-nocookie.com/embed/dQw4w9WgXcQ', false)->assertSee('LIVE ON YOUTUBE');
         $this->post(route('admin.sermons.live'), ['video_id' => 'javascript:alert(1)'])->assertSessionHasErrors('video_id');
     }
 

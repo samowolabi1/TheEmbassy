@@ -75,7 +75,7 @@ class AdminTest extends TestCase
         foreach (['/admin', '/admin/prayer-requests', '/admin/subscribers', '/admin/content', "/admin/announcements/{$announcement->id}/edit"] as $path) {
             $this->get($path)->assertOk()->assertSee('Church admin');
         }
-        $this->get('/admin')->assertSee('Pastor');
+        $this->get('/admin')->assertOk()->assertSee('Pastor');
     }
 
     // ---- Prayer requests ----
@@ -85,12 +85,12 @@ class AdminTest extends TestCase
         $this->actingAs($this->admin());
         $request = PrayerRequest::create(['name' => 'Tolu', 'request' => 'Pray for my exams', 'is_private' => true]);
 
-        $this->get('/admin/prayer-requests')->assertSee('Pray for my exams')->assertSee('Private');
-        $this->get('/admin')->assertSee('Unread prayer requests');
+        $this->get('/admin/prayer-requests')->assertOk()->assertSee('Pray for my exams')->assertSee('Private');
+        $this->get('/admin')->assertOk()->assertSee('Unread prayer requests');
 
         $this->patch("/admin/prayer-requests/{$request->id}", ['read' => 1])->assertRedirect();
         $this->assertNotNull($request->fresh()->read_at);
-        $this->get('/admin/prayer-requests?show=unread')->assertDontSee('Pray for my exams');
+        $this->get('/admin/prayer-requests?show=unread')->assertOk()->assertDontSee('Pray for my exams');
 
         $this->patch("/admin/prayer-requests/{$request->id}", ['read' => 0]);
         $this->assertNull($request->fresh()->read_at);
@@ -113,7 +113,7 @@ class AdminTest extends TestCase
         $ada = NewsletterSubscriber::create(['email' => 'ada@example.com', 'confirmed_at' => now()]);
         NewsletterSubscriber::create(['email' => '=cmd@example.com', 'confirmed_at' => now()]);
 
-        $this->get('/admin/subscribers?q=ada')->assertSee('ada@example.com')->assertDontSee('=cmd@example.com');
+        $this->get('/admin/subscribers?q=ada')->assertOk()->assertSee('ada@example.com')->assertDontSee('=cmd@example.com');
 
         $csv = $this->get('/admin/subscribers/export')->assertOk()->streamedContent();
         $this->assertStringContainsString('ada@example.com', $csv);
@@ -135,7 +135,7 @@ class AdminTest extends TestCase
             'tone' => 'ice', 'url' => '/events', 'when' => 'now',
         ])->assertRedirect(route('admin.content'));
 
-        $this->get('/')->assertSee('Youth picnic')->assertSee('href="/events"', false);
+        $this->get('/')->assertOk()->assertSee('Youth picnic')->assertSee('href="/events"', false);
     }
 
     public function test_drafts_stay_off_the_home_page(): void
@@ -147,7 +147,7 @@ class AdminTest extends TestCase
         ]);
 
         $this->assertSame('draft', Announcement::sole()->status());
-        $this->get('/')->assertDontSee('Secret plan');
+        $this->get('/')->assertOk()->assertDontSee('Secret plan');
     }
 
     public function test_scheduled_announcements_go_live_at_their_time(): void
@@ -160,9 +160,9 @@ class AdminTest extends TestCase
             'when' => 'schedule', 'publish_at' => $at->format('Y-m-d\TH:i'),
         ])->assertSessionHasNoErrors();
 
-        $this->get('/')->assertDontSee('Fasting week');
+        $this->get('/')->assertOk()->assertDontSee('Fasting week');
         $this->travelTo($at->copy()->addMinute());
-        $this->get('/')->assertSee('Fasting week');
+        $this->get('/')->assertOk()->assertSee('Fasting week');
     }
 
     public function test_announcement_links_must_be_web_addresses(): void
@@ -216,7 +216,7 @@ class AdminTest extends TestCase
         ])->assertSessionHasNoErrors();
 
         $this->assertTrue(Declaration::sole()->week_of->isSameDay(now()->startOfWeek()));
-        $this->get('/')->assertSee('I am called.');
+        $this->get('/')->assertOk()->assertSee('I am called.');
     }
 
     public function test_next_weeks_declaration_waits_until_monday(): void
@@ -229,9 +229,9 @@ class AdminTest extends TestCase
             'lines' => ['Next A', 'Next B', 'Next C', 'Next D'],
         ]);
 
-        $this->get('/')->assertSee('Now A')->assertDontSee('Next A');
+        $this->get('/')->assertOk()->assertSee('Now A')->assertDontSee('Next A');
         $this->travelTo(now()->addWeek()->startOfWeek()->addHour());
-        $this->get('/')->assertSee('Next A');
+        $this->get('/')->assertOk()->assertSee('Next A');
     }
 
     public function test_declaration_needs_four_lines(): void

@@ -34,7 +34,7 @@ class BlogTest extends TestCase
         $this->assertTrue($post->is_featured);
         $this->assertStringContainsString('<figure class="scripture">', $post->body_html);
         $this->assertStringContainsString('<div class="reflect">', $post->body_html);
-        $this->get('/blog')->assertSee('Living like royalty when life feels ordinary');
+        $this->get('/blog')->assertOk()->assertSee('Living like royalty when life feels ordinary');
     }
 
     public function test_media_staff_write_and_publish_an_article(): void
@@ -90,8 +90,8 @@ class BlogTest extends TestCase
         auth()->logout();
         $this->get('/blog/faith-at-work')->assertNotFound();
         $this->get('/blog/later')->assertNotFound();
-        $this->get('/blog')->assertDontSee('Faith at work');
-        $this->get(route('blog.feed'))->assertDontSee('Faith at work');
+        $this->get('/blog')->assertOk()->assertDontSee('Faith at work');
+        $this->get(route('blog.feed'))->assertOk()->assertDontSee('Faith at work');
 
         $this->travel(2)->days();
         $this->get('/blog/later')->assertOk();
@@ -129,15 +129,15 @@ class BlogTest extends TestCase
         $this->post(route('admin.posts.store'), $this->article(['is_featured' => '1']));
 
         $this->assertSame(1, Post::where('is_featured', true)->count());
-        $this->get('/blog')->assertSeeInOrder(['FEATURED', 'Faith at work']);
+        $this->get('/blog')->assertOk()->assertSeeInOrder(['FEATURED', 'Faith at work']);
     }
 
     public function test_topic_filter_search_and_pages(): void
     {
         Post::factory()->count(12)->create(['topic' => 'Purpose']);
 
-        $this->get('/blog?topic=Relationships')->assertSee('Dating with purpose')->assertDontSee('Your first salary');
-        $this->get('/blog?q=salary')->assertSee('Your first salary')->assertDontSee('Dating with purpose')->assertSee('1 result');
+        $this->get('/blog?topic=Relationships')->assertOk()->assertSee('Dating with purpose')->assertDontSee('Your first salary');
+        $this->get('/blog?q=salary')->assertOk()->assertSee('Your first salary')->assertDontSee('Dating with purpose')->assertSee('1 result');
         $this->get('/blog?q=%25')->assertOk();
         $this->get('/blog?page=2')->assertOk()->assertSee('Page 2 of');
     }
@@ -176,7 +176,7 @@ class BlogTest extends TestCase
 
     public function test_home_page_and_sitemap_list_articles(): void
     {
-        $this->get('/')->assertSee('Dating with purpose');
+        $this->get('/')->assertOk()->assertSee('Dating with purpose');
         $this->get('/sitemap.xml')->assertOk()->assertSee('/blog/dating-with-purpose')->assertSee('/gallery');
     }
 

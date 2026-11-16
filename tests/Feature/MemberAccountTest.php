@@ -29,7 +29,7 @@ class MemberAccountTest extends TestCase
 
     public function test_header_log_in_goes_to_the_member_sign_in(): void
     {
-        $this->get('/')->assertSee(route('login'), false);
+        $this->get('/')->assertOk()->assertSee(route('login'), false);
         $this->get(route('login'))->assertOk()->assertSee('Welcome back');
     }
 
@@ -49,7 +49,7 @@ class MemberAccountTest extends TestCase
         $this->assertAuthenticatedAs($member->user);
         $this->assertNull($member->user->role);
 
-        $this->get(route('account'))->assertSee('Waiting for approval')->assertSee('Choir')->assertSee("Once your membership is confirmed you'll get welcome Crowns", false);
+        $this->get(route('account'))->assertOk()->assertSee('Waiting for approval')->assertSee('Choir')->assertSee("Once your membership is confirmed you'll get welcome Crowns", false);
     }
 
     public function test_joining_needs_consent_and_a_free_email(): void
@@ -68,7 +68,7 @@ class MemberAccountTest extends TestCase
         $this->actingAs($user)->post(route('join.store'), ['name' => $user->name, 'phone' => '0803', 'agree' => '1'])->assertRedirect(route('account'));
 
         $this->assertSame($user->id, Member::sole()->user_id);
-        $this->get(route('account'))->assertSee('My shop');
+        $this->get(route('account'))->assertOk()->assertSee('My shop');
     }
 
     public function test_members_sign_in_and_land_on_their_account(): void
@@ -77,7 +77,7 @@ class MemberAccountTest extends TestCase
         Member::factory()->for($user)->create();
 
         $this->post(route('login.store'), ['email' => $user->email, 'password' => 'password'])->assertRedirect(route('account'));
-        $this->get('/')->assertSee('My account');
+        $this->get('/')->assertOk()->assertSee('My account');
         $this->post(route('logout'))->assertRedirect(route('home'));
         $this->assertGuest();
     }
@@ -135,7 +135,7 @@ class MemberAccountTest extends TestCase
         $message = ContactMessage::sole();
         Mail::assertSent(NewContactMessage::class, fn ($mail) => $mail->hasTo('office@church.test') && $mail->hasReplyTo('tolu@example.com'));
 
-        $this->actingAs(User::factory()->staff('secretary')->create())->get(route('admin.messages.index'))->assertSee('children');
+        $this->actingAs(User::factory()->staff('secretary')->create())->get(route('admin.messages.index'))->assertOk()->assertSee('children');
         $this->patch(route('admin.messages.update', $message), ['read' => 1]);
         $this->assertNotNull($message->fresh()->read_at);
     }
@@ -151,6 +151,6 @@ class MemberAccountTest extends TestCase
     {
         $this->get(route('privacy'))->assertOk()->assertSee('Nigeria Data Protection');
         $this->get(route('terms'))->assertOk()->assertSee('pay sellers directly');
-        $this->get('/')->assertSee(route('privacy'), false)->assertSee(route('contact'), false);
+        $this->get('/')->assertOk()->assertSee(route('privacy'), false)->assertSee(route('contact'), false);
     }
 }

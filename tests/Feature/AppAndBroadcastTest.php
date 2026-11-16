@@ -58,7 +58,7 @@ class AppAndBroadcastTest extends TestCase
             ->assertHeader('Content-Type', 'application/javascript; charset=UTF-8')
             ->assertSee("addEventListener('push'", false);
         $this->get('/offline')->assertOk()->assertSee("You're offline.", false);
-        $this->get('/')->assertSee('rel="manifest"', false)->assertSee('data-install', false);
+        $this->get('/')->assertOk()->assertSee('rel="manifest"', false)->assertSee('data-install', false);
     }
 
     public function test_phones_subscribe_to_notifications_only_on_real_push_services(): void
@@ -89,7 +89,7 @@ class AppAndBroadcastTest extends TestCase
         $this->assertNotSame(config('services.webpush.private_key'), Setting::firstWhere('key', 'services.webpush.private_key')->value);
         $this->artisan('push:keys')->expectsOutputToContain('already exist');
         $this->assertSame($public, config('services.webpush.public_key'));
-        $this->get('/')->assertSee('name="push-key"', false);
+        $this->get('/')->assertOk()->assertSee('name="push-key"', false);
     }
 
     public function test_announcements_go_by_email_and_whatsapp(): void
@@ -128,7 +128,7 @@ class AppAndBroadcastTest extends TestCase
         $this->actingAs(User::factory()->admin()->create());
 
         // WhatsApp isn't set up; text messages aren't offered at all.
-        $this->get(route('admin.announcements.send', $announcement))->assertSee('Off or not set up');
+        $this->get(route('admin.announcements.send', $announcement))->assertOk()->assertSee('Off or not set up');
         $this->post(route('admin.announcements.send.store', $announcement), ['channels' => ['whatsapp'], 'message' => 'Hi'])->assertSessionHasErrors('channels.0');
         $this->post(route('admin.announcements.send.store', $announcement), ['channels' => ['sms'], 'message' => 'Hi'])->assertSessionHasErrors('channels.0');
         config(['church.notify.email' => '0']);
@@ -180,7 +180,7 @@ class AppAndBroadcastTest extends TestCase
         $member = Member::factory()->active()->create(['phone' => '08011111111']);
         $this->actingAs($member->user);
 
-        $this->get('/account')->assertSee('Send me church messages on WhatsApp')->assertSee('data-push-toggle', false);
+        $this->get('/account')->assertOk()->assertSee('Send me church messages on WhatsApp')->assertSee('data-push-toggle', false);
         $this->put('/account', ['phone' => '08011111111'])->assertRedirect();
 
         $this->assertFalse($member->fresh()->notify_sms);
@@ -206,7 +206,7 @@ class AppAndBroadcastTest extends TestCase
 
     public function test_app_wording_points_to_real_features(): void
     {
-        $this->get('/about')->assertSee('Join a unit')->assertDontSee('Join a unit in the app');
-        $this->get('/')->assertDontSee('RSVP in the app')->assertDontSee('App Store');
+        $this->get('/about')->assertOk()->assertSee('Join a unit')->assertDontSee('Join a unit in the app');
+        $this->get('/')->assertOk()->assertDontSee('RSVP in the app')->assertDontSee('App Store');
     }
 }

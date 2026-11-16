@@ -82,14 +82,14 @@ class MarketplaceTest extends TestCase
     public function test_member_applies_and_admin_approves_with_a_login(): void
     {
         $this->plan('monthly', 500_000);
-        $this->get(route('market.apply'))->assertSee('the church never handles your sales')->assertSee('₦5,000')->assertDontSee('Account number');
+        $this->get(route('market.apply'))->assertOk()->assertSee('the church never handles your sales')->assertSee('₦5,000')->assertDontSee('Account number');
         $this->post(route('market.apply.store'), $this->application(['whatsapp' => '0809 111 2222']))->assertRedirect(route('market.apply'));
 
         $shop = Shop::sole();
         $this->assertSame(Shop::PENDING, $shop->status);
         $this->assertSame('0809 111 2222', $shop->whatsapp);
 
-        $this->actingAs(User::factory()->admin()->create())->get(route('admin.market.index'))->assertSee("Kemi's Kitchen");
+        $this->actingAs(User::factory()->admin()->create())->get(route('admin.market.index'))->assertOk()->assertSee("Kemi's Kitchen");
         $this->post(route('admin.market.approve', $shop))->assertRedirect();
 
         $shop->refresh();
@@ -143,15 +143,15 @@ class MarketplaceTest extends TestCase
 
         $product = Product::sole();
         $this->assertSame(2_500_000, $product->price);
-        $this->get(route('market.index'))->assertDontSee('Party jollof tray');
+        $this->get(route('market.index'))->assertOk()->assertDontSee('Party jollof tray');
         // The owner can preview it; nobody else can.
         $this->get(route('market.product', $product))->assertOk()->assertSee('Only you can see this listing');
         auth()->logout();
         $this->get(route('market.product', $product))->assertNotFound();
 
         VendorSubscription::factory()->active()->for($shop)->create();
-        $this->get(route('market.index'))->assertSee('Party jollof tray')->assertSee('₦25,000');
-        $this->get('/')->assertSee('Party jollof tray');
+        $this->get(route('market.index'))->assertOk()->assertSee('Party jollof tray')->assertSee('₦25,000');
+        $this->get('/')->assertOk()->assertSee('Party jollof tray');
     }
 
     public function test_vendor_lists_a_service_with_a_price_unit_and_no_stock(): void
@@ -168,7 +168,7 @@ class MarketplaceTest extends TestCase
         $this->assertTrue($service->isService());
         $this->assertNull($service->stock);
         $this->assertSame('₦40,000 per session', $service->priceLabel());
-        $this->get(route('market.index'))->assertSee('Birthday photoshoot')->assertSee('₦40,000 per session');
+        $this->get(route('market.index'))->assertOk()->assertSee('Birthday photoshoot')->assertSee('₦40,000 per session');
     }
 
     public function test_lapsed_suspended_and_hidden_listings_disappear(): void
@@ -178,13 +178,13 @@ class MarketplaceTest extends TestCase
         $lapsedShop = Shop::factory()->approved()->has(VendorSubscription::factory()->expired(), 'subscriptions')->create();
         Product::factory()->for($lapsedShop)->create(['name' => 'Lapsed lamp']);
 
-        $this->get(route('market.index'))->assertSee('Shea butter')->assertDontSee('Old stock')->assertDontSee('Lapsed lamp');
+        $this->get(route('market.index'))->assertOk()->assertSee('Shea butter')->assertDontSee('Old stock')->assertDontSee('Lapsed lamp');
         $this->get(route('market.product', $hidden))->assertNotFound();
         $this->get(route('market.shop', $lapsedShop))->assertNotFound();
 
         $this->actingAs(User::factory()->admin()->create())->post(route('admin.market.suspend', $product->shop));
         auth()->logout();
-        $this->get(route('market.index'))->assertDontSee('Shea butter');
+        $this->get(route('market.index'))->assertOk()->assertDontSee('Shea butter');
         $this->get(route('market.product', $product))->assertNotFound();
     }
 
@@ -197,7 +197,7 @@ class MarketplaceTest extends TestCase
         $this->actingAs($user)->get(route('vendor.products.edit', $theirs))->assertNotFound();
         $this->put(route('vendor.products.update', $theirs), ['name' => 'Hijacked', 'description' => 'x', 'price' => '100'])->assertNotFound();
         $this->patch(route('vendor.enquiries.read', $enquiry))->assertNotFound();
-        $this->get(route('vendor.enquiries.index'))->assertDontSee($enquiry->name);
+        $this->get(route('vendor.enquiries.index'))->assertOk()->assertDontSee($enquiry->name);
         $this->assertNull($enquiry->fresh()->read_at);
     }
 
@@ -208,7 +208,7 @@ class MarketplaceTest extends TestCase
         $product = Product::factory()->create();
         $product->shop->update(['phone' => '0803 000 0000', 'whatsapp' => '0809 111 2222']);
 
-        $this->get(route('market.product', $product))
+        $this->get(route('market.product', $product))->assertOk()
             ->assertSee('tel:08030000000')
             ->assertSee('https://wa.me/2348091112222', false)
             ->assertSee('mailto:'.$product->shop->email, false)
@@ -235,7 +235,7 @@ class MarketplaceTest extends TestCase
         $service = Product::factory()->service()->create();
         $data = ['name' => 'Ada', 'phone' => '0812 000 0000', 'message' => 'Shoot for 20 guests in Lekki'];
 
-        $this->get(route('market.product', $service))->assertSee('When do you need it?');
+        $this->get(route('market.product', $service))->assertOk()->assertSee('When do you need it?');
         $this->post(route('market.enquire', $service), $data)->assertSessionHasErrors('preferred_date');
         $this->post(route('market.enquire', $service), [...$data, 'preferred_date' => now()->subDay()->toDateString()])->assertSessionHasErrors('preferred_date');
         $this->post(route('market.enquire', $service), [...$data, 'preferred_date' => now()->addWeek()->toDateString()])->assertSessionHasNoErrors();
@@ -267,7 +267,7 @@ class MarketplaceTest extends TestCase
         $product = Product::factory()->for($shop)->create();
         $enquiry = Enquiry::factory()->for($product)->create(['name' => 'Ada Obi', 'message' => 'Is it available Saturday?']);
 
-        $this->actingAs($user)->get(route('vendor.enquiries.index'))->assertSee('Ada Obi')->assertSee('Is it available Saturday?')->assertSee('Mark as handled');
+        $this->actingAs($user)->get(route('vendor.enquiries.index'))->assertOk()->assertSee('Ada Obi')->assertSee('Is it available Saturday?')->assertSee('Mark as handled');
         $this->patch(route('vendor.enquiries.read', $enquiry))->assertRedirect();
         $this->assertNotNull($enquiry->fresh()->read_at);
     }
@@ -280,11 +280,11 @@ class MarketplaceTest extends TestCase
         VendorPlan::catalogue();
         $this->assertSame(5, VendorPlan::count());
 
-        $this->actingAs($user)->get(route('vendor.subscription.index'))->assertSee('Plans aren\'t open yet', false);
+        $this->actingAs($user)->get(route('vendor.subscription.index'))->assertOk()->assertSee('Plans aren\'t open yet', false);
         $this->post(route('vendor.subscription.store'), ['plan' => VendorPlan::first()->id])->assertSessionHasErrors('plan');
 
         $this->plan('yearly', 9_000_000);
-        $this->get(route('vendor.subscription.index'))->assertSee('1 year')->assertSee('₦90,000')->assertSee('₦7,500 a month')->assertDontSee('Quarterly');
+        $this->get(route('vendor.subscription.index'))->assertOk()->assertSee('1 year')->assertSee('₦90,000')->assertSee('₦7,500 a month')->assertDontSee('Quarterly');
     }
 
     public function test_vendor_pays_for_a_plan_and_is_listed_for_its_length(): void
@@ -309,7 +309,7 @@ class MarketplaceTest extends TestCase
         $this->assertTrue($subscription->ends_at->isSameDay(now()->addMonthsNoOverflow(3)));
         $this->assertTrue($shop->isListed());
         Mail::assertSent(SubscriptionActivated::class, fn ($mail) => $mail->hasTo($shop->email));
-        $this->get(route('vendor.subscription.index', ['paid' => $subscription->id]))->assertSee('Payment received')->assertSee('Listed');
+        $this->get(route('vendor.subscription.index', ['paid' => $subscription->id]))->assertOk()->assertSee('Payment received')->assertSee('Listed');
     }
 
     public function test_renewing_early_adds_on_after_the_current_period(): void
@@ -394,7 +394,7 @@ class MarketplaceTest extends TestCase
 
     public function test_admin_prices_plans_and_switches_them_on(): void
     {
-        $this->actingAs(User::factory()->admin()->create())->get(route('admin.market.index'))
+        $this->actingAs(User::factory()->admin()->create())->get(route('admin.market.index'))->assertOk()
             ->assertSee('Monthly')->assertSee('Quarterly')->assertSee('6 months')->assertSee('1 year')->assertSee('3 years');
 
         $monthly = VendorPlan::firstWhere('key', 'monthly');
@@ -426,7 +426,7 @@ class MarketplaceTest extends TestCase
 
         $this->post(route('admin.market.coupons.toggle', $coupon))->assertRedirect();
         $this->assertFalse($coupon->fresh()->is_active);
-        $this->get(route('admin.market.index'))->assertSee('WELCOME50')->assertSee('50% off');
+        $this->get(route('admin.market.index'))->assertOk()->assertSee('WELCOME50')->assertSee('50% off');
     }
 
     public function test_admin_sees_subscription_income_and_who_is_paid_up(): void
@@ -435,7 +435,7 @@ class MarketplaceTest extends TestCase
         VendorSubscription::factory()->active()->for($shop)->create(['amount' => 1_200_000, 'ends_at' => now()->addMonths(3)]);
         Shop::factory()->approved()->create(['name' => 'Bisi Bakes']);
 
-        $this->actingAs(User::factory()->admin()->create())->get(route('admin.market.index'))
+        $this->actingAs(User::factory()->admin()->create())->get(route('admin.market.index'))->assertOk()
             ->assertSee('₦12,000')
             ->assertSee('Paid to '.now()->addMonths(3)->format('j M Y'))
             ->assertSee('Not subscribed');
@@ -500,7 +500,7 @@ class MarketplaceTest extends TestCase
         $shop = Shop::factory()->approved()->create(['name' => 'Ade Prints']);
         VendorSubscription::factory()->active()->for($shop)->create(['amount' => 1_200_000]);
 
-        $this->actingAs(User::factory()->staff('finance')->create())->get(route('admin.market.index'))->assertSee('Subscription payments')->assertSee('Ade Prints');
+        $this->actingAs(User::factory()->staff('finance')->create())->get(route('admin.market.index'))->assertOk()->assertSee('Subscription payments')->assertSee('Ade Prints');
         $csv = $this->get(route('admin.market.export'))->streamedContent();
         $this->assertStringContainsString('Ade Prints', $csv);
         $this->assertStringContainsString('12000.00', $csv);

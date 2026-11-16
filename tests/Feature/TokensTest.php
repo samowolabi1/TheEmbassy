@@ -90,7 +90,7 @@ class TokensTest extends TestCase
         $this->post(route('services.open', $service));
         $this->post(route('services.open', $service)); // twice: still once
         $this->assertSame(5, $this->balance($member->user));
-        $this->get(route('account.tokens'))->assertSee('Joined online');
+        $this->get(route('account.tokens'))->assertOk()->assertSee('Joined online');
     }
 
     public function test_in_person_attendance_serving_and_ushers_marking_present(): void
@@ -141,7 +141,7 @@ class TokensTest extends TestCase
         $this->assertSame(1, TokenTransfer::where('key', 'like', 'community_day:%')->count());
 
         Declaration::create(['week_of' => Declaration::weekStarting(today()), 'lines' => ['I am chosen.', '', '', '']]);
-        $this->get(route('account.tokens'))->assertSee('I declare it');
+        $this->get(route('account.tokens'))->assertOk()->assertSee('I declare it');
         $this->post(route('account.declare'))->assertSessionHas('status', 'Amen! +2 Crowns.');
         $this->post(route('account.declare'))->assertSessionHas('status', fn ($s) => str_contains($s, 'declared it this week'));
 
@@ -178,12 +178,12 @@ class TokensTest extends TestCase
 
         // Not enough yet.
         $this->give($buyer, 100);
-        $this->get(route('market.product', $product))->assertSee('this needs 150');
+        $this->get(route('market.product', $product))->assertOk()->assertSee('this needs 150');
         $this->post(route('market.tokens', $product))->assertSessionHasErrors('tokens');
         $this->assertSame(100, $this->balance($buyer));
 
         $this->give($buyer, 100);
-        $this->get(route('market.index'))->assertSee('For Crowns')->assertSee('150 Crowns');
+        $this->get(route('market.index'))->assertOk()->assertSee('For Crowns')->assertSee('150 Crowns');
         $this->post(route('market.tokens', $product), ['note' => 'Size L'])->assertRedirect(route('account.tokens'));
         $order = TokenOrder::sole();
         $this->assertSame([50, 0, 'pending'], [$this->balance($buyer), $product->fresh()->stock, $order->status]);
@@ -196,7 +196,7 @@ class TokensTest extends TestCase
 
         // The seller hands it over with the code: the tokens are theirs.
         $seller = $product->shop->user;
-        $this->actingAs($seller)->get(route('vendor.token-orders.index'))->assertSee('Royal hoodie')->assertSee('Size L');
+        $this->actingAs($seller)->get(route('vendor.token-orders.index'))->assertOk()->assertSee('Royal hoodie')->assertSee('Size L');
         $this->post(route('vendor.token-orders.complete'), ['code' => strtolower($order->code)])->assertSessionHasNoErrors();
         $this->assertSame(150, $this->balance($seller));
         $this->post(route('vendor.token-orders.complete'), ['code' => $order->code])->assertSessionHasErrors('code');
@@ -296,7 +296,7 @@ class TokensTest extends TestCase
         $audit = $ledger->audit();
         $this->assertTrue($audit['ok'], implode(' ', $audit['problems']));
         $this->assertSame($audit['supply'], $audit['held']);
-        $this->get(route('admin.tokens.index', ['member' => $member->id]))->assertSee('Outreach volunteer')->assertSee('Ada Obi');
+        $this->get(route('admin.tokens.index', ['member' => $member->id]))->assertOk()->assertSee('Outreach volunteer')->assertSee('Ada Obi');
     }
 
     public function test_only_the_pastor_in_charge_sets_amounts_and_value(): void
@@ -324,7 +324,7 @@ class TokensTest extends TestCase
 
         $this->assertSame(0, app(Rewards::class)->welcome($member->user));
         $this->assertSame(0, $this->balance($member->user));
-        $this->actingAs(User::factory()->superAdmin()->create())->get(route('admin.tokens.index'))->assertSee('The treasury ran short');
+        $this->actingAs(User::factory()->superAdmin()->create())->get(route('admin.tokens.index'))->assertOk()->assertSee('The treasury ran short');
     }
 
     public function test_members_send_tokens_to_each_other_within_limits(): void
@@ -340,7 +340,7 @@ class TokensTest extends TestCase
         $this->post(route('account.tokens.send'), ['to' => '0803 111 2222', 'amount' => 1])->assertSessionHasErrors('to'); // yourself
         $this->post(route('account.tokens.send'), ['to' => 'nobody@example.com', 'amount' => 1])->assertSessionHasErrors('to');
         $this->assertSame([240, 60], [$this->balance($ada->user), $this->balance($tolu->user)]);
-        $this->actingAs($tolu->user)->get(route('account.tokens'))->assertSee('Happy birthday');
+        $this->actingAs($tolu->user)->get(route('account.tokens'))->assertOk()->assertSee('Happy birthday');
 
         $this->travel(1)->days();
         $this->actingAs($ada->user)->post(route('account.tokens.send'), ['to' => 'tolu@example.com', 'amount' => 50])->assertSessionHasNoErrors();
@@ -359,7 +359,7 @@ class TokensTest extends TestCase
         $this->give($member->user, 5);
         $this->assertSame(105, $this->balance($member->user));
         $this->actingAs($member->user)->post(route('market.tokens', $product))->assertSessionHasErrors('tokens');
-        $this->get(route('account.tokens'))->assertSee('Your wallet is on hold');
+        $this->get(route('account.tokens'))->assertOk()->assertSee('Your wallet is on hold');
     }
 
     public function test_event_tickets_paid_with_tokens_go_back_to_the_treasury(): void
@@ -375,7 +375,7 @@ class TokensTest extends TestCase
 
         $this->actingAs($member->user)->post(route('events.book', $event), ['name' => 'Ada', 'email' => 'a@example.com', 'quantities' => [$type->id => 1]]);
         $order = TicketOrder::sole();
-        $this->get(URL::signedRoute('tickets.show', $order))->assertSee('Pay 👑 1,000 Crowns');
+        $this->get(URL::signedRoute('tickets.show', $order))->assertOk()->assertSee('Pay 👑 1,000 Crowns');
         $this->post(URL::signedRoute('tickets.tokens', $order))->assertRedirect($order->url());
 
         $this->assertTrue($order->fresh()->isConfirmed());

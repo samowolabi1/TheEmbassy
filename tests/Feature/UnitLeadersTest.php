@@ -44,7 +44,7 @@ class UnitLeadersTest extends TestCase
         $this->assertSame('Bro. Femi', $unit->fresh()->leader_name);
 
         $this->actingAs($femi->user);
-        $this->get(route('account'))->assertSee('Lead Choir');
+        $this->get(route('account'))->assertOk()->assertSee('Lead Choir');
         $this->get(route('unit.show', $unit))->assertOk()->assertSee('Head of department');
         $this->get(route('unit.show', $other))->assertForbidden();
     }
@@ -75,7 +75,7 @@ class UnitLeadersTest extends TestCase
         $tolu = Member::factory()->active()->create(['name' => 'Tolu']);
         $this->actingAs($hod->user);
 
-        $this->get(route('unit.members', $unit))->assertSee('Ada Obi')->assertSee('HOD');
+        $this->get(route('unit.members', $unit))->assertOk()->assertSee('Ada Obi')->assertSee('HOD');
         $this->post(route('unit.members.add', $unit), ['member_id' => $tolu->id, 'training' => ['baptised' => '1', 'believers_class' => '1', 'workers_training' => '1']])->assertRedirect();
         $this->assertSame($unit->id, $tolu->fresh()->unit_id);
 
@@ -98,7 +98,7 @@ class UnitLeadersTest extends TestCase
 
         $this->get(route('unit.meetings.screen', [$unit, $meeting]))->assertOk()->assertSee(substr($meeting->code(), 0, 3));
 
-        $this->actingAs($ada->user)->get(route('account'))->assertSee('Rehearsal')->assertSee('Check in');
+        $this->actingAs($ada->user)->get(route('account'))->assertOk()->assertSee('Rehearsal')->assertSee('Check in');
         $this->post(route('meetings.check-in', $meeting), ['code' => '000000'])->assertSessionHasErrors('meeting');
         $this->post(route('meetings.check-in', $meeting), ['code' => $meeting->code()])->assertSessionHas('status');
         $this->assertSame('code', $meeting->attendees()->first()->pivot->mode);
@@ -141,7 +141,7 @@ class UnitLeadersTest extends TestCase
             ->assertSessionHas('status');
         Mail::assertSent(UnitMessageMail::class, 3);
 
-        $this->actingAs($ada->user)->get(route('account'))->assertSee('White and gold on Sunday');
+        $this->actingAs($ada->user)->get(route('account'))->assertOk()->assertSee('White and gold on Sunday');
     }
 
     public function test_rota_assigns_unit_members_and_reminds_them_once(): void
@@ -155,12 +155,12 @@ class UnitLeadersTest extends TestCase
         $this->post(route('unit.rota.store', $unit), ['service_id' => $service->id, 'member_id' => $ada->id, 'role' => 'Lead vocals'])->assertRedirect();
         $this->post(route('unit.rota.store', $unit), ['service_id' => $service->id, 'member_id' => $ada->id, 'role' => 'Alto'])->assertSessionHasErrors('member_id');
         $this->post(route('unit.rota.store', $unit), ['service_id' => $service->id, 'member_id' => $outsider->id, 'role' => 'Alto'])->assertSessionHasErrors('member_id');
-        $this->get(route('unit.rota', $unit))->assertSee('Lead vocals');
+        $this->get(route('unit.rota', $unit))->assertOk()->assertSee('Lead vocals');
 
         $this->artisan('units:remind')->expectsOutput('Sent 1 rota reminders.');
         $this->artisan('units:remind')->expectsOutput('Sent 0 rota reminders.');
         Mail::assertSent(DutyReminder::class, fn ($mail) => $mail->hasTo($ada->email));
-        $this->actingAs($ada->user)->get(route('account'))->assertSee('Your duties')->assertSee('Lead vocals');
+        $this->actingAs($ada->user)->get(route('account'))->assertOk()->assertSee('Your duties')->assertSee('Lead vocals');
     }
 
     public function test_attendance_shows_sundays_and_meetings_per_member(): void

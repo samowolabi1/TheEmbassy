@@ -121,7 +121,7 @@ class NoticeBoardTest extends TestCase
     {
         config(['services.paystack.secret_key' => null]);
 
-        $this->get('/notices/advertise')->assertSee("Online payments aren't switched on yet", false);
+        $this->get('/notices/advertise')->assertOk()->assertSee("Online payments aren't switched on yet", false);
         $this->post('/notices', $this->form())->assertSessionHasErrors('payment');
         $this->assertDatabaseCount('notices', 0);
     }
@@ -140,9 +140,9 @@ class NoticeBoardTest extends TestCase
         $this->assertTrue($payment->fresh()->isPaid());
         $notice = Notice::sole();
         $this->assertSame(Notice::IN_REVIEW, $notice->status);
-        $this->get($notice->statusUrl())->assertSee('Paid: in review');
+        $this->get($notice->statusUrl())->assertOk()->assertSee('Paid: in review');
         // Paid isn't live: it still needs an admin.
-        $this->get('/notices')->assertDontSee('Party trays for your events');
+        $this->get('/notices')->assertOk()->assertDontSee('Party trays for your events');
     }
 
     public function test_a_wrong_amount_is_not_treated_as_paid(): void
@@ -206,15 +206,15 @@ class NoticeBoardTest extends TestCase
         $notice = Notice::factory()->inReview()->create(['title' => 'Career fair', 'days' => 7, 'featured' => true]);
         $this->actingAs(User::factory()->admin()->create());
 
-        $this->get('/admin/notices')->assertSee('Career fair');
+        $this->get('/admin/notices')->assertOk()->assertSee('Career fair');
         $this->post("/admin/notices/{$notice->id}/approve")->assertRedirect();
 
-        $this->get('/notices')->assertSee('Career fair');
-        $this->get('/')->assertSee('Career fair'); // featured notices show on the home page
+        $this->get('/notices')->assertOk()->assertSee('Career fair');
+        $this->get('/')->assertOk()->assertSee('Career fair'); // featured notices show on the home page
 
         $this->travel(8)->days();
-        $this->get('/notices')->assertDontSee('Career fair');
-        $this->get('/admin/notices?show=expired')->assertSee('Career fair');
+        $this->get('/notices')->assertOk()->assertDontSee('Career fair');
+        $this->get('/admin/notices?show=expired')->assertOk()->assertSee('Career fair');
     }
 
     public function test_admin_rejects_with_a_reason_the_advertiser_sees(): void
@@ -224,8 +224,8 @@ class NoticeBoardTest extends TestCase
 
         $this->post("/admin/notices/{$notice->id}/reject", ['reason' => 'Not suitable for a church audience'])->assertRedirect();
 
-        $this->get($notice->statusUrl())->assertSee('Not suitable for a church audience');
-        $this->get('/notices')->assertDontSee($notice->title);
+        $this->get($notice->statusUrl())->assertOk()->assertSee('Not suitable for a church audience');
+        $this->get('/notices')->assertOk()->assertDontSee($notice->title);
     }
 
     public function test_unpaid_notices_cannot_be_approved(): void

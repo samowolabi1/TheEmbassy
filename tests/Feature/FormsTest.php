@@ -31,6 +31,7 @@ class FormsTest extends TestCase
     {
         $this->followingRedirects()
             ->post('/prayer-requests', ['request' => 'Pray for my family.'])
+            ->assertOk()
             ->assertSee("We've received it. We're praying with you.", false);
     }
 

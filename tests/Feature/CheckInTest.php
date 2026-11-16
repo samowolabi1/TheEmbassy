@@ -58,7 +58,7 @@ class CheckInTest extends TestCase
         $this->assertEqualsWithDelta(50, $pivot->distance_m, 5);
         $this->assertTrue($member->fresh()->last_attended_on->isToday());
         $this->assertDatabaseMissing('member_service', ['distance_m' => null, 'mode' => 'in_person']);
-        $this->get(route('check-in'))->assertSee("You're checked in", false);
+        $this->get(route('check-in'))->assertOk()->assertSee("You're checked in", false);
     }
 
     public function test_members_far_from_church_cannot_check_in_in_person(): void
@@ -122,7 +122,7 @@ class CheckInTest extends TestCase
         $member = Member::factory()->active()->create();
         $later = $this->service(['starts_at' => now()->addHours(3), 'ends_at' => now()->addHours(5)]);
 
-        $this->actingAs($member->user)->get(route('check-in'))->assertSee('Check-in opens 30 minutes before each service');
+        $this->actingAs($member->user)->get(route('check-in'))->assertOk()->assertSee('Check-in opens 30 minutes before each service');
         $this->checkIn($later, ['latitude' => self::NEARBY[0], 'longitude' => self::NEARBY[1], 'accuracy' => 20, 'code' => $later->code()])
             ->assertSessionHasErrors(['location' => "Check-in for this service isn't open right now."]);
 
@@ -150,7 +150,7 @@ class CheckInTest extends TestCase
         $service = $this->service(['in_person_checkin' => false]);
         $this->actingAs($member->user);
 
-        $this->get(route('check-in'))->assertDontSee("I'm at church", false)->assertSee("I'm watching elsewhere", false)->assertSee('Join online');
+        $this->get(route('check-in'))->assertOk()->assertDontSee("I'm at church", false)->assertSee("I'm watching elsewhere", false)->assertSee('Join online');
         $this->post(route('check-in.store'), ['service' => $service->id, 'mode' => 'online', 'code' => '000000'])->assertSessionHasErrors('code');
         $this->post(route('check-in.store'), ['service' => $service->id, 'mode' => 'in_person', 'latitude' => self::NEARBY[0], 'longitude' => self::NEARBY[1], 'accuracy' => 10, 'code' => $service->code()])
             ->assertSessionHasErrors('location');
@@ -216,7 +216,7 @@ class CheckInTest extends TestCase
         $first = Service::orderBy('starts_at')->first();
         $this->travelTo($first->starts_at->copy()->subMinutes(5));
         $this->get(route('admin.attendance.screen', $first))->assertOk()->assertSee(substr($first->code(), 0, 3))->assertSee('<svg', false);
-        $this->get(route('admin.attendance.index'))->assertSee('Check-in open');
+        $this->get(route('admin.attendance.index'))->assertOk()->assertSee('Check-in open');
     }
 
     public function test_check_in_needs_a_start_time(): void

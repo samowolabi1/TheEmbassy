@@ -85,7 +85,7 @@ class StudioTest extends TestCase
         $guest = StudioGuest::sole();
         $this->assertStringStartsWith('https://vdo.ninja/?push='.$guest->stream_id, $guest->guestUrl());
         $this->assertStringContainsString('view='.$guest->stream_id, $guest->obsUrl());
-        $this->get(route('unit.studio.index', $this->media))->assertSee('Pastor Grace')->assertSee($guest->obsUrl());
+        $this->get(route('unit.studio.index', $this->media))->assertOk()->assertSee('Pastor Grace')->assertSee($guest->obsUrl());
         $this->delete(route('unit.studio.guests.destroy', [$this->media, $guest]));
         $this->assertModelMissing($guest);
     }

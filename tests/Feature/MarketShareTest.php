@@ -73,7 +73,7 @@ class MarketShareTest extends TestCase
             ->assertSee('Share your shop')->assertSee('Red velvet cake')
             ->assertSee(route('market.product.image', [$this->product, 'story', 'download' => 1]), false)
             ->assertSee('Visits from your shared links so far: 1.');
-        $this->get(route('vendor.products.index'))->assertSee('#product-'.$this->product->slug, false);
+        $this->get(route('vendor.products.index'))->assertOk()->assertSee('#product-'.$this->product->slug, false);
     }
 
     public function test_pictures_of_shops_not_in_the_market_are_only_for_their_owner(): void

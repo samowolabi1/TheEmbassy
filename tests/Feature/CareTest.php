@@ -156,9 +156,9 @@ class CareTest extends TestCase
         $this->post(route('admin.care.store'), ['member_id' => $member->id, 'note' => 'Lost her job; pray with her', 'due_on' => today()->addDay()->toDateString(), 'assigned_to' => $pastor->id])->assertRedirect();
         Mail::assertSent(FollowUpAssigned::class, fn ($mail) => $mail->hasTo($pastor->email));
 
-        $this->actingAs($pastor)->get(route('admin.care.index'))->assertSee('Tolu Adeyemi')->assertSee('Lost her job')->assertSee('wa.me/2348030000000', false);
-        $this->get('/admin')->assertSee('Your follow-ups');
-        $this->get(route('admin.members.show', $member))->assertSee('Lost her job');
+        $this->actingAs($pastor)->get(route('admin.care.index'))->assertOk()->assertSee('Tolu Adeyemi')->assertSee('Lost her job')->assertSee('wa.me/2348030000000', false);
+        $this->get('/admin')->assertOk()->assertSee('Your follow-ups');
+        $this->get(route('admin.members.show', $member))->assertOk()->assertSee('Lost her job');
     }
 
     public function test_only_care_staff_can_be_assigned_and_ushers_have_no_access(): void
@@ -178,6 +178,6 @@ class CareTest extends TestCase
         $services[1]->members()->attach($member->id);
         $services[3]->members()->attach($member->id);
 
-        $this->actingAs(User::factory()->staff('pastor')->create())->get(route('admin.members.show', $member))->assertSee('At <strong>2 of the last 4</strong>', false);
+        $this->actingAs(User::factory()->staff('pastor')->create())->get(route('admin.members.show', $member))->assertOk()->assertSee('At <strong>2 of the last 4</strong>', false);
     }
 }

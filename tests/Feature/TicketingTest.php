@@ -52,8 +52,8 @@ class TicketingTest extends TestCase
         Event::factory()->create(['title' => 'Hidden plan', 'is_published' => false]);
         Event::factory()->create(['title' => 'Last year', 'starts_at' => now()->subMonth()]);
 
-        $this->get('/events')->assertSee('Worship Night')->assertSee('Free')->assertDontSee('Hidden plan')->assertDontSee('Last year');
-        $this->get('/')->assertSee('Worship Night');
+        $this->get('/events')->assertOk()->assertSee('Worship Night')->assertSee('Free')->assertDontSee('Hidden plan')->assertDontSee('Last year');
+        $this->get('/')->assertOk()->assertSee('Worship Night');
     }
 
     public function test_event_page_and_calendar_file(): void
@@ -90,7 +90,7 @@ class TicketingTest extends TestCase
         $this->assertSame(3, Ticket::distinct()->count('code'));
         Mail::assertSent(TicketsConfirmed::class, fn ($mail) => $mail->hasTo('ada@example.com'));
 
-        $this->get($order->url())->assertSee("You're booked", false)->assertSee($order->tickets->first()->code);
+        $this->get($order->url())->assertOk()->assertSee("You're booked", false)->assertSee($order->tickets->first()->code);
         Http::assertNothingSent();
     }
 
@@ -129,7 +129,7 @@ class TicketingTest extends TestCase
         $this->book($event, [$type->id => 1], ['email' => 'c@example.com'])->assertSessionHasNoErrors();
 
         $this->assertSame(0, $type->fresh()->remaining());
-        $this->get(route('events.show', $event))->assertSee('Sold out');
+        $this->get(route('events.show', $event))->assertOk()->assertSee('Sold out');
     }
 
     public function test_unpaid_orders_hold_places_for_thirty_minutes(): void
@@ -239,15 +239,15 @@ class TicketingTest extends TestCase
 
         $this->assertStringContainsString('<svg', $ticket->qrSvg());
 
-        $this->actingAs($admin)->get(route('admin.tickets.show', $ticket))->assertSee('Valid ticket.');
-        $this->followingRedirects()->post(route('admin.tickets.check-in', $ticket))->assertSee('Checked in. Welcome, Ada Okafor!')->assertDontSee('Already checked in');
+        $this->actingAs($admin)->get(route('admin.tickets.show', $ticket))->assertOk()->assertSee('Valid ticket.');
+        $this->followingRedirects()->post(route('admin.tickets.check-in', $ticket))->assertOk()->assertSee('Checked in. Welcome, Ada Okafor!')->assertDontSee('Already checked in');
         $first = $ticket->fresh()->checked_in_at;
         $this->assertNotNull($first);
 
         $this->travel(5)->minutes();
         $this->post(route('admin.tickets.check-in', $ticket));
         $this->assertTrue($ticket->fresh()->checked_in_at->equalTo($first));
-        $this->get(route('admin.tickets.show', $ticket))->assertSee('Already checked in');
+        $this->get(route('admin.tickets.show', $ticket))->assertOk()->assertSee('Already checked in');
     }
 
     public function test_unpaid_tickets_cannot_be_checked_in(): void
@@ -255,7 +255,7 @@ class TicketingTest extends TestCase
         $this->actingAs(User::factory()->admin()->create());
         $ticket = Ticket::factory()->create();
 
-        $this->get(route('admin.tickets.show', $ticket))->assertSee('Not valid');
+        $this->get(route('admin.tickets.show', $ticket))->assertOk()->assertSee('Not valid');
         $this->post(route('admin.tickets.check-in', $ticket))->assertStatus(422);
     }
 

@@ -28,9 +28,9 @@ class MembersAdminTest extends TestCase
 
         $this->actingAs($this->office());
         $this->get(route('admin.members.index'))->assertOk()->assertSee('Tolu Adeyemi')->assertSee('Jide Kolawole')->assertDontSee('Funmi Nwosu');
-        $this->get(route('admin.members.index', ['tab' => 'pending']))->assertSee('Funmi Nwosu')->assertSee('Approve');
-        $this->get(route('admin.members.index', ['q' => 'tolu']))->assertSee('Tolu Adeyemi')->assertDontSee('Jide Kolawole');
-        $this->get(route('admin.members.index', ['unit' => $choir->id]))->assertSee('Tolu Adeyemi')->assertDontSee('Jide Kolawole');
+        $this->get(route('admin.members.index', ['tab' => 'pending']))->assertOk()->assertSee('Funmi Nwosu')->assertSee('Approve');
+        $this->get(route('admin.members.index', ['q' => 'tolu']))->assertOk()->assertSee('Tolu Adeyemi')->assertDontSee('Jide Kolawole');
+        $this->get(route('admin.members.index', ['unit' => $choir->id]))->assertOk()->assertSee('Tolu Adeyemi')->assertDontSee('Jide Kolawole');
     }
 
     public function test_staff_add_and_edit_members_with_milestones(): void
@@ -103,7 +103,7 @@ class MembersAdminTest extends TestCase
 
         $unit = Unit::sole();
         $member = Member::factory()->active()->create(['unit_id' => $unit->id]);
-        $this->get(route('admin.units.index'))->assertSee('Choir')->assertSee('1 member')->assertSee('House 1');
+        $this->get(route('admin.units.index'))->assertOk()->assertSee('Choir')->assertSee('1 member')->assertSee('House 1');
 
         $this->delete(route('admin.units.destroy', $unit))->assertRedirect();
         $this->assertNull($member->fresh()->unit_id);

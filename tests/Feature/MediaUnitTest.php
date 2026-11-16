@@ -46,7 +46,7 @@ class MediaUnitTest extends TestCase
     public function test_team_members_get_the_media_tools_but_not_the_unit_admin(): void
     {
         $this->actingAs($this->member->user);
-        $this->get(route('account'))->assertSee('Media team');
+        $this->get(route('account'))->assertOk()->assertSee('Media team');
         $this->get(route('unit.equipment.index', $this->unit))->assertOk()->assertDontSee('Add an item');
         $this->get(route('unit.show', $this->unit))->assertForbidden();
         $this->post(route('unit.equipment.store', $this->unit), ['name' => 'X', 'category' => 'camera'])->assertForbidden();
@@ -79,7 +79,7 @@ class MediaUnitTest extends TestCase
         $this->post(route('unit.equipment.out', [$this->unit, $camera]), ['member_id' => $this->member->id, 'due_on' => today()->addDay()->toDateString()])->assertRedirect();
         $this->assertSame('checked_out', $camera->fresh()->status);
         $this->post(route('unit.equipment.out', [$this->unit, $camera]), ['member_id' => $this->member->id])->assertStatus(422);
-        $this->get(route('unit.equipment.index', $this->unit))->assertSee('with Kunle Camera');
+        $this->get(route('unit.equipment.index', $this->unit))->assertOk()->assertSee('with Kunle Camera');
 
         $this->post(route('unit.equipment.in', [$this->unit, $camera]), ['condition' => 'faulty'])->assertSessionHasErrors('fault');
         $this->post(route('unit.equipment.in', [$this->unit, $camera]), ['condition' => 'faulty', 'fault' => 'Lens cap missing, autofocus sticks'])->assertRedirect();
@@ -99,7 +99,7 @@ class MediaUnitTest extends TestCase
         $this->actingAs($this->member->user)->post(route('unit.equipment.report', [$this->unit, $mic]), ['description' => 'Crackles when moved'])->assertRedirect();
 
         $this->assertSame('faulty', $mic->fresh()->condition);
-        $this->actingAs($this->hod->user)->get(route('unit.equipment.index', $this->unit))->assertSee('Crackles when moved');
+        $this->actingAs($this->hod->user)->get(route('unit.equipment.index', $this->unit))->assertOk()->assertSee('Crackles when moved');
     }
 
     // ---- Service setup and streaming ----
@@ -116,7 +116,7 @@ class MediaUnitTest extends TestCase
         $task = $setup->tasks()->first();
         $this->post(route('unit.setup.tasks.toggle', [$this->unit, $task]))->assertRedirect();
         $this->assertNotNull($task->fresh()->done_at);
-        $this->get(route('unit.setup.index', $this->unit))->assertSee('1/3 ready');
+        $this->get(route('unit.setup.index', $this->unit))->assertOk()->assertSee('1/3 ready');
 
         // Team members can't go live.
         $this->post(route('unit.setup.live', [$this->unit, $service]))->assertForbidden();
@@ -132,11 +132,11 @@ class MediaUnitTest extends TestCase
         $this->post(route('unit.setup.live', [$this->unit, $service]))->assertSessionHas('status');
 
         Setting::applyToConfig();
-        $this->get(route('watch'))->assertSee('youtube-nocookie.com/embed/dQw4w9WgXcQ', false)->assertSee('LIVE ON YOUTUBE');
+        $this->get(route('watch'))->assertOk()->assertSee('youtube-nocookie.com/embed/dQw4w9WgXcQ', false)->assertSee('LIVE ON YOUTUBE');
 
         $this->post(route('unit.setup.end', [$this->unit, $service]));
         Setting::applyToConfig();
-        $this->get(route('watch'))->assertSee('dQw4w9WgXcQ')->assertDontSee('LIVE ON YOUTUBE');
+        $this->get(route('watch'))->assertOk()->assertSee('dQw4w9WgXcQ')->assertDontSee('LIVE ON YOUTUBE');
     }
 
     public function test_stream_keys_are_encrypted_and_only_shown_to_leaders(): void
@@ -147,8 +147,8 @@ class MediaUnitTest extends TestCase
         $destination = StreamDestination::sole();
 
         $this->assertStringNotContainsString('abcd-efgh', DB::table('stream_destinations')->value('stream_key'));
-        $this->get(route('unit.setup.index', $this->unit))->assertSee('mnop')->assertDontSee('abcd-efgh');
-        $this->get(route('unit.streams.key', [$this->unit, $destination]))->assertSee('abcd-efgh-ijkl-mnop');
+        $this->get(route('unit.setup.index', $this->unit))->assertOk()->assertSee('mnop')->assertDontSee('abcd-efgh');
+        $this->get(route('unit.streams.key', [$this->unit, $destination]))->assertOk()->assertSee('abcd-efgh-ijkl-mnop');
 
         // Updating without a key keeps the saved one.
         $this->put(route('unit.streams.update', [$this->unit, $destination]), ['platform' => 'youtube', 'label' => 'YouTube', 'server_url' => 'rtmp://a.rtmp.youtube.com/live2', 'is_active' => '1']);
@@ -184,7 +184,7 @@ class MediaUnitTest extends TestCase
         Http::assertSent(fn (HttpRequest $r) => str_ends_with($r->url(), '/1234/photos') && $r['caption'] === 'Join us this Sunday! #RoyalTribe' && str_contains($r['url'], '/storage/social/') && $r->hasHeader('Authorization', 'Bearer EAAtoken'));
         Http::assertSent(fn (HttpRequest $r) => str_ends_with($r->url(), '/9876/media_publish') && $r['creation_id'] === 'container-1');
 
-        $this->get(route('unit.social.show', [$this->unit, $post]))->assertSee('View post')->assertSee('Share on WhatsApp');
+        $this->get(route('unit.social.show', [$this->unit, $post]))->assertOk()->assertSee('View post')->assertSee('Share on WhatsApp');
     }
 
     public function test_instagram_videos_publish_once_processing_finishes(): void
@@ -234,7 +234,7 @@ class MediaUnitTest extends TestCase
         $post = SocialPost::sole();
 
         $this->assertSame('failed', $post->status);
-        $this->get(route('unit.social.show', [$this->unit, $post]))->assertSee('(#200) Permissions error');
+        $this->get(route('unit.social.show', [$this->unit, $post]))->assertOk()->assertSee('(#200) Permissions error');
 
         $this->post(route('unit.social.act', [$this->unit, $post]), ['intent' => 'retry'])->assertSessionHas('status', 'Published.');
     }
@@ -260,7 +260,7 @@ class MediaUnitTest extends TestCase
         config(['services.meta.page_token' => null]);
         Setting::applyToConfig();
         $this->assertSame('EAAsecret', config('services.meta.page_token'));
-        $this->get(route('admin.settings.edit'))->assertDontSee('EAAsecret')->assertSee('Remove the saved token');
+        $this->get(route('admin.settings.edit'))->assertOk()->assertDontSee('EAAsecret')->assertSee('Remove the saved token');
 
         // Saving again without typing it keeps it.
         $this->put(route('admin.settings.update'), ['services__meta__page_id' => '1234']);
@@ -273,7 +273,7 @@ class MediaUnitTest extends TestCase
         $this->actingAs($this->hod->user)->put(route('unit.setup.checklist', $this->unit), ['checklist' => "Batteries charged\nSlides loaded"])->assertRedirect();
         $service = Service::create(['held_on' => today()->addDay(), 'kind' => 'sunday']);
 
-        $this->get(route('unit.setup.show', [$this->unit, $service]))->assertSee('Batteries charged');
+        $this->get(route('unit.setup.show', [$this->unit, $service]))->assertOk()->assertSee('Batteries charged');
         $this->assertSame(['Batteries charged', 'Slides loaded'], ServiceSetup::sole()->tasks()->pluck('title')->all());
         $this->actingAs($this->member->user)->put(route('unit.setup.checklist', $this->unit), ['checklist' => 'x'])->assertForbidden();
     }

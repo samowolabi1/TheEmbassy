@@ -69,12 +69,12 @@ class MemberPrayerTest extends TestCase
         $this->post(route('account.prayer.pray', $shared));
         $this->post(route('account.prayer.pray', $shared));
         $this->assertSame(1, $shared->fresh()->prayed_count);
-        $this->get(route('account.prayer.wall'))->assertSee('You prayed');
+        $this->get(route('account.prayer.wall'))->assertOk()->assertSee('You prayed');
         $this->post(route('account.prayer.pray', $private))->assertNotFound();
 
         // Staff can take something off the wall.
         $this->actingAs(User::factory()->create(['role' => 'secretary']))->post(route('admin.prayer-requests.off-wall', $shared));
-        $this->actingAs($friend->user)->get(route('account.prayer.wall'))->assertDontSee('mother');
+        $this->actingAs($friend->user)->get(route('account.prayer.wall'))->assertOk()->assertDontSee('mother');
 
         // Old requests leave the wall; only the member can mark or remove their own; visitors can't see the wall.
         $old = $this->ask('church');

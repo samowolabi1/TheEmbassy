@@ -32,7 +32,7 @@ class FeedbackTest extends TestCase
 
     public function test_members_are_asked_after_a_service_they_attended_and_give_feedback_once(): void
     {
-        $this->actingAs($this->ada->user)->get(route('account'))->assertSee('How was Sunday service?');
+        $this->actingAs($this->ada->user)->get(route('account'))->assertOk()->assertSee('How was Sunday service?');
         $this->get(route('account.feedback'))->assertOk()->assertSee('you were there');
 
         $this->post(route('account.feedback.rate', $this->sunday), [])->assertSessionHasErrors('rating');
@@ -43,7 +43,7 @@ class FeedbackTest extends TestCase
         $this->post(route('account.feedback.rate', $this->sunday), ['rating' => 4, 'could_improve' => ['sound', 'timing'], 'anonymous' => '1']);
         $f = ServiceFeedback::sole();
         $this->assertSame([4, ['sound', 'timing'], true], [$f->rating, $f->could_improve, $f->anonymous]);
-        $this->get(route('account'))->assertDontSee('How was Sunday service?');
+        $this->get(route('account'))->assertOk()->assertDontSee('How was Sunday service?');
 
         // Old services and unknown parts are refused.
         $old = Service::create(['held_on' => today()->subDays(ServiceFeedback::DAYS + 2), 'kind' => 'sunday']);
@@ -84,11 +84,11 @@ class FeedbackTest extends TestCase
         $this->post(route('admin.feedback.respond', $s), ['status' => 'done', 'response' => 'Great idea! Starting in January.']);
         Mail::assertSentCount(1);
 
-        $this->actingAs($this->ada->user)->get(route('account.feedback'))->assertSee('Starting in January.')->assertSee('Done');
+        $this->actingAs($this->ada->user)->get(route('account.feedback'))->assertOk()->assertSee('Starting in January.')->assertSee('Done');
 
         // Anonymous suggestions hide the name from staff; members not yet approved can't use the page.
         $this->post(route('account.feedback.suggest'), ['category' => 'facilities', 'subject' => 'Fans at the back', 'body' => 'It gets hot.', 'anonymous' => '1']);
-        $this->actingAs($pastor)->get(route('admin.feedback.index', ['tab' => 'suggestions']))->assertSee('Fans at the back')->assertSee('A member (no name)');
+        $this->actingAs($pastor)->get(route('admin.feedback.index', ['tab' => 'suggestions']))->assertOk()->assertSee('Fans at the back')->assertSee('A member (no name)');
         $pending = Member::factory()->create(['status' => Member::PENDING]);
         $this->actingAs($pending->user)->get(route('account.feedback'))->assertNotFound();
     }

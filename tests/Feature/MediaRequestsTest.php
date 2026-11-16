@@ -61,7 +61,7 @@ class MediaRequestsTest extends TestCase
         $ordinary = Member::factory()->active()->create(['unit_id' => $this->choir->id]);
         $this->actingAs($ordinary->user)->get(route('media-requests.index'))->assertForbidden();
         $this->actingAs($this->choirHead->user)->get(route('media-requests.index'))->assertOk()->assertSee('Ask the media team.');
-        $this->actingAs($this->choirHead->user)->get(route('account'))->assertSee('Ask the media team');
+        $this->actingAs($this->choirHead->user)->get(route('account'))->assertOk()->assertSee('Ask the media team');
 
         // A unit head can only ask for their own unit.
         $other = Unit::factory()->create();
@@ -94,7 +94,7 @@ class MediaRequestsTest extends TestCase
         // Messages: an internal note isn't shown or sent to whoever asked.
         $this->post(route('unit.requests.comment', [$this->media, $request]), ['body' => 'Using the gold template', 'internal' => '1']);
         $this->post(route('unit.requests.comment', [$this->media, $request]), ['body' => 'Do you want the choir photo on it?']);
-        $this->actingAs($this->choirHead->user)->get(route('media-requests.show', $request))
+        $this->actingAs($this->choirHead->user)->get(route('media-requests.show', $request))->assertOk()
             ->assertSee('Do you want the choir photo on it?')->assertDontSee('Using the gold template');
 
         // Delivered with a file and a link.
@@ -142,7 +142,7 @@ class MediaRequestsTest extends TestCase
         $this->assertSame($other->id, $request->fresh()->assigned_member_id);
         $this->post(route('unit.requests.decline', [$this->media, $request]), ['reason' => 'Not enough notice for a video.']);
         $this->assertSame('declined', $request->fresh()->status);
-        $this->actingAs($this->choirHead->user)->get(route('media-requests.show', $request))->assertSee('Not enough notice for a video.');
+        $this->actingAs($this->choirHead->user)->get(route('media-requests.show', $request))->assertOk()->assertSee('Not enough notice for a video.');
     }
 
     public function test_requests_and_their_files_are_private(): void
@@ -180,8 +180,8 @@ class MediaRequestsTest extends TestCase
         $this->assertNotNull($logo->thumb_path);
 
         $this->get(route('unit.library.index', [$this->media, 'folder' => $folder->id]))->assertOk()->assertSee('church-logo')->assertDontSee('Easter raw footage');
-        $this->get(route('unit.library.index', [$this->media, 'q' => 'easter']))->assertSee('Easter raw footage')->assertDontSee('church-logo');
-        $this->get(route('unit.library.index', [$this->media, 'kind' => 'design']))->assertSee('brand')->assertDontSee('church-logo');
+        $this->get(route('unit.library.index', [$this->media, 'q' => 'easter']))->assertOk()->assertSee('Easter raw footage')->assertDontSee('church-logo');
+        $this->get(route('unit.library.index', [$this->media, 'kind' => 'design']))->assertOk()->assertSee('brand')->assertDontSee('church-logo');
 
         // A design file is only ever downloaded, never shown in the browser.
         $psd = MediaFile::firstWhere('kind', 'design');

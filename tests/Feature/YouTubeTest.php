@@ -107,7 +107,7 @@ class YouTubeTest extends TestCase
         config(['services.google.client_id' => null]);
 
         $this->actingAs($this->hod->user)->post(route('unit.youtube.connect', $this->unit))->assertSessionHasErrors('youtube');
-        $this->get(route('unit.setup.index', $this->unit))->assertSee('An administrator needs to add the Google OAuth client ID');
+        $this->get(route('unit.setup.index', $this->unit))->assertOk()->assertSee('An administrator needs to add the Google OAuth client ID');
     }
 
     public function test_only_media_leaders_connect_or_manage_broadcasts(): void
@@ -163,13 +163,13 @@ class YouTubeTest extends TestCase
         $this->artisan('youtube:sync');
         $this->assertTrue(ServiceSetup::sole()->isLive());
         Setting::applyToConfig();
-        $this->get(route('watch'))->assertSee('embed/Bcast123456', false)->assertSee('LIVE ON YOUTUBE');
+        $this->get(route('watch'))->assertOk()->assertSee('embed/Bcast123456', false)->assertSee('LIVE ON YOUTUBE');
 
         $this->artisan('youtube:sync');
         $this->assertFalse(ServiceSetup::sole()->isLive());
         $this->assertSame('complete', ServiceSetup::sole()->youtube_status);
         Setting::applyToConfig();
-        $this->get(route('watch'))->assertSee('embed/Bcast123456', false)->assertDontSee('LIVE ON YOUTUBE');
+        $this->get(route('watch'))->assertOk()->assertSee('embed/Bcast123456', false)->assertDontSee('LIVE ON YOUTUBE');
 
         // Finished broadcasts aren't checked again.
         $this->artisan('youtube:sync')->expectsOutput('Created 0 YouTube broadcasts, checked 0, 0 problems.');
@@ -195,7 +195,7 @@ class YouTubeTest extends TestCase
         $connection->fresh()->update(['expires_at' => now()->subMinute()]);
         $this->artisan('youtube:sync')->expectsOutput('Created 0 YouTube broadcasts, checked 0, 1 problems.');
         $this->assertNotNull($connection->fresh()->problem);
-        $this->actingAs($this->hod->user)->get(route('unit.setup.index', $this->unit))->assertSee('Needs reconnecting')->assertSee('Connect again');
+        $this->actingAs($this->hod->user)->get(route('unit.setup.index', $this->unit))->assertOk()->assertSee('Needs reconnecting')->assertSee('Connect again');
 
         // While the sign-in is broken, nothing more is tried.
         Http::fake();
@@ -221,7 +221,7 @@ class YouTubeTest extends TestCase
 
         $this->artisan('youtube:sync')->expectsOutput('Created 0 YouTube broadcasts, checked 0, 0 problems.');
 
-        $this->actingAs($this->hod->user)->get(route('unit.setup.show', [$this->unit, $service]))->assertSee('Try again');
+        $this->actingAs($this->hod->user)->get(route('unit.setup.show', [$this->unit, $service]))->assertOk()->assertSee('Try again');
         $this->post(route('unit.youtube.create', [$this->unit, $service]))->assertSessionHas('status', 'Broadcast created on YouTube.');
         $this->assertSame('Bcast654321', $setup->fresh()->youtube_video_id);
         $this->assertNull($setup->fresh()->youtube_error);

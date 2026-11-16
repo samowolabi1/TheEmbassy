@@ -45,10 +45,10 @@ class GalleryTest extends TestCase
 
         // Hidden until published.
         $this->get(route('gallery.show', $album))->assertNotFound();
-        $this->get('/gallery')->assertDontSee('Youth Convention 2026');
+        $this->get('/gallery')->assertOk()->assertDontSee('Youth Convention 2026');
 
         $this->put(route('admin.gallery.update', $album), ['title' => 'Youth Convention 2026', 'taken_on' => '2026-08-15', 'is_published' => '1'])->assertSessionHasNoErrors();
-        $this->get('/gallery')->assertSee('Youth Convention 2026')->assertSee('3 items');
+        $this->get('/gallery')->assertOk()->assertSee('Youth Convention 2026')->assertSee('3 items');
         $this->get(route('gallery.show', $album))->assertOk()->assertSee($item->url())->assertSee('data-lightbox', false);
     }
 
@@ -154,7 +154,7 @@ class GalleryTest extends TestCase
         GalleryAlbum::factory()->create(['title' => 'Easter 2025', 'taken_on' => '2025-04-20'])->items()->create(['kind' => 'video', 'youtube_id' => 'dQw4w9WgXcQ']);
         GalleryAlbum::factory()->create(['title' => 'Easter 2026', 'taken_on' => '2026-04-05'])->items()->create(['kind' => 'video', 'youtube_id' => 'dQw4w9WgXcQ']);
 
-        $this->get('/gallery?year=2025')->assertSee('Easter 2025')->assertDontSee('Easter 2026');
+        $this->get('/gallery?year=2025')->assertOk()->assertSee('Easter 2025')->assertDontSee('Easter 2026');
         $this->get('/gallery?year=abc')->assertSessionHasErrors('year');
 
         $this->actingAs(User::factory()->staff('usher')->create());

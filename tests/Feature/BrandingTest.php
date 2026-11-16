@@ -29,7 +29,7 @@ class BrandingTest extends TestCase
 
     public function test_public_site_uses_the_configured_church(): void
     {
-        $this->get('/')
+        $this->get('/')->assertOk()
             ->assertSee('GRACE CHAPEL')
             ->assertSee('LEKKI')
             ->assertSee('images/grace.png')
@@ -40,14 +40,14 @@ class BrandingTest extends TestCase
 
     public function test_admin_uses_the_configured_church(): void
     {
-        $this->get('/admin/login')->assertSee('GRACE CHAPEL');
-        $this->actingAs(User::factory()->admin()->create())->get('/admin')->assertSee('GRACE CHAPEL');
+        $this->get('/admin/login')->assertOk()->assertSee('GRACE CHAPEL');
+        $this->actingAs(User::factory()->admin()->create())->get('/admin')->assertOk()->assertSee('GRACE CHAPEL');
     }
 
     public function test_invalid_colours_are_ignored(): void
     {
         config(['church.brand.colors.navy' => 'red; } body { display: none']);
 
-        $this->get('/')->assertDontSee('display: none', false);
+        $this->get('/')->assertOk()->assertDontSee('display: none', false);
     }
 }

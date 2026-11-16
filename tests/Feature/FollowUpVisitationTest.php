@@ -155,7 +155,7 @@ class FollowUpVisitationTest extends TestCase
         $this->post(route('admin.visits.complete', $visit), ['outcome' => 'prayed', 'report' => 'Her mother is ill. Prayed together; she will be back Sunday.'])->assertSessionHas('status');
         $this->assertSame('done', $visit->fresh()->status);
         $this->assertSame('prayed', $followUp->fresh()->outcome);
-        $this->get(route('admin.visits.index', ['tab' => 'done']))->assertSee('Her mother is ill.');
+        $this->get(route('admin.visits.index', ['tab' => 'done']))->assertOk()->assertSee('Her mother is ill.');
 
         // Ushers don't do visitation.
         $this->actingAs(User::factory()->create(['role' => 'usher']))->get(route('admin.visits.index'))->assertForbidden();

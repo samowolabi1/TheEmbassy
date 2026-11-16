@@ -56,7 +56,7 @@ class PageContentTest extends TestCase
         $this->assertCount(1, $about['faqs']);
         Storage::disk('public')->assertExists([$about['story_photo'], $about['leaders'][0]['photo']]);
 
-        $this->get('/about')
+        $this->get('/about')->assertOk()
             ->assertSee('Raising royals.')
             ->assertSee(config('church.short_name').' is home.')
             ->assertSee('We began in 2019.')
@@ -110,16 +110,16 @@ class PageContentTest extends TestCase
         $this->put(route('admin.pages.update', 'home'), ['quote' => 'God kept me through exams.', 'name' => 'Tola Martins', 'role' => 'Choir'])->assertRedirect();
 
         $this->assertSame('TM', PageContent::for('home')['testimony']['initials']);
-        $this->get('/')->assertSee('God kept me through exams.')->assertSee('Tola Martins');
+        $this->get('/')->assertOk()->assertSee('God kept me through exams.')->assertSee('Tola Martins');
     }
 
     public function test_units_with_descriptions_replace_the_starter_list(): void
     {
-        $this->get('/about')->assertSee('Lead the Tribe in worship');
+        $this->get('/about')->assertOk()->assertSee('Lead the Tribe in worship');
 
         Unit::factory()->create(['name' => 'Sanctuary keepers', 'description' => 'Keep the house of God beautiful.']);
 
-        $this->get('/about')->assertSee('Keep the house of God beautiful.')->assertDontSee('Lead the Tribe in worship');
+        $this->get('/about')->assertOk()->assertSee('Keep the house of God beautiful.')->assertDontSee('Lead the Tribe in worship');
     }
 
     public function test_leader_names_saved_in_old_settings_are_carried_over(): void
@@ -129,7 +129,7 @@ class PageContentTest extends TestCase
 
         LegacyContent::import();
 
-        $this->get('/about')->assertSee('Pastor Old Settings');
-        $this->get('/')->assertSee('Old Member');
+        $this->get('/about')->assertOk()->assertSee('Pastor Old Settings');
+        $this->get('/')->assertOk()->assertSee('Old Member');
     }
 }

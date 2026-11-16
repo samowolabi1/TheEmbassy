@@ -73,13 +73,13 @@ class BirthdaysTest extends TestCase
 
         // Their account shows the card and the wishes; the inbox has a birthday message.
         $this->actingAs($ada->user)->get(route('account'))->assertOk()->assertSee('Happy birthday, Ada!')->assertSee($celebration->cardUrl(), false);
-        $this->get(route('account.inbox'))->assertSee('Happy birthday! 🎉');
-        $this->actingAs($notToday->user)->get(route('account'))->assertDontSee('Happy birthday, ');
+        $this->get(route('account.inbox'))->assertOk()->assertSee('Happy birthday! 🎉');
+        $this->actingAs($notToday->user)->get(route('account'))->assertOk()->assertDontSee('Happy birthday, ');
 
         // The community shows it as from the church; members who opted out aren't listed.
         $friend = Member::factory()->active()->create();
-        $this->actingAs($friend->user)->get(route('community.room', $post->room))->assertSee('Birthday card for Ada Obi', false);
-        $this->get(route('community.index'))->assertSee('Ada Obi')->assertDontSee('Quiet Person');
+        $this->actingAs($friend->user)->get(route('community.room', $post->room))->assertOk()->assertSee('Birthday card for Ada Obi', false);
+        $this->get(route('community.index'))->assertOk()->assertSee('Ada Obi')->assertDontSee('Quiet Person');
         $this->assertNull(BirthdayCelebration::where('member_id', $private->id)->first());
     }
 

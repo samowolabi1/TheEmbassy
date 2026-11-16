@@ -36,7 +36,7 @@ class MemberAppTest extends TestCase
         $member = Member::factory()->active()->create();
         $this->actingAs($member->user);
 
-        $this->get(route('account'))->assertSee('Join now')->assertSee(route('services.join', $service), false);
+        $this->get(route('account'))->assertOk()->assertSee('Join now')->assertSee(route('services.join', $service), false);
         $this->get(route('services.join', $service))->assertOk()->assertSee('youtube-nocookie.com/embed/dQw4w9WgXcQ', false)->assertSee('Keep the stream playing for 3 minutes');
 
         $watch = fn () => $this->postJson(route('services.watching', $service))->assertOk();
@@ -50,7 +50,7 @@ class MemberAppTest extends TestCase
         $watch()->assertJsonPath('present', true);
 
         $this->assertSame('online', $service->members()->first()->pivot->mode);
-        $this->get(route('services.join', $service))->assertSee("You're marked present online", false);
+        $this->get(route('services.join', $service))->assertOk()->assertSee("You're marked present online", false);
     }
 
     public function test_stopping_for_a_while_starts_the_count_again(): void
@@ -72,7 +72,7 @@ class MemberAppTest extends TestCase
         $member = Member::factory()->active()->create();
         $this->actingAs($member->user);
 
-        $this->get(route('services.join', $service))->assertSee('Join on Zoom');
+        $this->get(route('services.join', $service))->assertOk()->assertSee('Join on Zoom');
         $this->post(route('services.open', $service))->assertRedirect('https://us02web.zoom.us/j/123456789');
         $this->assertTrue($service->members()->whereKey($member->id)->exists());
     }
@@ -133,21 +133,21 @@ class MemberAppTest extends TestCase
 
         $ada = Member::factory()->active()->create(['name' => 'Ada Obi']);
         $tolu = Member::factory()->active()->create(['name' => 'Tolu Ade']);
-        $this->actingAs($ada->user)->get(route('account'))->assertSee('1 open');
-        $this->get(route('account.welfare'))->assertSee('Christmas food package')->assertSee('Rice, beans, oil');
+        $this->actingAs($ada->user)->get(route('account'))->assertOk()->assertSee('1 open');
+        $this->get(route('account.welfare'))->assertOk()->assertSee('Christmas food package')->assertSee('Rice, beans, oil');
         $this->post(route('account.welfare.apply', $package), ['household_size' => 4, 'note' => 'Lost my job'])->assertRedirect();
         $this->post(route('account.welfare.apply', $package), ['household_size' => 4])->assertSessionHas('status', fn ($s) => str_contains($s, 'already applied'));
         $this->actingAs($tolu->user)->post(route('account.welfare.apply', $package), ['household_size' => 2]);
         [$adaApp, $toluApp] = [WelfarePackageApplication::where('member_id', $ada->id)->first(), WelfarePackageApplication::where('member_id', $tolu->id)->first()];
 
         // The HOD sees the applications; the one place goes to Ada, Tolu waits.
-        $this->actingAs($hod->user)->get(route('unit.welfare.packages.show', [$unit, $package]))->assertSee('Ada Obi')->assertSee('Lost my job');
+        $this->actingAs($hod->user)->get(route('unit.welfare.packages.show', [$unit, $package]))->assertOk()->assertSee('Ada Obi')->assertSee('Lost my job');
         $this->post(route('unit.welfare.packages.decide', [$unit, $package, $adaApp]), ['status' => 'approved'])->assertSessionHasNoErrors();
         $this->post(route('unit.welfare.packages.decide', [$unit, $package, $toluApp]), ['status' => 'approved'])->assertSessionHasErrors('status');
         $this->post(route('unit.welfare.packages.decide', [$unit, $package, $toluApp]), ['status' => 'waitlist', 'decision_note' => 'We will call you'])->assertSessionHasNoErrors();
         Mail::assertSent(WelfarePackageDecision::class, fn ($m) => $m->hasTo($ada->email) && str_contains($m->render(), $adaApp->reference));
 
-        $this->actingAs($ada->user)->get(route('account.welfare'))->assertSee($adaApp->reference)->assertSee('Church office, Saturday 10am');
+        $this->actingAs($ada->user)->get(route('account.welfare'))->assertOk()->assertSee($adaApp->reference)->assertSee('Church office, Saturday 10am');
 
         // Handing it over by reference, once.
         $this->actingAs($hod->user)->post(route('unit.welfare.packages.collect', [$unit, $package]), ['reference' => strtolower($adaApp->reference)])->assertSessionHasNoErrors();
@@ -197,7 +197,7 @@ class MemberAppTest extends TestCase
         $drama->messages()->forceCreate(['unit_id' => $drama->id, 'subject' => 'Drama only', 'body' => 'Secret']);
         $this->actingAs($member->user);
 
-        $this->get(route('account'))->assertSee('unread: </span>3', false);
+        $this->get(route('account'))->assertOk()->assertSee('unread: </span>3', false);
         $page = $this->get(route('account.inbox'))->assertOk()
             ->assertSee('Auditions this Saturday at 10am.')
             ->assertSee('Thanksgiving Sunday')
@@ -206,7 +206,7 @@ class MemberAppTest extends TestCase
             ->assertDontSee('Not sent yet');
         $this->assertSame(1, substr_count($page->getContent(), '<strong class="inbox__subject">Choir auditions</strong>'));
 
-        $this->get(route('account'))->assertDontSee('unread: </span>', false);
+        $this->get(route('account'))->assertOk()->assertDontSee('unread: </span>', false);
     }
 
     public function test_broadcast_notifications_open_the_inbox(): void

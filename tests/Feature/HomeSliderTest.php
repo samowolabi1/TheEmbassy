@@ -75,7 +75,7 @@ class HomeSliderTest extends TestCase
             1 => ['hidden' => '1'],
             3 => ['show_until' => now()->subDay()->toDateString()],
         ]))->assertSessionHasNoErrors();
-        $this->get(route('home'))->assertDontSee('>Convention</span>', false)->assertDontSee('I am His.')->assertSee('/02', false);
+        $this->get(route('home'))->assertOk()->assertDontSee('>Convention</span>', false)->assertDontSee('I am His.')->assertSee('/02', false);
 
         $this->put(route('admin.pages.update', 'home'), $this->form([0 => ['primary_link' => 'javascript:alert(1)']]))->assertSessionHasErrors('slides.0.primary_link');
         $this->put(route('admin.pages.update', 'home'), $this->form([0 => ['primary_label' => 'Go', 'primary_link' => '']]))->assertSessionHasErrors('slides.0.primary_link');
@@ -92,7 +92,7 @@ class HomeSliderTest extends TestCase
     {
         $this->actingAs($this->admin)->put(route('admin.pages.update', 'home'), $this->form([1 => ['title' => '', 'accent' => ''], 2 => ['feature' => 'none', 'title' => ''], 3 => ['title' => '', 'accent' => '']]))
             ->assertSessionHasNoErrors();
-        $this->get(route('home'))->assertSee('Young. Royal.')->assertDontSee('data-dot', false);
+        $this->get(route('home'))->assertOk()->assertSee('Young. Royal.')->assertDontSee('data-dot', false);
 
         $this->actingAs(User::factory()->create(['role' => 'finance']))->get(route('admin.pages.edit', 'home'))->assertForbidden();
     }

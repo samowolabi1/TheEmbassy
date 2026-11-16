@@ -103,7 +103,7 @@ class NewsletterTest extends TestCase
         $this->artisan('messages:send')->assertSuccessful();
 
         Mail::assertSent(WeeklyNewsletter::class, 1);
-        $this->get(route('admin.subscribers.index'))->assertSee('Sent');
+        $this->get(route('admin.subscribers.index'))->assertOk()->assertSee('Sent');
     }
 
     public function test_a_failed_address_does_not_stop_the_rest(): void

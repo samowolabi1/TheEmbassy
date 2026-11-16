@@ -133,7 +133,7 @@ class MemberRanksTest extends TestCase
 
         // Each unit's messages reach her, and both rosters list her.
         $this->assertTrue($ushering->members()->whereKey($ada->id)->exists());
-        $this->actingAs($this->hod->user)->get(route('unit.members', $this->choir))->assertSee('Ada Obi');
+        $this->actingAs($this->hod->user)->get(route('unit.members', $this->choir))->assertOk()->assertSee('Ada Obi');
 
         // Leaving one unit keeps her a worker, with Ushering as her main unit; leaving the last makes her a member.
         $this->delete(route('unit.members.remove', [$this->choir, $ada]));
@@ -188,7 +188,7 @@ class MemberRanksTest extends TestCase
             ->assertSessionHas('status', 'Thank you! Your request to join Choir has gone to the church office for approval.');
         $this->post(route('account.units.request'), ['unit_id' => $this->choir->id, 'training' => self::ALL_DONE])->assertSessionHasErrors('unit_id');
         $this->assertSame('member', $plain->fresh()->rank);
-        $this->get(route('account'))->assertSee('Waiting for approval');
+        $this->get(route('account'))->assertOk()->assertSee('Waiting for approval');
 
         // The head sees it; only the pastors or office approve.
         $this->actingAs($this->hod->user)->get(route('unit.members', $this->choir))->assertOk()->assertSee('Bola Ade')->assertSee('waiting for the church office');
@@ -206,7 +206,7 @@ class MemberRanksTest extends TestCase
         $this->actingAs($plain->user)->post(route('account.units.request'), ['unit_id' => $drama->id, 'training' => self::ALL_DONE]);
         $this->actingAs($office)->post(route('admin.unit-requests.decline', $plain->unitRequests()->where('unit_id', $drama->id)->first()), ['reason' => 'Drama is full until January.']);
         Mail::assertSent(ReminderMail::class, fn ($m) => str_contains($m->body, 'Drama is full until January.'));
-        $this->actingAs($plain->user)->get(route('account'))->assertSee('Not approved')->assertSee('Drama is full until January.');
+        $this->actingAs($plain->user)->get(route('account'))->assertOk()->assertSee('Not approved')->assertSee('Drama is full until January.');
         $this->assertFalse($plain->fresh()->inUnit($drama));
     }
 

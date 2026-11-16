@@ -30,7 +30,7 @@ class ChurchLocationTest extends TestCase
         $this->actingAs(User::factory()->admin()->create());
         $this->put(route('admin.settings.update'), ['church__address' => '5 New Road, Ikeja, Lagos'])->assertSessionHasNoErrors();
         Setting::applyToConfig(); // as on the next request
-        $this->get(route('about'))->assertSee('5 New Road, Ikeja, Lagos')->assertSee(rawurlencode('5 New Road, Ikeja, Lagos'), false);
+        $this->get(route('about'))->assertOk()->assertSee('5 New Road, Ikeja, Lagos')->assertSee(rawurlencode('5 New Road, Ikeja, Lagos'), false);
 
         // A shared Google Maps link and an embed link override the ones made from the address.
         $this->put(route('admin.settings.update'), [
@@ -39,7 +39,7 @@ class ChurchLocationTest extends TestCase
             'church__map_embed_url' => 'https://www.google.com/maps/embed?pb=!1m18!demo',
         ])->assertSessionHasNoErrors();
         Setting::applyToConfig();
-        $this->get(route('about'))->assertSee('https://maps.app.goo.gl/abc123', false)->assertSee('https://www.google.com/maps/embed?pb=!1m18!demo', false);
+        $this->get(route('about'))->assertOk()->assertSee('https://maps.app.goo.gl/abc123', false)->assertSee('https://www.google.com/maps/embed?pb=!1m18!demo', false);
     }
 
     public function test_no_map_or_directions_while_the_address_is_a_placeholder(): void

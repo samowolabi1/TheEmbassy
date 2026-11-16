@@ -41,7 +41,7 @@ class TestimoniesTest extends TestCase
         $t = $this->share();
         $this->assertSame(['pending', true, 'Adaeze'], [$t->status, $t->share_publicly, $t->byline()]);
         $this->get(route('testimonies.show', $t))->assertNotFound();
-        $this->get(route('testimonies.index'))->assertDontSee('God healed my mother');
+        $this->get(route('testimonies.index'))->assertOk()->assertDontSee('God healed my mother');
 
         $pastor = User::factory()->create(['role' => 'pastor']);
         $this->actingAs($pastor)->get(route('admin.testimonies.index'))->assertOk()->assertSee('God healed my mother');
@@ -52,8 +52,8 @@ class TestimoniesTest extends TestCase
         $this->assertSame(5, $this->member->user->tokenBalance());
 
         // On the website, under the first name only; people praise God for it once each.
-        $this->get(route('testimonies.index'))->assertSee('God healed my mum')->assertSee('Adaeze')->assertDontSee('Obi');
-        $this->get(route('testimonies.index', ['category' => 'provision']))->assertDontSee('God healed my mum');
+        $this->get(route('testimonies.index'))->assertOk()->assertSee('God healed my mum')->assertSee('Adaeze')->assertDontSee('Obi');
+        $this->get(route('testimonies.index', ['category' => 'provision']))->assertOk()->assertDontSee('God healed my mum');
         $friend = Member::factory()->active()->create();
         $this->actingAs($friend->user)->post(route('testimonies.praise', $t));
         $this->post(route('testimonies.praise', $t));
@@ -73,13 +73,13 @@ class TestimoniesTest extends TestCase
         $media = User::factory()->create(['role' => 'media']);
         $this->actingAs($media)->put(route('admin.testimonies.update', $private), ['title' => $private->title, 'category' => 'other', 'body' => $private->body, 'action' => 'publish']);
         $this->assertSame('published', $private->fresh()->status);
-        $this->get(route('testimonies.index'))->assertDontSee('Kept for the church');
+        $this->get(route('testimonies.index'))->assertOk()->assertDontSee('Kept for the church');
         $this->get(route('testimonies.show', $private))->assertNotFound();
 
         $short = $this->share(['title' => 'Too short']);
         $this->actingAs($media)->post(route('admin.testimonies.decline', $short), ['review_note' => 'Please tell us a little more.']);
         $this->assertSame('declined', $short->fresh()->status);
-        $this->actingAs($this->member->user)->get(route('account.testimonies'))->assertSee('Please tell us a little more.');
+        $this->actingAs($this->member->user)->get(route('account.testimonies'))->assertOk()->assertSee('Please tell us a little more.');
 
         $this->post(route('account.testimonies.withdraw', $private));
         $this->assertSame('withdrawn', $private->fresh()->status);

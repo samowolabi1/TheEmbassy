@@ -26,7 +26,7 @@ class AttendanceTest extends TestCase
         $this->post(route('admin.attendance.store'), ['held_on' => $sunday, 'kind' => 'sunday', 'in_person' => 584, 'online' => 336])
             ->assertRedirect(route('admin.attendance.show', Service::sole()));
 
-        $this->get(route('admin.attendance.index'))->assertSee('920')->assertSee('Sunday attendance');
+        $this->get(route('admin.attendance.index'))->assertOk()->assertSee('920')->assertSee('Sunday attendance');
         $this->post(route('admin.attendance.store'), ['held_on' => $sunday, 'kind' => 'sunday', 'in_person' => 1, 'online' => 0])->assertSessionHasErrors('held_on');
         $this->assertSame(1, Service::count());
     }
@@ -81,14 +81,14 @@ class AttendanceTest extends TestCase
         $card = FirstTimer::create(['name' => 'Bisi Eze', 'phone' => '0803 555 0000', 'visited_on' => today(), 'invited_by' => 'Ada O.']);
         $this->actingAs($office = User::factory()->staff('secretary')->create());
 
-        $this->get(route('admin.first-timers.index'))->assertSee('Bisi Eze')->assertSee('Invited by Ada O.');
+        $this->get(route('admin.first-timers.index'))->assertOk()->assertSee('Bisi Eze')->assertSee('Invited by Ada O.');
         $this->get('/admin')->assertOk();
 
         $this->post(route('admin.first-timers.follow-up', $card), ['note' => 'Coming again Sunday'])->assertRedirect();
         $card->refresh();
         $this->assertSame($office->id, $card->followed_up_by);
-        $this->get(route('admin.first-timers.index'))->assertDontSee('0803 555 0000');
-        $this->get(route('admin.first-timers.index', ['tab' => 'done']))->assertSee('Coming again Sunday');
+        $this->get(route('admin.first-timers.index'))->assertOk()->assertDontSee('0803 555 0000');
+        $this->get(route('admin.first-timers.index', ['tab' => 'done']))->assertOk()->assertSee('Coming again Sunday');
 
         $this->post(route('admin.first-timers.register', $card))->assertRedirect(route('admin.members.index', ['tab' => 'pending']));
         $member = Member::sole();

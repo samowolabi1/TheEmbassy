@@ -59,7 +59,7 @@ class ReportsTest extends TestCase
         $this->get(route('admin.reports.download', 'nothing'))->assertNotFound();
 
         $this->actingAs(User::factory()->create(['role' => 'super']))->get(route('admin.reports.index'))->assertOk()->assertSee('Every gift in the dates chosen');
-        $this->get(route('admin.dashboard'))->assertSee(route('admin.reports.index'));
+        $this->get(route('admin.dashboard'))->assertOk()->assertSee(route('admin.reports.index'));
     }
 
     public function test_every_report_downloads_as_a_workbook(): void

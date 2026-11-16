@@ -82,7 +82,7 @@ class AppointmentsTest extends TestCase
         $a->refresh();
         $this->assertSame(['confirmed', '2026-11-18 15:00', '2026-11-18 15:30'], [$a->status, $a->starts_at->format('Y-m-d H:i'), $a->ends_at->format('Y-m-d H:i')]);
         Mail::assertSent(AppointmentUpdate::class, fn ($m) => $m->hasTo($this->member->user->email) && str_contains($m->body, 'new time'));
-        $this->actingAs($this->member->user)->get(route('account.appointments'))->assertSee('Come to the office behind the hall.');
+        $this->actingAs($this->member->user)->get(route('account.appointments'))->assertOk()->assertSee('Come to the office behind the hall.');
 
         // The reminder the day before, once.
         Carbon::setTestNow(Carbon::parse('2026-11-17 17:00'));

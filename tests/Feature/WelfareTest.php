@@ -52,7 +52,7 @@ class WelfareTest extends TestCase
         Mail::assertSent(WelfareNeedsAttention::class, function ($mail) {
             return $mail->hasTo($this->hod->email) && ! str_contains($mail->render(), 'Surgery on Monday');
         });
-        $this->get(route('account.welfare'))->assertSee('The welfare team is looking into it');
+        $this->get(route('account.welfare'))->assertOk()->assertSee('The welfare team is looking into it');
     }
 
     public function test_cases_are_private_to_the_welfare_team_and_pastors(): void
@@ -113,7 +113,7 @@ class WelfareTest extends TestCase
         $this->post(route('unit.welfare.act', [$this->unit, $case]), ['action' => 'approve', 'amount' => '120000']);
         $this->assertSame('awaiting_pastor', $case->fresh()->status);
 
-        $this->actingAs($pastor)->get('/admin')->assertSee('Welfare');
+        $this->actingAs($pastor)->get('/admin')->assertOk()->assertSee('Welfare');
         $this->post(route('unit.welfare.act', [$this->unit, $case]), ['action' => 'approve', 'amount' => '100000', 'note' => 'Church covers most of it'])->assertRedirect();
         $case->refresh();
         $this->assertSame('approved', $case->status);
@@ -132,7 +132,7 @@ class WelfareTest extends TestCase
         $this->post(route('unit.welfare.act', [$this->unit, $case]), ['action' => 'decline', 'reason' => 'Already supported this month by the parish'])->assertRedirect();
         $this->assertSame('declined', $case->fresh()->status);
         Mail::assertSent(WelfareDecision::class);
-        $this->actingAs($ada->user)->get(route('account.welfare'))->assertSee('We couldn&#039;t help this time', false);
+        $this->actingAs($ada->user)->get(route('account.welfare'))->assertOk()->assertSee('We couldn&#039;t help this time', false);
     }
 
     public function test_the_hod_opens_cases_for_outsiders_and_assigns_a_case_worker(): void
@@ -149,19 +149,19 @@ class WelfareTest extends TestCase
         $this->put(route('unit.welfare.update', [$this->unit, $case]), ['assigned_member_id' => $worker->id, 'urgency' => 'normal', 'next_check_on' => today()->addWeek()->toDateString()]);
 
         // The worker sees it from their account and logs a visit; others can't open it.
-        $this->actingAs($worker->user)->get(route('account.welfare'))->assertSee('Mama Grace');
+        $this->actingAs($worker->user)->get(route('account.welfare'))->assertOk()->assertSee('Mama Grace');
         $this->get(route('account.welfare.case', $case))->assertOk()->assertSee('0803 777 0000');
         $this->post(route('account.welfare.note', $case), ['kind' => 'visit', 'body' => 'Took rice and oil', 'happened_on' => today()->toDateString()])->assertSessionHas('status');
         $this->actingAs($outsider->user)->get(route('account.welfare.case', $case))->assertNotFound();
 
-        $this->actingAs($this->hod->user)->get(route('unit.welfare.show', [$this->unit, $case]))->assertSee('Took rice and oil')->assertSee('Assigned to Bro. Kunle');
+        $this->actingAs($this->hod->user)->get(route('unit.welfare.show', [$this->unit, $case]))->assertOk()->assertSee('Took rice and oil')->assertSee('Assigned to Bro. Kunle');
     }
 
     public function test_cases_due_a_check_in_are_listed(): void
     {
         $case = WelfareCase::create(['beneficiary_name' => 'A', 'category' => 'bereavement', 'summary' => 'Lost her father', 'urgency' => 'normal', 'next_check_on' => today()]);
 
-        $this->actingAs($this->hod->user)->get(route('unit.welfare.index', [$this->unit, 'tab' => 'check']))->assertSee('Lost her father');
+        $this->actingAs($this->hod->user)->get(route('unit.welfare.index', [$this->unit, 'tab' => 'check']))->assertOk()->assertSee('Lost her father');
     }
 
     public function test_export_leaves_out_names(): void
@@ -181,7 +181,7 @@ class WelfareTest extends TestCase
         Member::factory()->active()->create(['name' => 'Married Couple', 'anniversary' => today()->subYears(10)->addDays(5)]);
         Member::factory()->active()->create(['name' => 'Not Soon', 'birthday' => today()->subYears(30)->addDays(60)]);
 
-        $this->actingAs($this->hod->user)->get(route('unit.welfare.celebrations', $this->unit))
+        $this->actingAs($this->hod->user)->get(route('unit.welfare.celebrations', $this->unit))->assertOk()
             ->assertSee('Birthday Person')->assertSee('Married Couple')->assertSee('10 years')->assertDontSee('Not Soon')->assertSee('wa.me/2348030000000', false);
     }
 

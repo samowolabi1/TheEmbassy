@@ -43,7 +43,7 @@ class CommunityTest extends TestCase
         $this->actingAs(User::factory()->create())->get('/community')->assertForbidden(); // no member record
 
         $this->actingAs($this->member())->get('/community')->assertOk()->assertSee('General')->assertSee('HOUSE RULES');
-        $this->get('/')->assertSee(route('community.index'), false);
+        $this->get('/')->assertOk()->assertSee(route('community.index'), false);
         $this->actingAs(User::factory()->staff('usher')->create())->get('/community')->assertOk();
     }
 
@@ -75,10 +75,10 @@ class CommunityTest extends TestCase
         $this->say($ada, ['body' => 'One']);
         $this->say($ada, ['body' => 'Two']);
 
-        $this->actingAs($tolu)->get('/community')->assertSee('unread: </span>2', false);
+        $this->actingAs($tolu)->get('/community')->assertOk()->assertSee('unread: </span>2', false);
         $this->get(route('community.room', $this->general()));
         $this->assertSame(CommunityMessage::max('id'), CommunityRead::where('user_id', $tolu->id)->value('last_read_id'));
-        $this->get('/community')->assertDontSee('unread: </span>', false);
+        $this->get('/community')->assertOk()->assertDontSee('unread: </span>', false);
     }
 
     public function test_photos_polls_reactions_and_votes(): void
@@ -147,7 +147,7 @@ class CommunityTest extends TestCase
         $this->assertNotNull($message->fresh()->removed_at);
         $this->assertTrue($ada->fresh()->isMutedInCommunity());
         $this->say($ada->fresh(), ['body' => 'Let me in'])->assertUnprocessable()->assertJsonValidationErrors('body');
-        $this->actingAs($ada->fresh())->get(route('community.room', $this->general()))->assertSee('Rude to members');
+        $this->actingAs($ada->fresh())->get(route('community.room', $this->general()))->assertOk()->assertSee('Rude to members');
 
         $this->actingAs($moderator)->delete(route('admin.community.unmute', $ada))->assertRedirect();
         $this->say($ada->fresh(), ['body' => 'Sorry everyone'])->assertCreated();
@@ -163,8 +163,8 @@ class CommunityTest extends TestCase
         $singer = $this->member(['unit_id' => $choir->id]);
         $other = $this->member();
 
-        $this->actingAs($singer)->get('/community')->assertSee('Choir room');
-        $this->actingAs($other)->get('/community')->assertDontSee('Choir room');
+        $this->actingAs($singer)->get('/community')->assertOk()->assertSee('Choir room');
+        $this->actingAs($other)->get('/community')->assertOk()->assertDontSee('Choir room');
         $this->get(route('community.room', $room))->assertNotFound();
         $this->say($other, ['body' => 'Hi'], $room)->assertNotFound();
 
@@ -194,7 +194,7 @@ class CommunityTest extends TestCase
         $this->member(['name' => 'Birthday Girl', 'birthday' => today()->subYears(21)]);
         $this->member(['name' => 'Next Month', 'birthday' => today()->addMonth()->subYears(30)]);
 
-        $this->actingAs($this->member())->get('/community')->assertSee('Birthday Girl')->assertSee('Today!')->assertDontSee('Next Month');
+        $this->actingAs($this->member())->get('/community')->assertOk()->assertSee('Birthday Girl')->assertSee('Today!')->assertDontSee('Next Month');
     }
 
     public function test_quiz_is_played_once_timed_and_scored_on_the_server(): void
@@ -205,16 +205,16 @@ class CommunityTest extends TestCase
         $q2 = $quiz->questions()->create(['question' => 'Who killed Goliath?', 'options' => ['David', 'Saul'], 'answer' => 0, 'reference' => '1 Samuel 17']);
         $ada = $this->member();
 
-        $this->actingAs($ada)->get('/community')->assertSee('Heroes of faith')->assertSee('Play now');
-        $this->get(route('community.quiz', $quiz))->assertSee('Start the quiz')->assertDontSee('Who built the ark?');
+        $this->actingAs($ada)->get('/community')->assertOk()->assertSee('Heroes of faith')->assertSee('Play now');
+        $this->get(route('community.quiz', $quiz))->assertOk()->assertSee('Start the quiz')->assertDontSee('Who built the ark?');
         $this->post(route('community.quiz.start', $quiz))->assertRedirect();
-        $this->get(route('community.quiz', $quiz))->assertSee('Who built the ark?')->assertDontSee('"answer"', false);
+        $this->get(route('community.quiz', $quiz))->assertOk()->assertSee('Who built the ark?')->assertDontSee('"answer"', false);
 
         $this->post(route('community.quiz.submit', $quiz), ['answers' => [$q1->id => 1, $q2->id => 1]])->assertSessionHas('status', 'You scored 1 out of 2. +6 Crowns.');
         // One go only.
         $this->post(route('community.quiz.submit', $quiz), ['answers' => [$q1->id => 1, $q2->id => 0]]);
         $this->assertSame(1, $quiz->attempts()->first()->score);
-        $this->get(route('community.quiz', $quiz))->assertSee('Your score: 1/2')->assertDontSee('1 Samuel 17');
+        $this->get(route('community.quiz', $quiz))->assertOk()->assertSee('Your score: 1/2')->assertDontSee('1 Samuel 17');
 
         // Too slow doesn't count.
         $tolu = $this->member();
@@ -225,7 +225,7 @@ class CommunityTest extends TestCase
 
         // Answers show once it closes.
         $this->travel(2)->days();
-        $this->actingAs($ada)->get(route('community.quiz', $quiz))->assertSee('1 Samuel 17')->assertSee('You said: Saul');
+        $this->actingAs($ada)->get(route('community.quiz', $quiz))->assertOk()->assertSee('1 Samuel 17')->assertSee('You said: Saul');
     }
 
     public function test_staff_build_quizzes_and_rooms(): void
