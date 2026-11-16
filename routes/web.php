@@ -90,13 +90,17 @@ Route::prefix('vendor')->name('vendor.')->group(function () {
         Route::get('/enquiries', [Vendor\EnquiryController::class, 'index'])->name('enquiries.index');
         Route::patch('/enquiries/{enquiry}', [Vendor\EnquiryController::class, 'markRead'])->name('enquiries.read');
         Route::get('/subscription', [Vendor\SubscriptionController::class, 'index'])->name('subscription.index');
+        Route::get('/storefront', [Vendor\StorefrontController::class, 'edit'])->name('storefront.edit');
+        Route::post('/storefront', [Vendor\StorefrontController::class, 'update'])->middleware('throttle:20,1')->name('storefront.update');
+        Route::put('/storefront/sections', [Vendor\StorefrontController::class, 'collections'])->name('storefront.collections');
         Route::get('/shop', [Vendor\ShopController::class, 'edit'])->name('shop.edit');
         Route::put('/shop', [Vendor\ShopController::class, 'update'])->name('shop.update');
         Route::post('/subscription', [Vendor\SubscriptionController::class, 'store'])->middleware('throttle:10,1')->name('subscription.store');
         Route::get('/token-orders', [Vendor\TokenOrderController::class, 'index'])->name('token-orders.index');
         Route::post('/token-orders/complete', [Vendor\TokenOrderController::class, 'complete'])->name('token-orders.complete');
         Route::post('/token-orders/{order}/decline', [Vendor\TokenOrderController::class, 'decline'])->name('token-orders.decline');
-        Route::resource('products', Vendor\ProductController::class)->only(['index', 'create', 'store', 'edit', 'update']);
+        Route::resource('products', Vendor\ProductController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+        Route::post('/products/{product}/toggle', [Vendor\ProductController::class, 'toggle'])->name('products.toggle');
         Route::get('/share', [Vendor\ShareController::class, 'index'])->name('share.index');
     });
 });

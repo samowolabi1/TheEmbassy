@@ -51,10 +51,14 @@
             <div class="grid-auto" style="--min: 260px; --gap: 14px">
                 @foreach ($shops as $shop)
                     <a href="{{ route('market.shop', $shop) }}" class="card shop-card">
-                        <span class="shop-card__mark">{{ \Illuminate\Support\Str::of($shop->name)->explode(' ')->take(2)->map(fn ($w) => mb_substr($w, 0, 1))->join('') }}</span>
+                        @if ($shop->logoUrl())
+                            <img src="{{ $shop->logoUrl() }}" alt="" class="shop-card__mark" style="object-fit: cover; padding: 0" loading="lazy">
+                        @else
+                            <span class="shop-card__mark" style="background: {{ $shop->colours()[1] }}; color: {{ $shop->colours()[0] }}">{{ $shop->initials() }}</span>
+                        @endif
                         <span class="stack" style="gap: 2px; min-width: 0">
                             <span class="product__name">{{ $shop->name }}</span>
-                            <span class="product__seller">{{ $shop->category }} · {{ $shop->products_count }} {{ \Illuminate\Support\Str::plural('item', $shop->products_count) }}</span>
+                            <span class="product__seller">{{ $shop->tagline ? \Illuminate\Support\Str::limit($shop->tagline, 50).' · ' : $shop->category.' · ' }}{{ $shop->products_count }} {{ \Illuminate\Support\Str::plural('item', $shop->products_count) }}</span>
                         </span>
                     </a>
                 @endforeach

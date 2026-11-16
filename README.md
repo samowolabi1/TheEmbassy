@@ -357,6 +357,15 @@ Members share a testimony from **My account › Testimony**:
 - **Publishing:** the member is emailed, and earns tokens (5 to start, once a month at most; the pastor in charge sets the amount on the Token treasury page). The testimony appears on `/testimonies` only if the member agreed to the website. Signed-in people can say "Praise God" once each, and the testimony can be shared to WhatsApp.
 - Members can withdraw a testimony at any time.
 
+### Online shops
+
+Every seller has their own online shop at `/market/shops/{their-shop}` (no custom domains), which they manage themselves at `/vendor`:
+- **My online shop:** a wide **banner** and a **logo** (resized for the web; without a logo the shop shows its initials), a **shop colour** from eight (buttons, sections and badges follow it), a **tagline**, an **announcement** bar (a sale, holiday hours), **their story**, **opening hours**, **where to find them** (with a map link), **delivery** and **returns** terms, and **Instagram, TikTok, Facebook and website** links. A preview at the top shows the banner, logo, colour and tagline as they're chosen.
+- **Sections:** the seller groups listings into sections such as "Cakes" or "Drinks", renames and orders them, or removes one (its listings stay, with no section).
+- **Products and services:** up to **8 photos** each (pick several at once; large photos are made smaller and get a thumbnail). The seller chooses the cover, removes photos and adds more. Each listing can have a section, a **"was" price** (shown crossed out with the % saved), be **featured** at the top of the shop, be hidden and shown again in one tap, or be deleted (enquiries about it are kept; not while a Crown order for it is waiting).
+- **What buyers see:** the announcement bar, the banner with logo, name, tagline, hours and buttons to WhatsApp, call or read about the shop; share buttons; section chips, a search box and sorting (newest, price low to high, high to low); Featured first, then each section, then everything else; and an About panel with the story, hours, location, delivery, returns, contact and social links. Product pages have a photo gallery (swipe on phones; arrows, thumbnails and arrow keys on computers), the sale price, the section, a "Sold by" card in the shop's colour with its logo, and the shop's delivery and returns terms.
+- The market's shop list shows each shop's logo (or initials in its colour) and tagline.
+
 ### Sharing shops and listings
 
 Sellers have a **Share** page in their shop area (and a Share button on each listing):

@@ -35,6 +35,10 @@
                     <input type="number" data-money name="price" value="{{ old('price', $product->price ? $product->price / 100 : '') }}" required min="100" step="1">
                     @error('price') <span class="field-error">{{ $message }}</span> @enderror
                 </label>
+                <label class="field">Was (optional) <x-tip text="On sale? Put the old, higher price here. Buyers see it crossed out with how much they save." />
+                    <input type="number" data-money name="compare_price" value="{{ old('compare_price', $product->compare_price ? $product->compare_price / 100 : '') }}" min="100" step="1" placeholder="Not on sale">
+                    @error('compare_price') <span class="field-error">{{ $message }}</span> @enderror
+                </label>
                 <label class="field" data-for-type="product">In stock
                     <input type="number" name="stock" value="{{ old('stock', $product->stock) }}" min="0" placeholder="No limit">
                     <span class="field__hint">Leave empty for made-to-order.</span>
@@ -47,14 +51,31 @@
                     @error('price_unit') <span class="field-error">{{ $message }}</span> @enderror
                 </label>
             </div>
-            <label class="field">Photo
-                @if ($product->imageUrl())
-                    <img src="{{ $product->imageUrl() }}" alt="Current photo" style="width: 160px; aspect-ratio: 1; object-fit: cover; border-radius: 14px">
+            <fieldset class="field" style="border: 0; padding: 0; margin: 0" id="photos">
+                <legend style="margin-bottom: 6px">Photos <x-tip text="Up to {{ $maxPhotos }} photos. The cover shows in the market and on your shop; buyers swipe through the rest. Clear, bright photos on a plain background sell best." /></legend>
+                @if ($images->isNotEmpty())
+                    <div class="photo-grid" style="margin-bottom: 10px">
+                        @foreach ($images as $i => $image)
+                            <span class="photo-tile" data-photo-kept>
+                                <img class="photo-tile__img" src="{{ $image->thumbUrl() }}" alt="Photo {{ $i + 1 }}">
+                                @if ($i === 0)<span class="photo-tile__cover">Cover</span>@endif
+                                <label><input type="radio" name="cover" value="{{ $image->id }}" @checked($i === 0)>Cover</label>
+                                <label><input type="checkbox" name="remove_images[]" value="{{ $image->id }}">Remove</label>
+                            </span>
+                        @endforeach
+                    </div>
                 @endif
-                <input type="file" name="image" accept="image/jpeg,image/png,image/webp" style="height: auto; padding: 12px">
-                <span class="field__hint">JPG, PNG or WebP, up to 2 MB.{{ $product->imageUrl() ? ' Choosing a new one replaces it.' : '' }}</span>
-                @error('image') <span class="field-error">{{ $message }}</span> @enderror
-            </label>
+                @if ($images->count() < $maxPhotos)
+                    <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp" data-photo-input data-max="{{ $maxPhotos }}" style="height: auto; padding: 12px">
+                    <span class="field__hint">{{ $images->isEmpty() ? 'Choose one or more photos (hold Ctrl or ⌘ to pick several, or select several on your phone). The first is the cover.' : 'Add more photos: '.($maxPhotos - $images->count()).' more fit.' }} JPG, PNG or WebP, up to 8 MB each; large photos are made smaller for you.</span>
+                    <div class="photo-grid" data-photo-new style="margin-top: 8px"></div>
+                    <span class="field__hint" data-photo-note style="color: #a6531a" aria-live="polite"></span>
+                @else
+                    <span class="field__hint">That's the most photos a listing can have. Remove one to add another.</span>
+                @endif
+                @error('images') <span class="field-error">{{ $message }}</span> @enderror
+                @error('images.*') <span class="field-error">{{ $message }}</span> @enderror
+            </fieldset>
             @if (auth()->user()->canUseTokens())
             <fieldset class="token-option">
                 <legend class="sr-only">{{ TokenName::title() }}</legend>
@@ -66,8 +87,32 @@
                 </label>
             </fieldset>
             @endif
+            <label class="field">Section in your shop
+                <select name="shop_collection_id">
+                    <option value="">No section</option>
+                    @foreach ($collections as $c)
+                        <option value="{{ $c->id }}" @selected((int) old('shop_collection_id', $product->shop_collection_id) === $c->id)>{{ $c->name }}</option>
+                    @endforeach
+                </select>
+                <span class="field__hint">@if ($collections->isEmpty())<a href="{{ route('vendor.storefront.edit') }}#sections">Add sections</a> such as "Cakes" or "Drinks" to group your listings.@else Add or rename sections in <a href="{{ route('vendor.storefront.edit') }}#sections">My online shop</a>.@endif</span>
+                @error('shop_collection_id') <span class="field-error">{{ $message }}</span> @enderror
+            </label>
+            <label class="login__remember"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $product->is_featured))>Feature it at the top of my shop</label>
             <label class="login__remember"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $product->is_active))>Show it in the market</label>
             <button type="submit" class="btn btn--gold" style="align-self: flex-start">{{ $product->exists ? 'Save' : 'Add listing' }}</button>
         </form>
     </section>
+
+    @if ($product->exists)
+        <section class="box" style="max-width: 760px">
+            <h2>Delete this listing</h2>
+            <p class="box__note">It's removed from your shop and the market for good, with its photos. Enquiries about it are kept. To take it down for a while, untick "Show it in the market" instead.</p>
+            @error('product') <p class="field-error" role="alert">{{ $message }}</p> @enderror
+            <form method="POST" action="{{ route('vendor.products.destroy', $product) }}" data-confirm="Delete &quot;{{ $product->name }}&quot; for good?">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn--danger btn--sm">Delete listing</button>
+            </form>
+        </section>
+    @endif
 @endsection

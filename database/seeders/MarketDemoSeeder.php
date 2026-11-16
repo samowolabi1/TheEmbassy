@@ -102,6 +102,8 @@ class MarketDemoSeeder extends Seeder
             }
         }
 
+        $this->storefronts();
+
         $this->command?->info($made ? "Made {$made} demo shops." : 'The demo shops are already there.');
         $this->command?->line('Seller logins: seller1@demo.test … seller'.count($this->shops()).'@demo.test, password '.self::PASSWORD.' (at /vendor/login).');
         $this->command?->line('Coupon for subscriptions: DEMO20 (20% off).');
@@ -161,7 +163,7 @@ class MarketDemoSeeder extends Seeder
      * A simple picture for the listing: the shop's colours, the name and the price. Real sellers
      * upload photos; these just make the demo look like a market.
      */
-    private function picture(string $name, int $price, string $type, string $category): ?string
+    private function picture(string $name, int $price, string $type, string $category, int $variant = 0): ?string
     {
         if (! function_exists('imagettftext')) {
             return null; // GD without FreeType: the listing shows without a picture
@@ -177,7 +179,7 @@ class MarketDemoSeeder extends Seeder
             imageline($img, 0, $y, $w, $y, imagecolorallocate($img, ...array_map(fn ($p, $q) => (int) ($p + ($q - $p) * $t), $a, $b)));
         }
         // Soft circles for texture.
-        mt_srand(crc32($name));
+        mt_srand(crc32($name.$variant));
         for ($i = 0; $i < 7; $i++) {
             $d = mt_rand(160, 520);
             imagefilledellipse($img, mt_rand(0, $w), mt_rand(0, $h), $d, $d, imagecolorallocatealpha($img, 255, 255, 255, mt_rand(105, 118)));
@@ -196,11 +198,96 @@ class MarketDemoSeeder extends Seeder
             $y += 100;
         }
         $this->centred($img, '₦'.number_format($price), $price_font, 72, $y + 70, imagecolorallocate($img, 255, 241, 199));
-        $this->centred($img, 'DEMO LISTING', $label, 22, 850, imagecolorallocatealpha($img, 255, 255, 255, 60));
+        $this->centred($img, $variant ? 'DEMO PHOTO '.($variant + 1) : 'DEMO LISTING', $label, 22, 850, imagecolorallocatealpha($img, 255, 255, 255, 60));
 
         ob_start();
         imagejpeg($img, null, 85);
         $path = 'products/demo-'.Str::slug($name).'-'.Str::random(6).'.jpg';
+        Storage::disk('public')->put($path, (string) ob_get_clean());
+
+        return $path;
+    }
+
+    /**
+     * Each demo shop's online shop: tagline, colour, banner, logo, story, hours, delivery and
+     * returns, sections, a featured item and a sale, and two more photos per product. Only for
+     * demo shops that haven't been designed yet, so a seller's own changes are never undone.
+     */
+    private function storefronts(): void
+    {
+        $designs = [
+            'demo-adas-kitchen' => ['Party food that tastes like home', 'coral', 'Christmas party trays: order by 20 December 🎄', 'Mon–Sat, 8am–7pm', ['Party trays' => ['jollof', 'small chops', 'meat pies'], 'Drinks' => ['zobo']]],
+            'demo-royal-threads' => ['Made-to-measure African fashion', 'plum', 'New adire collection just in', 'Tue–Sat, 10am–6pm', ['Ready to wear' => ['shirt', 'dress', 'hoodie'], 'Tailoring' => ['agbada']]],
+            'demo-glow-by-temi' => ['Natural skincare and bridal glam', 'rose', null, 'By appointment', ['Skincare' => ['shea', 'soap'], 'Makeup & gele' => ['makeup', 'gele']]],
+            'demo-pixelpraise-studio' => ['Photos and design for every occasion', 'teal', 'Booking now for December weddings', 'Mon–Fri, 9am–5pm', ['Photography' => ['photography', 'passport'], 'Design' => ['logo', 'flyer']]],
+            'demo-campus-tutors' => ['Better grades, less stress', 'navy', null, 'Evenings and Saturdays', ['Tutoring' => ['tutoring', 'jamb'], 'Careers' => ['cv']]],
+            'demo-faith-bookshelf' => ['Books that build your faith', 'emerald', null, 'Sundays after service', ['For adults' => ['bible', 'journal'], 'For children' => ['children']]],
+            'demo-crown-crafts' => ['Thoughtful gifts, made by hand', 'gold', 'Free gift wrapping this month 🎁', 'Mon–Sat, 9am–6pm', ['Gifts' => ['hamper', 'bracelet'], 'Home' => ['frame']]],
+            'demo-fixit-tunde' => ['Phones and laptops, fixed fast', 'charcoal', null, 'Mon–Sat, 9am–7pm', []],
+        ];
+        foreach (Shop::where('slug', 'like', 'demo-%')->whereNull('tagline')->get() as $shop) {
+            [$tagline, $accent, $announcement, $hours, $sections] = $designs[$shop->slug] ?? [$shop->category, 'navy', null, null, []];
+            $shop->fill([
+                'tagline' => $tagline, 'accent' => $accent, 'announcement' => $announcement, 'hours' => $hours,
+                'about' => $shop->description."\n\n".$shop->owner_name.' is a member of '.config('church.short_name').'. Every order supports a family in our church.',
+                'address' => 'Ikeja, Lagos',
+                'delivery_info' => 'Delivery across Lagos in 1 to 3 days, from ₦2,000 depending on where you are. Free pick-up at church on Sundays.',
+                'returns_info' => 'Tell us within 3 days if anything isn\'t right and we\'ll make it right. Food and custom orders can\'t be returned.',
+                'instagram' => '@'.str_replace('demo-', '', $shop->slug),
+            ]);
+            $shop->banner_path ??= $this->banner($shop);
+            $shop->save();
+
+            foreach (array_keys($sections) as $i => $name) {
+                $shop->collections()->firstOrCreate(['slug' => Str::slug($name)], ['name' => $name, 'position' => $i]);
+            }
+            $collections = $shop->collections()->get();
+            foreach ($shop->products()->get() as $n => $product) {
+                $section = collect($sections)->search(fn ($words) => collect($words)->contains(fn ($w) => str_contains(mb_strtolower($product->name), $w)));
+                $product->shop_collection_id = $section ? $collections->firstWhere('name', $section)?->id : null;
+                $product->is_featured = $n === 0;
+                $product->compare_price = $n === 1 ? (int) round($product->price * 1.25 / 10000) * 10000 : $product->compare_price;
+                $product->save();
+                // Demo pictures only: one becomes three (the migration may already have moved the first).
+                if ($product->image_path && str_starts_with($product->image_path, 'products/demo-') && $product->images()->count() <= 1) {
+                    $product->images()->firstOrCreate(['path' => $product->image_path], ['position' => 0]);
+                    foreach ([1, 2] as $v) {
+                        if ($path = $this->picture($product->name, intdiv($product->price, 100), $product->type, $shop->category, $v)) {
+                            $product->images()->create(['path' => $path, 'position' => $v]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * A wide banner for a demo shop: its colour, with soft shapes and the shop's name.
+     */
+    private function banner(Shop $shop): ?string
+    {
+        if (! function_exists('imagettftext')) {
+            return null;
+        }
+        [$from, $to] = self::COLOURS[$shop->category] ?? self::COLOURS['Other'];
+        [$w, $h] = [1800, 560];
+        $img = imagecreatetruecolor($w, $h);
+        $a = sscanf(ltrim($from, '#'), '%02x%02x%02x');
+        $b = sscanf(ltrim($to, '#'), '%02x%02x%02x');
+        for ($x = 0; $x < $w; $x++) {
+            $t = $x / $w;
+            imageline($img, $x, 0, $x, $h, imagecolorallocate($img, ...array_map(fn ($p, $q) => (int) ($p + ($q - $p) * $t), $a, $b)));
+        }
+        mt_srand(crc32($shop->slug));
+        for ($i = 0; $i < 9; $i++) {
+            $d = mt_rand(180, 640);
+            imagefilledellipse($img, mt_rand(0, $w), mt_rand(0, $h), $d, $d, imagecolorallocatealpha($img, 255, 255, 255, mt_rand(108, 120)));
+        }
+        mt_srand();
+        $this->centred($img, $shop->name, resource_path('fonts/Poppins-Black.ttf'), 84, 300, imagecolorallocatealpha($img, 255, 255, 255, 20));
+        ob_start();
+        imagejpeg($img, null, 85);
+        $path = 'shops/banners/demo-'.$shop->slug.'-'.Str::random(6).'.jpg';
         Storage::disk('public')->put($path, (string) ob_get_clean());
 
         return $path;

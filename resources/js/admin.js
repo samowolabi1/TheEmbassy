@@ -148,3 +148,53 @@ if (outreach) {
     });
     syncSections();
 }
+
+
+// Online shop editor: show the chosen banner, logo, colour and tagline before saving.
+(() => {
+    const preview = document.querySelector('[data-storefront-preview]');
+    if (!preview) return;
+    document.querySelectorAll('[data-preview-input]').forEach((input) => input.addEventListener('change', () => {
+        const file = input.files[0];
+        if (!file) return;
+        const target = preview.querySelector(input.dataset.previewInput === 'banner' ? '[data-preview-banner]' : '[data-preview-logo]');
+        target.style.backgroundImage = `url('${URL.createObjectURL(file)}')`;
+        if (input.dataset.previewInput === 'logo') target.textContent = '';
+    }));
+    document.querySelectorAll('[data-accent]').forEach((radio) => radio.addEventListener('change', () => {
+        const [main, soft] = radio.dataset.accent.split('|');
+        preview.style.setProperty('--shop', main);
+        preview.style.setProperty('--shop-soft', soft);
+    }));
+    const tagline = document.querySelector('[data-preview-text="tagline"]');
+    tagline?.addEventListener('input', () => {
+        preview.querySelector('[data-preview-tagline]').textContent = tagline.value || tagline.dataset.fallback;
+    });
+})();
+
+// Product photos: preview the ones chosen before uploading, and say how many more fit.
+(() => {
+    const input = document.querySelector('[data-photo-input]');
+    if (!input) return;
+    const list = document.querySelector('[data-photo-new]');
+    const max = Number(input.dataset.max || 8);
+    const note = document.querySelector('[data-photo-note]');
+    input.addEventListener('change', () => {
+        list.replaceChildren();
+        const kept = document.querySelectorAll('[data-photo-kept]:not(:has(input[type=checkbox]:checked))').length;
+        [...input.files].forEach((file, i) => {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.alt = '';
+            img.className = 'photo-tile__img' + (kept + i >= max ? ' is-over' : '');
+            const tile = document.createElement('span');
+            tile.className = 'photo-tile';
+            tile.append(img);
+            list.append(tile);
+        });
+        if (note) {
+            const over = kept + input.files.length - max;
+            note.textContent = over > 0 ? `Only ${max} photos fit: the last ${over} won't be added.` : '';
+        }
+    });
+})();

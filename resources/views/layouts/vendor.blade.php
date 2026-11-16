@@ -2,6 +2,7 @@
     $user = auth()->user();
     $shop = $user->shop;
     $nav = [
+        ['id' => 'storefront', 'label' => 'My online shop', 'route' => 'vendor.storefront.edit'],
         ['id' => 'products', 'label' => 'Products & services', 'route' => 'vendor.products.index'],
         ['id' => 'share', 'label' => 'Share', 'route' => 'vendor.share.index'],
         ['id' => 'enquiries', 'label' => 'Enquiries', 'route' => 'vendor.enquiries.index', 'badge' => $shop->enquiries()->whereNull('read_at')->count() ?: null],

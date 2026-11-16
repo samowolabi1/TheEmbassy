@@ -9,13 +9,14 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
  * Something sold on the market: a product (goods, optionally with stock) or a service (booked, no stock).
  */
-#[Fillable(['type', 'slug', 'name', 'description', 'price', 'price_unit', 'stock', 'image_path', 'is_active', 'token_price'])]
+#[Fillable(['type', 'slug', 'name', 'description', 'price', 'price_unit', 'stock', 'image_path', 'is_active', 'token_price', 'shop_collection_id', 'compare_price', 'is_featured'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -36,6 +37,8 @@ class Product extends Model
             'price' => 'integer',
             'stock' => 'integer',
             'is_active' => 'boolean',
+            'is_featured' => 'boolean',
+            'compare_price' => 'integer',
         ];
     }
 
@@ -50,6 +53,62 @@ class Product extends Model
     public function shop(): BelongsTo
     {
         return $this->belongsTo(Shop::class);
+    }
+
+    /**
+     * Its photos, cover first.
+     *
+     * @return HasMany<ProductImage, $this>
+     */
+    public function images(): HasMany
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('position')->orderBy('id');
+    }
+
+    /**
+     * @return BelongsTo<ShopCollection, $this>
+     */
+    public function collection(): BelongsTo
+    {
+        return $this->belongsTo(ShopCollection::class, 'shop_collection_id');
+    }
+
+    /**
+     * Keep image_path (used for the cover in lists, share cards and old links) on the first photo.
+     */
+    public function syncCover(): void
+    {
+        $first = $this->images()->first();
+        $this->forceFill(['image_path' => $first?->path])->save();
+        $this->unsetRelation('images');
+    }
+
+    /**
+     * A small copy of the cover for grids, or the cover itself.
+     */
+    public function thumbUrl(): ?string
+    {
+        $first = $this->relationLoaded('images') ? $this->images->first() : null;
+
+        return $first ? $first->thumbUrl() : $this->imageUrl();
+    }
+
+    /**
+     * On sale: a higher "was" price is set.
+     */
+    public function onSale(): bool
+    {
+        return $this->compare_price !== null && $this->compare_price > $this->price;
+    }
+
+    public function compareLabel(): ?string
+    {
+        return $this->onSale() ? '₦'.number_format($this->compare_price / 100) : null;
+    }
+
+    public function salePercent(): ?int
+    {
+        return $this->onSale() ? (int) round(100 - $this->price / $this->compare_price * 100) : null;
     }
 
     /**

@@ -22,20 +22,47 @@
 
         <div class="notice-form" style="margin-top: 20px">
             <div class="notice-form__main" style="padding: 0; background: none; border: 0; gap: 20px">
-                @if ($product->imageUrl())
+                @if ($product->images->isNotEmpty())
+                    <div class="gallery" data-gallery>
+                        <div class="gallery__track" data-gallery-track tabindex="0" aria-label="Photos of {{ $product->name }}">
+                            @foreach ($product->images as $i => $image)
+                                <img src="{{ $image->url() }}" alt="{{ $product->name }}, photo {{ $i + 1 }} of {{ $product->images->count() }}" class="gallery__photo" @if ($i > 0) loading="lazy" @endif>
+                            @endforeach
+                        </div>
+                        @if ($product->images->count() > 1)
+                            <button type="button" class="gallery__arrow gallery__arrow--prev" data-gallery-prev aria-label="Previous photo"><x-icon name="chevron-left" :size="20" /></button>
+                            <button type="button" class="gallery__arrow gallery__arrow--next" data-gallery-next aria-label="Next photo"><x-icon name="chevron-left" :size="20" /></button>
+                            <div class="gallery__thumbs">
+                                @foreach ($product->images as $i => $image)
+                                    <button type="button" class="gallery__thumb" data-gallery-go="{{ $i }}" @if ($i === 0) aria-current="true" @endif aria-label="Show photo {{ $i + 1 }}"><img src="{{ $image->thumbUrl() }}" alt=""></button>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @elseif ($product->imageUrl())
                     <img src="{{ $product->imageUrl() }}" alt="{{ $product->name }}" class="product-hero-photo">
                 @else
                     <div role="img" aria-label="No photo" class="product-hero-photo bg-ice"></div>
                 @endif
                 <div class="stack" style="gap: 12px">
-                    <span class="tag tag--wash">{{ $product->isService() ? 'Service' : $shop->category }}</span>
+                    <span class="tag tag--wash">{{ $product->isService() ? 'Service' : ($product->collection?->name ?? $shop->category) }}</span>
                     <h1 class="h2">{{ $product->name }}</h1>
-                    <span class="product-hero-price">{{ $product->priceLabel() }}</span>
+                    <span class="product-hero-price">{{ $product->priceLabel() }}@if ($product->onSale()) <s class="product-hero-was">{{ $product->compareLabel() }}</s> <span class="pill pill--ok" style="vertical-align: middle">Save {{ $product->salePercent() }}%</span>@endif</span>
                     @if ($product->acceptsTokens())
                         <span class="token-chip" style="align-self: flex-start">{{ TokenName::icon() }} Or {{ number_format($product->token_price) }} {{ TokenName::many() }}</span>
                     @endif
                     <p class="lede" style="margin: 0; white-space: pre-line">{{ $product->description }}</p>
-                    <span class="product__seller">Sold by <a href="{{ route('market.shop', $shop) }}" style="font-weight: 800">{{ $shop->name }}</a></span>
+                    <a href="{{ route('market.shop', $shop) }}" class="seller-chip" style="--shop: {{ $shop->colours()[0] }}">
+                        @if ($shop->logoUrl())<img src="{{ $shop->logoUrl() }}" alt="" class="seller-chip__logo">@else<span class="seller-chip__logo seller-chip__logo--initials">{{ $shop->initials() }}</span>@endif
+                        <span class="stack" style="gap: 0"><span class="field-hint" style="margin: 0">Sold by</span><strong>{{ $shop->name }}</strong></span>
+                        <span class="seller-chip__go">Visit shop</span>
+                    </a>
+                    @if ($shop->delivery_info && ! $product->isService())
+                        <details class="product-policy"><summary>Delivery</summary><p>{{ $shop->delivery_info }}</p></details>
+                    @endif
+                    @if ($shop->returns_info && ! $product->isService())
+                        <details class="product-policy"><summary>Returns and refunds</summary><p>{{ $shop->returns_info }}</p></details>
+                    @endif
                     @include('market.share-bar', ['item' => $product, 'cards' => app(\App\Services\Market\ShareCards::class), 'image' => route('market.product.image', [$product, 'square'])])
                 </div>
             </div>

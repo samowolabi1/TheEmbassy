@@ -25,22 +25,48 @@ class MarketController extends Controller
     public function index(): View
     {
         return view('market.index', [
-            'products' => Product::listed()->with('shop.user.member')->get(),
+            'products' => Product::listed()->with('shop.user.member', 'images')->get(),
             'shops' => Shop::listed()->withCount(['products' => fn ($q) => $q->where('is_active', true)])->orderBy('name')->get(),
         ]);
     }
 
     /**
-     * Shops only show while subscribed. The owner can still see theirs, to check how it looks.
+     * A seller's online shop: banner, sections, search and sort, and everything about them.
+     * Shops only show while subscribed; the owner can still see theirs, to check how it looks.
      */
     public function shop(Request $request, Shop $shop): View
     {
         $this->ensureVisible($request, $shop);
         $this->countShareVisit($request, $shop);
 
+        $collections = $shop->collections()->get();
+        $section = $collections->firstWhere('slug', $request->query('section'));
+        $q = trim((string) $request->query('q'));
+        $sort = in_array($request->query('sort'), ['price-low', 'price-high', 'newest'], true) ? $request->query('sort') : null;
+        $all = $shop->products()->where('is_active', true)->with('images')->latest()->get()->each->setRelation('shop', $shop);
+
+        $products = $all
+            ->when($section, fn ($c) => $c->where('shop_collection_id', $section->id))
+            ->when($q !== '', fn ($c) => $c->filter(fn ($p) => str_contains(mb_strtolower($p->name.' '.$p->description), mb_strtolower($q))))
+            ->when($sort === 'price-low', fn ($c) => $c->sortBy('price'))
+            ->when($sort === 'price-high', fn ($c) => $c->sortByDesc('price'))
+            ->values();
+        // With no filter, show it in the seller's sections; otherwise one list.
+        $browsing = ! $section && $q === '' && ! $sort;
+
         return view('market.shop', [
             'shop' => $shop,
-            'products' => $shop->products()->where('is_active', true)->latest()->get(),
+            'products' => $products,
+            'collections' => $collections->filter(fn ($c) => $all->contains('shop_collection_id', $c->id))->values(),
+            'section' => $section,
+            'q' => $q,
+            'sort' => $sort,
+            'featured' => $browsing ? $all->where('is_featured', true)->values() : collect(),
+            'grouped' => $browsing && $collections->isNotEmpty()
+                ? $collections->map(fn ($c) => ['collection' => $c, 'products' => $all->where('shop_collection_id', $c->id)->values()])->filter(fn ($g) => $g['products']->isNotEmpty())->values()
+                : null,
+            'unsorted' => $browsing && $collections->isNotEmpty() ? $all->whereNull('shop_collection_id')->values() : collect(),
+            'total' => $all->count(),
         ]);
     }
 
@@ -50,9 +76,12 @@ class MarketController extends Controller
         abort_unless($product->is_active, 404);
         $this->countShareVisit($request, $product);
 
+        $more = $product->shop->products()->where('is_active', true)->whereKeyNot($product->id)->with('images')
+            ->orderByRaw('case when shop_collection_id = ? then 0 else 1 end', [$product->shop_collection_id ?? 0])->latest()->take(4)->get();
+
         return view('market.product', [
-            'product' => $product->load('shop.user.member'),
-            'more' => $product->shop->products()->where('is_active', true)->whereKeyNot($product->id)->latest()->take(3)->get(),
+            'product' => $product->load('shop.user.member', 'images', 'collection'),
+            'more' => $more->each->setRelation('shop', $product->shop),
         ]);
     }
 
