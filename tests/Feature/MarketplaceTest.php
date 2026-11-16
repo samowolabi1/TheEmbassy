@@ -116,7 +116,7 @@ class MarketplaceTest extends TestCase
         ])->assertRedirect(route('vendor.login'));
 
         $this->post(route('vendor.login.store'), ['email' => $user->email, 'password' => 'a-long-password'])
-            ->assertRedirect(route('vendor.products.index'));
+            ->assertRedirect(route('vendor.home'));
         $this->get(route('vendor.products.index'))->assertOk()->assertSee($shop->name)->assertSee('Your listings are hidden');
     }
 

@@ -2186,9 +2186,10 @@ input[type='file'] {
 
 /* Online shop editor: a small preview of the top of the shop, colour swatches, sections. */
 .storefront-preview { border-radius: 18px; overflow: hidden; border: 1px solid var(--admin-line, var(--line)); background: var(--white); max-width: 640px; }
-.storefront-preview__banner { aspect-ratio: 16 / 5; background: linear-gradient(135deg, var(--shop), var(--shop-soft)) center / cover no-repeat; }
+.storefront-preview__banner { aspect-ratio: 16 / 5; }
 .storefront-preview__bar { display: flex; align-items: center; gap: 12px; padding: 0 16px 14px; margin-top: -26px; }
-.storefront-preview__logo { width: 64px; height: 64px; flex: none; border-radius: 16px; border: 3px solid var(--white); background: var(--shop) center / cover no-repeat; color: var(--white); display: grid; place-items: center; font-weight: 800; font-size: 20px; box-shadow: 0 4px 14px rgba(10, 29, 63, 0.16); }
+.storefront-preview__logo { flex: none; border-radius: 18px; border: 3px solid var(--white); background: var(--white); display: inline-flex; box-shadow: 0 4px 14px rgba(10, 29, 63, 0.16); }
+.storefront-preview__logo .shop-logo { border-radius: 15px; }
 .storefront-preview__bar strong { color: var(--navy); font-size: 17px; margin-top: 22px; }
 .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
 .swatch { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; border: 1px solid var(--line); background: var(--white); font-size: 13px; font-weight: 600; cursor: pointer; }
@@ -2209,3 +2210,36 @@ input[type='file'] {
 .photo-tile label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
 .form .photo-tile label { flex-direction: row; align-items: center; gap: 5px; margin: 0; padding: 0; min-height: 0; font-size: 13px; font-weight: 600; }
 .photo-tile { gap: 2px; }
+
+/* Seller home: quick actions, getting-started checklist, figures. */
+.quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 12px; margin-bottom: 20px; }
+@media (max-width: 600px) {
+  .quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .quick-action { flex-direction: row; align-items: center; padding: 12px; font-size: 14px; border-radius: 16px; }
+  .quick-action__icon { font-size: 20px; }
+}
+.quick-action { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 16px; border-radius: 20px; background: var(--white); border: 1px solid var(--admin-line, var(--line)); color: var(--navy); font-weight: 800; font-size: 15px; transition: border-color 0.15s, transform 0.15s; }
+.quick-action:hover { border-color: var(--gold); transform: translateY(-1px); }
+.quick-action__icon { font-size: 24px; line-height: 1; }
+.progress { height: 8px; border-radius: 999px; background: var(--sand); overflow: hidden; margin: 4px 0 6px; }
+.progress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--gold), #c8901a); }
+.checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.checklist__item { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 0; border-top: 1px solid var(--line-soft); }
+.checklist__tick { width: 26px; height: 26px; flex: none; border-radius: 50%; border: 2px solid var(--field-line); display: grid; place-items: center; font-weight: 800; color: var(--white); font-size: 14px; }
+.checklist__item.is-done .checklist__tick { background: #1f7a4a; border-color: #1f7a4a; }
+.checklist__text { flex: 1 1 180px; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+.checklist__text strong { color: var(--navy); }
+.checklist__text span { color: var(--slate); font-size: 13px; }
+.checklist__item.is-done .checklist__text strong { color: var(--slate); text-decoration: line-through; }
+.checklist__item .btn { flex: none; }
+.glance { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.glance div { padding: 12px; border-radius: 14px; background: var(--sand); }
+.glance dt { font-size: 12px; color: var(--slate); font-weight: 600; }
+.glance dd { margin: 2px 0 0; font-family: var(--font-display); font-weight: 800; font-size: 24px; color: var(--navy); }
+@media (max-width: 520px) {
+  .checklist__item .btn { margin-left: 38px; }
+}
+
+.form .field .photo-tile input { width: auto; height: auto; min-height: 0; padding: 0; margin: 0; border: 0; background: none; box-shadow: none; flex: none; }
+.photo-tile { width: min(120px, calc(50% - 5px)); }
+.photo-tile__img { width: 100%; }

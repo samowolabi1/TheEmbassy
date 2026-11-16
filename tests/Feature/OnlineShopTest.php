@@ -114,11 +114,12 @@ class OnlineShopTest extends TestCase
         $this->assertSame($images[2]->path, $product->fresh()->image_path);
         Storage::disk('public')->assertMissing($images[0]->path);
 
-        // Up to eight photos.
+        // Up to five photos: four plus three keeps the first one.
         $this->put(route('vendor.products.update', $product), $this->listing([
-            'images' => array_map(fn ($i) => UploadedFile::fake()->image("x{$i}.jpg"), range(1, 6)),
-        ]))->assertSessionHasErrors('images');
-        $this->assertSame(8, $product->images()->count());
+            'images' => array_map(fn ($i) => UploadedFile::fake()->image("x{$i}.jpg"), range(1, 3)),
+        ]))->assertSessionHasErrors(['images' => 'A listing can have up to 5 photos, so some weren\'t added.']);
+        $this->assertSame(5, $product->images()->count());
+        $this->get(route('vendor.products.edit', $product))->assertOk()->assertSee('That\'s the most photos a listing can have.', false);
 
         // The "was" price must be higher.
         $this->put(route('vendor.products.update', $product), $this->listing(['compare_price' => '100']))->assertSessionHasErrors('compare_price');
@@ -170,5 +171,25 @@ class OnlineShopTest extends TestCase
         $this->assertModelMissing($product);
         $this->assertSame(0, ProductImage::count());
         Storage::disk('public')->assertMissing('products/one.jpg');
+    }
+
+    public function test_the_seller_home_has_a_checklist_help_and_sharing(): void
+    {
+        $this->actingAs($this->user)->get(route('vendor.home'))->assertOk()
+            ->assertSee('Getting started')->assertSee('1 of 7 done') // subscribed already
+            ->assertSee('Add your logo')->assertSee('Share your shop')->assertSee('wa.me', false)
+            ->assertSee('data-help-open', false)->assertSee('id="page-tour"', false)->assertSee('Questions sellers ask');
+
+        // Default logo and banner until the seller adds their own.
+        $this->get(route('market.shop', $this->shop))->assertOk()->assertSee('shop-banner--default', false)->assertSee('shop-logo--default', false);
+
+        // Opening the share kit ticks that step; adding a listing offers to share it.
+        $this->get(route('vendor.share.index'))->assertOk();
+        $this->assertNotNull($this->shop->fresh()->share_opened_at);
+        $this->post(route('vendor.products.store'), $this->listing(['images' => [UploadedFile::fake()->image('a.jpg')]]))->assertRedirect(route('vendor.products.index'));
+        $this->get(route('vendor.products.index'))->assertOk()->assertSee('Share "Chocolate cake"', false);
+        $this->get(route('vendor.home'))->assertSee('4 of 7 done');
+        $this->get(route('vendor.storefront.edit'))->assertOk()->assertSee('id="page-tour"', false);
+        $this->get(route('vendor.products.create'))->assertOk()->assertSee('Up to 5', false);
     }
 }

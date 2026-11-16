@@ -53,7 +53,7 @@
                     @endif
                     <p class="lede" style="margin: 0; white-space: pre-line">{{ $product->description }}</p>
                     <a href="{{ route('market.shop', $shop) }}" class="seller-chip" style="--shop: {{ $shop->colours()[0] }}">
-                        @if ($shop->logoUrl())<img src="{{ $shop->logoUrl() }}" alt="" class="seller-chip__logo">@else<span class="seller-chip__logo seller-chip__logo--initials">{{ $shop->initials() }}</span>@endif
+                        <x-shop-logo :shop="$shop" :size="44" />
                         <span class="stack" style="gap: 0"><span class="field-hint" style="margin: 0">Sold by</span><strong>{{ $shop->name }}</strong></span>
                         <span class="seller-chip__go">Visit shop</span>
                     </a>

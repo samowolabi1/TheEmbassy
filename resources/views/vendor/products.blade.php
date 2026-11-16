@@ -11,6 +11,14 @@
         </div>
     </header>
 
+    @if ($justAdded)
+        <section class="box" id="share-new" style="border: 2px solid var(--gold)">
+            <h2>Share "{{ $justAdded->name }}" 📣</h2>
+            <p class="box__note" style="margin: 0">Tell your customers it's here. Each link opens the listing with its photos and price.@unless ($shop->isListed()) It shows to buyers once you subscribe.@endunless</p>
+            @include('market.share-bar', ['item' => $justAdded, 'cards' => $cards, 'image' => route('market.product.image', [$justAdded, 'square'])])
+        </section>
+    @endif
+
     @if ($errors->has('product'))<p class="flash" role="alert" style="background: #fdecea; color: #8a1c12">{{ $errors->first('product') }}</p>@endif
 
     @if ($collections->isNotEmpty())

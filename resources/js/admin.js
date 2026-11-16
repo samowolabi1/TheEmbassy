@@ -157,14 +157,27 @@ if (outreach) {
     document.querySelectorAll('[data-preview-input]').forEach((input) => input.addEventListener('change', () => {
         const file = input.files[0];
         if (!file) return;
-        const target = preview.querySelector(input.dataset.previewInput === 'banner' ? '[data-preview-banner]' : '[data-preview-logo]');
-        target.style.backgroundImage = `url('${URL.createObjectURL(file)}')`;
-        if (input.dataset.previewInput === 'logo') target.textContent = '';
+        const url = URL.createObjectURL(file);
+        if (input.dataset.previewInput === 'banner') {
+            const banner = preview.querySelector('[data-preview-banner]');
+            banner.classList.remove('shop-banner--default');
+            banner.replaceChildren();
+            banner.style.backgroundImage = `url('${url}')`;
+        } else {
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = '';
+            img.className = 'shop-logo';
+            img.style.setProperty('--size', '58px');
+            preview.querySelector('[data-preview-logo]').replaceChildren(img);
+        }
     }));
     document.querySelectorAll('[data-accent]').forEach((radio) => radio.addEventListener('change', () => {
         const [main, soft] = radio.dataset.accent.split('|');
-        preview.style.setProperty('--shop', main);
-        preview.style.setProperty('--shop-soft', soft);
+        [preview, ...preview.querySelectorAll('.shop-banner--default, .shop-logo--default')].forEach((el) => {
+            el.style.setProperty('--shop', main);
+            el.style.setProperty('--shop-soft', soft);
+        });
     }));
     const tagline = document.querySelector('[data-preview-text="tagline"]');
     tagline?.addEventListener('input', () => {

@@ -18,9 +18,9 @@
         <section class="box form">
             <h2>Look</h2>
             <div class="storefront-preview" style="--shop: {{ $shop->colours()[0] }}; --shop-soft: {{ $shop->colours()[1] }}" data-storefront-preview>
-                <div class="storefront-preview__banner" @if ($shop->bannerUrl()) style="background-image: url('{{ $shop->bannerUrl() }}')" @endif data-preview-banner></div>
+                <x-shop-banner :shop="$shop" class="storefront-preview__banner" :preview="true" />
                 <div class="storefront-preview__bar">
-                    <span class="storefront-preview__logo" data-preview-logo @if ($shop->logoUrl()) style="background-image: url('{{ $shop->logoUrl() }}')" @endif>@unless ($shop->logoUrl()){{ $shop->initials() }}@endunless</span>
+                    <span class="storefront-preview__logo" data-preview-logo><x-shop-logo :shop="$shop" :size="58" /></span>
                     <span class="stack" style="gap: 2px; min-width: 0">
                         <strong>{{ $shop->name }}</strong>
                         <span class="box__note" style="margin: 0" data-preview-tagline>{{ $shop->tagline ?: $shop->category }}</span>

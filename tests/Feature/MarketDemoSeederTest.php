@@ -27,7 +27,7 @@ class MarketDemoSeederTest extends TestCase
         Storage::disk('public')->assertExists(Product::first()->image_path);
 
         $this->get(route('market.index'))->assertOk()->assertSee('Party jollof rice')->assertDontSee('Birthday gift hamper');
-        $this->post(route('vendor.login.store'), ['email' => 'seller1@demo.test', 'password' => MarketDemoSeeder::PASSWORD])->assertRedirect(route('vendor.products.index'));
+        $this->post(route('vendor.login.store'), ['email' => 'seller1@demo.test', 'password' => MarketDemoSeeder::PASSWORD])->assertRedirect(route('vendor.home'));
     }
 
     public function test_it_refuses_to_run_on_a_live_site(): void

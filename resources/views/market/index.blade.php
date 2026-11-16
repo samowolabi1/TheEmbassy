@@ -51,11 +51,7 @@
             <div class="grid-auto" style="--min: 260px; --gap: 14px">
                 @foreach ($shops as $shop)
                     <a href="{{ route('market.shop', $shop) }}" class="card shop-card">
-                        @if ($shop->logoUrl())
-                            <img src="{{ $shop->logoUrl() }}" alt="" class="shop-card__mark" style="object-fit: cover; padding: 0" loading="lazy">
-                        @else
-                            <span class="shop-card__mark" style="background: {{ $shop->colours()[1] }}; color: {{ $shop->colours()[0] }}">{{ $shop->initials() }}</span>
-                        @endif
+                        <x-shop-logo :shop="$shop" :size="52" />
                         <span class="stack" style="gap: 2px; min-width: 0">
                             <span class="product__name">{{ $shop->name }}</span>
                             <span class="product__seller">{{ $shop->tagline ? \Illuminate\Support\Str::limit($shop->tagline, 50).' · ' : $shop->category.' · ' }}{{ $shop->products_count }} {{ \Illuminate\Support\Str::plural('item', $shop->products_count) }}</span>

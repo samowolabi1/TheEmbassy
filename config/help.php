@@ -412,6 +412,67 @@ return [
         ],
     ],
 
+    // The seller area (/vendor): keyed by the layout's `active`.
+    'vendor' => [
+        'home' => [
+            'title' => 'Your shop at a glance',
+            'about' => 'Start here: quick actions, your getting-started checklist, sharing, and new enquiries.',
+            'faqs' => [
+                ['How do buyers find my shop?', 'In the '.env('CHURCH_MARKET_NAME', 'Tribe Market').' on the church website while you\'re subscribed, and through links you share. Your shop has its own web address you can put on WhatsApp, Instagram and flyers.'],
+                ['How do buyers pay me?', 'Directly, on terms you agree with them. Buyers call you, chat on WhatsApp or send an enquiry. Church members can also pay with Crowns for listings where you allow it.'],
+                ['What does the checklist do?', 'It walks you through setting up: logo, banner, your story, your first listings with photos, subscribing and sharing. Each step ticks itself when it\'s done.'],
+            ],
+        ],
+        'storefront' => [
+            'title' => 'My online shop',
+            'about' => 'How your shop looks: banner, logo, colour, tagline, announcement, your story, hours, delivery, returns, social links and sections.',
+            'faqs' => [
+                ['I don\'t have a logo or banner yet.', 'No problem: your shop shows a designed banner and a logo with your initials, both in your shop colour, until you add your own.'],
+                ['What size should my banner be?', 'Wide, at least 1600 × 600. It\'s cropped to fit phones and computers, so keep the important part in the middle.'],
+                ['What are sections?', 'Groups for your listings, such as "Cakes" and "Drinks". Buyers tap a section to see just those. Choose each listing\'s section when you add or edit it.'],
+                ['Can I change my shop\'s name or phone number?', 'Yes, in Shop details. Your shop\'s web address stays the same, so links you\'ve shared keep working.'],
+            ],
+        ],
+        'products' => [
+            'title' => 'Products & services',
+            'about' => 'Everything you sell: add, edit, hide, feature, put on sale or delete listings, each with up to 5 photos.',
+            'faqs' => [
+                ['How many photos can a listing have?', 'Up to 5. The first is the cover; choose a different cover any time. Large photos are made smaller for you, so phone photos are fine.'],
+                ['How do I put something on sale?', 'Edit it and fill in "Was" with the old, higher price. Buyers see it crossed out with how much they save.'],
+                ['What does Feature do?', 'Featured listings show first on your shop, under "Featured". Use it for best sellers and new arrivals.'],
+                ['Hide or delete?', 'Hide takes a listing off your shop for now, and Show brings it back. Delete removes it and its photos for good.'],
+            ],
+        ],
+        'share' => [
+            'title' => 'Share',
+            'about' => 'Ready-made pictures, captions, links and QR codes for your shop and every listing.',
+            'faqs' => [
+                ['Which picture should I use?', 'Square for WhatsApp, Instagram and Facebook posts, Status for WhatsApp status and stories, Wide for Facebook and X links, and the QR code for flyers and your stall.'],
+                ['Can I see who came from my links?', 'You can see how many visits your shared links brought, here and on your Home page.'],
+            ],
+        ],
+        'enquiries' => [
+            'title' => 'Enquiries',
+            'about' => 'Messages from buyers about your listings. Each is also emailed to you.',
+            'faqs' => [['How do I reply?', 'Call or WhatsApp the buyer using their number, or reply to the email. Mark it read when it\'s handled.']],
+        ],
+        'token-orders' => [
+            'title' => 'Crown orders',
+            'about' => 'Members who got a listing with Crowns. Hand it over, then mark it done; the Crowns come to you.',
+            'faqs' => [['What if I can\'t fulfil it?', 'Decline it and the member gets their Crowns back.']],
+        ],
+        'subscription' => [
+            'title' => 'Subscription',
+            'about' => 'Your shop shows in the market while your subscription is active. Pay for a period, use a coupon, or renew early.',
+            'faqs' => [['Do I lose days if I renew early?', 'No: the new period starts when your current one ends.']],
+        ],
+        'shop' => [
+            'title' => 'Shop details',
+            'about' => 'Your shop\'s name, category, short description and how buyers reach you.',
+            'faqs' => [['Where do enquiries go?', 'To your sign-in email, and they show under Enquiries.']],
+        ],
+    ],
+
     'tours' => [
 
         'admin.dashboard' => [
@@ -437,6 +498,44 @@ return [
             ['.page-head__sub', 'Where cards come from', 'Visitors fill in a card at the /welcome page. Put its QR code at the door.'],
             ['.box--flush', 'The cards', 'Mark each person as called and note how it went, or add them to the register when they join.'],
             ['#new-card', 'Typing in a paper card', 'Add a card here for visitors who filled in a paper one.'],
+        ],
+
+        'vendor.home' => [
+            ['#quick-actions', 'Quick actions', 'Add a product or service, design your shop, or share it, in one tap.'],
+            ['#getting-started', 'Getting started', 'Your checklist. Work down it and each step ticks itself when it\'s done.'],
+            ['#share-box', 'Share your shop', 'Send your shop to WhatsApp, Facebook, X or Telegram, or copy the link.'],
+            ['.side__nav', 'Your menu', 'Everything for your shop: design, listings, sharing, enquiries and your subscription. On a phone, open it with the menu button.'],
+        ],
+        'vendor.storefront.edit' => [
+            ['.storefront-preview', 'Preview', 'How the top of your shop looks. It changes as you choose a banner, logo, colour and tagline.'],
+            ['.swatches', 'Shop colour', 'Buttons, sections and badges in your shop follow this colour.'],
+            ['box:About your shop', 'About your shop', 'Your story, hours, where to find you, delivery and returns. Buyers trust shops that tell them this.'],
+            ['box:Social media', 'Social media', 'Links to your Instagram, TikTok, Facebook and website show on your shop.'],
+            ['#sections', 'Sections', 'Group your listings, e.g. Cakes and Drinks. Buyers tap a section to see just those.'],
+            ['.page-head .actions', 'See it live', 'Open your shop as buyers see it.'],
+        ],
+        'vendor.products.index' => [
+            ['.page-head .actions', 'Add a listing', 'Add a product or a service, with up to 5 photos.'],
+            ['.box--flush', 'Your listings', 'Hide, show, edit or share each one. Featured and sale listings are marked.'],
+        ],
+        'vendor.products.create' => [
+            ['.choice-group', 'Product or service', 'Services (photography, tutoring, catering) are booked for a date and have no stock.'],
+            ['#photos', 'Photos', 'Choose up to 5 at once. The first is the cover; large photos are made smaller for you.'],
+            ['input[name=compare_price]', 'On sale?', 'Put the old, higher price here to show a sale.'],
+            ['select[name=shop_collection_id]', 'Section', 'Which section of your shop it shows in.'],
+        ],
+        'vendor.products.edit' => [
+            ['#photos', 'Photos', 'Pick the cover, tick photos to remove, or add more (up to 5).'],
+            ['input[name=is_featured]', 'Feature it', 'Featured listings show first in your shop.'],
+            ['box:Delete this listing', 'Delete', 'Removes it for good. To take it down for a while, untick "Show it in the market" instead.'],
+        ],
+        'vendor.share.index' => [
+            ['box:Tips', 'Tips', 'Which picture to use where: WhatsApp, Instagram, Facebook, flyers.'],
+            ['#shop', 'Your shop', 'Pictures, a caption and a QR code for your whole shop.'],
+        ],
+        'vendor.subscription.index' => [
+            ['box:Choose a plan', 'Plans', 'Pick how long. A coupon from the church office takes money off.'],
+            ['box:Renew or extend', 'Renew', 'Renewing early adds the new time after your current period.'],
         ],
 
         'admin.care.index' => [

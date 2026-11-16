@@ -26,13 +26,9 @@
             @unless ($shop->isListed())
                 <p class="contact-note" role="status">Only you can see this page. Your shop shows in the market while your subscription is active. <a href="{{ route('vendor.subscription.index') }}" style="font-weight: 800">Subscribe</a></p>
             @endunless
-            <div class="storefront__banner" @if ($shop->bannerUrl()) style="background-image: url('{{ $shop->bannerUrl() }}')" @endif role="img" aria-label="{{ $shop->name }} banner"></div>
+            <x-shop-banner :shop="$shop" class="storefront__banner" />
             <div class="storefront__head">
-                @if ($shop->logoUrl())
-                    <img class="storefront__logo" src="{{ $shop->logoUrl() }}" alt="{{ $shop->name }} logo">
-                @else
-                    <span class="storefront__logo storefront__logo--initials" aria-hidden="true">{{ $shop->initials() }}</span>
-                @endif
+                <x-shop-logo :shop="$shop" :size="112" class="storefront__logo" />
                 <div class="storefront__title">
                     <span class="storefront__category">{{ $shop->category }}</span>
                     <h1 class="display">{{ $shop->name }}</h1>

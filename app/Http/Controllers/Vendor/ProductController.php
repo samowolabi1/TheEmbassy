@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\TokenOrder;
 use App\Services\Content\Images;
+use App\Services\Market\ShareCards;
 use App\Support\TokenName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,15 +22,19 @@ use RuntimeException;
 class ProductController extends Controller
 {
     /** Photos per listing. */
-    public const MAX_PHOTOS = 8;
+    public const MAX_PHOTOS = 5;
 
     public function index(Request $request): View
     {
         $shop = $request->user()->shop;
         $section = $request->query('section');
 
+        $justAdded = session('justAdded') ? $shop->products()->whereKey(session('justAdded'))->where('is_active', true)->first() : null;
+
         return view('vendor.products', [
             'shop' => $shop,
+            'justAdded' => $justAdded?->setRelation('shop', $shop),
+            'cards' => app(ShareCards::class),
             'collections' => $shop->collections()->get(),
             'section' => $section,
             'products' => $shop->products()->with('images', 'collection')
@@ -54,7 +59,7 @@ class ProductController extends Controller
             return redirect()->route('vendor.products.edit', $product)->withErrors(['images' => $error]);
         }
 
-        return redirect()->route('vendor.products.index')->with('status', "\"{$data['name']}\" added.");
+        return redirect()->route('vendor.products.index')->with('status', "\"{$data['name']}\" added.")->with('justAdded', $product->id);
     }
 
     public function edit(Request $request, Product $product): View

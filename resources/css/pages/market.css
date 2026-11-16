@@ -123,10 +123,9 @@
 .storefront { --shop: var(--navy); --shop-soft: var(--ice); }
 .storefront__announce { margin: 0; padding: 10px 20px; background: var(--shop); color: var(--white); text-align: center; font-weight: 700; font-size: 14px; }
 .storefront__top { display: flex; flex-direction: column; gap: 14px; padding-top: 24px; }
-.storefront__banner { aspect-ratio: 16 / 5; min-height: 150px; border-radius: 28px; background: radial-gradient(120% 140% at 85% 10%, var(--shop-soft) 0%, transparent 55%), linear-gradient(135deg, var(--shop), color-mix(in srgb, var(--shop) 70%, #000)) center / cover no-repeat; background-size: cover; background-position: center; }
+.storefront__banner { aspect-ratio: 16 / 5; min-height: 150px; border-radius: 28px; }
 .storefront__head { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 22px; margin-top: -56px; padding: 0 clamp(8px, 3vw, 28px); }
-.storefront__logo { width: 112px; height: 112px; flex: none; border-radius: 28px; object-fit: cover; border: 5px solid var(--ivory); background: var(--white); box-shadow: 0 10px 28px rgba(10, 29, 63, 0.18); }
-.storefront__logo--initials { display: grid; place-items: center; background: var(--shop); color: var(--white); font-family: var(--font-display); font-weight: 800; font-size: 38px; }
+.storefront__logo { border: 5px solid var(--ivory); box-shadow: 0 10px 28px rgba(10, 29, 63, 0.18); }
 .storefront__title { flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding-top: 64px; }
 .storefront__title h1 { margin: 0; font-size: clamp(30px, 5vw, 46px); line-height: 1.05; color: var(--navy); overflow-wrap: anywhere; }
 .storefront__category { align-self: flex-start; padding: 3px 10px; border-radius: 999px; background: var(--shop-soft); color: var(--shop); font-size: 12px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
@@ -155,7 +154,7 @@
   .storefront__banner { border-radius: 20px; aspect-ratio: 16 / 7; }
   .storefront__head { margin-top: -44px; }
   .storefront__title { padding-top: 0; flex-basis: 100%; }
-  .storefront__logo { width: 88px; height: 88px; border-radius: 22px; }
+  .storefront__logo { --size: 88px !important; }
   .storefront__info { grid-template-columns: 1fr; }
   .storefront__actions { width: 100%; }
   .storefront__actions .btn { flex: 1 1 auto; }

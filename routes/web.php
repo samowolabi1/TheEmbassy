@@ -86,7 +86,7 @@ Route::prefix('vendor')->name('vendor.')->group(function () {
 
     Route::middleware(['auth', 'can:run-shop'])->group(function () {
         Route::post('/logout', [Vendor\AuthController::class, 'destroy'])->name('logout');
-        Route::redirect('/', '/vendor/products')->name('home');
+        Route::get('/', [Vendor\HomeController::class, 'index'])->name('home');
         Route::get('/enquiries', [Vendor\EnquiryController::class, 'index'])->name('enquiries.index');
         Route::patch('/enquiries/{enquiry}', [Vendor\EnquiryController::class, 'markRead'])->name('enquiries.read');
         Route::get('/subscription', [Vendor\SubscriptionController::class, 'index'])->name('subscription.index');

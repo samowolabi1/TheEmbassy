@@ -2,6 +2,7 @@
     $user = auth()->user();
     $shop = $user->shop;
     $nav = [
+        ['id' => 'home', 'label' => 'Home', 'route' => 'vendor.home'],
         ['id' => 'storefront', 'label' => 'My online shop', 'route' => 'vendor.storefront.edit'],
         ['id' => 'products', 'label' => 'Products & services', 'route' => 'vendor.products.index'],
         ['id' => 'share', 'label' => 'Share', 'route' => 'vendor.share.index'],
@@ -30,8 +31,8 @@
     <div class="admin-shell">
         <aside class="side">
             <div class="side__top">
-                <a href="{{ route('vendor.products.index') }}" class="side__brand">
-                    <span class="side__logo"><img src="{{ asset(config('church.brand.logo')) }}" alt="" width="40" height="38"></span>
+                <a href="{{ route('vendor.home') }}" class="side__brand">
+                    <span class="side__logo" style="padding: 0; overflow: hidden"><x-shop-logo :shop="$shop" :size="40" /></span>
                     <span class="side__words"><span class="side__name">{{ $shop->name }}</span><span class="side__role">{{ config('church.brand.market_name') }}</span></span>
                 </a>
                 @include('partials.side-controls')
@@ -67,5 +68,6 @@
             @yield('content')
         </main>
     </div>
+    @include('vendor.partials.help-panel')
 </body>
 </html>

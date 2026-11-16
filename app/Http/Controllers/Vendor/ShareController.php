@@ -16,6 +16,7 @@ class ShareController extends Controller
     public function index(Request $request, ShareCards $cards): View
     {
         $shop = $request->user()->shop;
+        $shop->share_opened_at ?? $shop->forceFill(['share_opened_at' => now()])->save();
 
         return view('vendor.share', [
             'shop' => $shop,
