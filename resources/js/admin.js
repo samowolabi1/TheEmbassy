@@ -225,3 +225,18 @@ document.querySelectorAll('[data-question-type]').forEach((select) => {
     select.addEventListener('change', sync);
     sync();
 });
+
+// Tables that become cards on phones: each cell is labelled with its column's heading.
+document.querySelectorAll('table.table--cards').forEach((table) => {
+    // Only the heading's own words: not tooltips, hidden helper text or "select all" boxes.
+    const heads = [...table.querySelectorAll('thead th')].map((th) => {
+        const copy = th.cloneNode(true);
+        copy.querySelectorAll('.tip, .tip__text, .tip__button, .sr-only, input, button').forEach((el) => el.remove());
+        return copy.textContent.replace(/\s+/g, ' ').trim();
+    });
+    table.querySelectorAll('tbody tr').forEach((row) => {
+        [...row.children].forEach((cell, i) => {
+            if (!cell.hasAttribute('data-label') && !cell.hasAttribute('colspan')) cell.setAttribute('data-label', heads[i] ?? '');
+        });
+    });
+});

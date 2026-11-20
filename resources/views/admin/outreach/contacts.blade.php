@@ -25,7 +25,7 @@
 
     <section class="box box--flush">
         <div class="table-wrap">
-            <table class="table">
+            <table class="table table--cards">
                 <thead><tr><th>NAME</th><th>KIND</th><th>EMAIL</th><th>PHONE / WHATSAPP</th><th class="num">MESSAGES</th></tr></thead>
                 <tbody>
                     @forelse ($people as $p)

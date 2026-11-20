@@ -819,3 +819,11 @@
 .composer__helper textarea { border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; font: inherit; font-size: 14px; background: var(--white); resize: vertical; }
 .composer__helper .btn { align-self: flex-start; }
 .composer__helper .field-error { margin: 0; }
+
+/* Touch screens: message actions and the composer's toggles get a finger-sized tap area. */
+@media (max-width: 760px), (pointer: coarse) {
+  .msg__actions { gap: 0 4px; }
+  .msg__action { padding: 10px 8px; font-size: 13px; margin-left: -8px; }
+  .msg__action + .msg__action { margin-left: 0; }
+  .composer__poll-toggle { padding: 10px 0; }
+}

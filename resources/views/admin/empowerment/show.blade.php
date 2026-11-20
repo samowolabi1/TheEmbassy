@@ -41,7 +41,7 @@
         <form method="POST" action="{{ route('admin.empowerment.bulk', $programme) }}" id="bulk">
             @csrf
             <div class="table-wrap">
-                <table class="table" style="min-width: 820px">
+                <table class="table table--cards" style="min-width: 820px">
                     <thead><tr><th style="width: 36px"><span class="sr-only">Select</span><input type="checkbox" data-check-all aria-label="Select all"></th><th>NAME</th><th class="num">AGE</th><th>PHONE</th><th>CHOICES</th><th>STATUS</th><th>APPLIED</th><th class="num"><span class="sr-only">Open</span></th></tr></thead>
                     <tbody>
                         @forelse ($applications as $a)

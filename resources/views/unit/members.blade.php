@@ -10,7 +10,7 @@
 
     <section class="box box--flush">
         <div class="table-wrap">
-            <table class="table" style="min-width: 900px">
+            <table class="table table--cards" style="min-width: 900px">
                 <thead><tr><th>NAME</th><th>ROLE <x-tip text="Everyone serving in a unit is a worker. Ministers are made by a pastor." /></th><th>TRAINING <x-tip text="Workers need the baptismal class, believers' class and workers' in training class. Ministers also need School of Disciples (SOD) and Bible college. Press Update to mark each one done or not yet." /></th><th>PHONE</th><th>FELLOWSHIP</th><th>LAST AT CHURCH</th><th class="num"><span class="sr-only">Actions</span></th></tr></thead>
                 <tbody>
                     @forelse ($members as $m)

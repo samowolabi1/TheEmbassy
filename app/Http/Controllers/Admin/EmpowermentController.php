@@ -334,7 +334,10 @@ class EmpowermentController extends Controller
         return $programme->applications()
             ->when($status, fn ($x) => $x->where('status', $status))
             ->when($track, fn ($x) => $x->whereHas('choices', fn ($c) => $c->whereKey($track)))
-            ->when($q !== '', fn ($x) => $x->where(fn ($w) => $w->where('name', 'like', '%'.$q.'%')->orWhere('phone', 'like', '%'.$q.'%')->orWhere('reference', 'like', '%'.$q.'%')));
+            ->when($q !== '', function ($x) use ($q) {
+                $like = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $q).'%';
+                $x->where(fn ($w) => $w->where('name', 'like', $like)->orWhere('phone', 'like', $like)->orWhere('reference', 'like', $like));
+            });
     }
 
     private function slug(string $title): string

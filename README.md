@@ -501,6 +501,15 @@ Young people apply for empowerment programmes at **`/empowerment`** (linked in t
 - **Reviewing:** applications by status (new, shortlisted, accepted, waiting list, not selected, completed) and by choice, with search; how many picked and were accepted for each choice. Open one to see every answer, set its status, choose what they're accepted for, keep a private note, and let them know (a message for each status). Tick several to change them together. **Download Excel** gives every application with each answer in its own column, plus a summary. Reports › Youth empowerment covers all programmes for any dates.
 - **Demo:** `php artisan db:seed --class=EmpowermentDemoSeeder` adds an open programme with six choices, five questions and 24 applications at different stages.
 
+## Phones first
+
+Most people use the app on a phone, so every page is built for one and checked at 360px wide (and on tablets): nothing scrolls sideways or runs off the screen. On phones and touch screens:
+- form boxes use 16px text, so iPhones don't zoom in when one is tapped;
+- small controls get a finger-sized tap area: checkbox rows, "Done / Not yet" buttons, show-more toggles, the ⓘ tips and chat message actions;
+- status labels and small badges stay at least 12px;
+- the busiest admin lists (members, unit members, empowerment applications, contacts) turn into cards, each value labelled with its column; other wide tables scroll inside their box, with a soft fade at the edge to show there's more;
+- the announcement bar at the top is one compact, tappable row, and admin pages leave room so the floating Help button never covers the last item.
+
 ## Reports (Excel)
 
 Admin › **Reports**, for administrators and the pastor in charge only (nobody else sees the page or can download). Choose the dates (or This month, Last month, This quarter, This year, Last year) and download a report as an Excel workbook (`.xlsx`). Each has a **Summary** sheet with the key figures, then sheets with every record behind them; header rows stay in view, every column can be filtered and sorted, money is in naira and dates are real dates Excel can sort. Text is stored as text, so nothing in a cell can run as a formula.

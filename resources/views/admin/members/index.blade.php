@@ -55,7 +55,7 @@
             <button type="submit" class="btn btn--ghost btn--xs">Filter</button>
         </form>
         <div class="table-wrap">
-            <table class="table" style="min-width: 720px">
+            <table class="table table--cards" style="min-width: 720px">
                 <thead><tr><th>NAME</th><th>UNIT</th><th>{{ mb_strtoupper(TokenName::many()) }}</th><th>LAST ATTENDED</th><th class="num"><span class="sr-only">Actions</span></th></tr></thead>
                 <tbody>
                     @forelse ($members as $m)

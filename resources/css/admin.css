@@ -412,36 +412,6 @@ a.stat-tile--navy:hover {
 }
 
 /* Status pills */
-.pill {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  padding: 4px 9px;
-  border-radius: 999px;
-  white-space: nowrap;
-  text-transform: uppercase;
-}
-.pill--live,
-.pill--ok {
-  color: var(--ok);
-  background: var(--ok-bg);
-}
-.pill--scheduled,
-.pill--info {
-  color: var(--navy);
-  background: var(--ice);
-}
-.pill--draft,
-.pill--gold {
-  color: var(--bronze);
-  background: var(--wash);
-}
-.pill--warn {
-  color: var(--warn);
-  background: var(--warn-bg);
-}
-
 /* Filter tabs inside admin */
 .tabs {
   display: flex;
@@ -2263,3 +2233,38 @@ input[type='file'] {
 .empower-banner-preview .empower-hero { border-radius: 20px; min-height: 140px; }
 .switch-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 12px 14px; border-radius: 14px; background: var(--sand); }
 .switch-row input { width: 20px; height: 20px; accent-color: var(--navy); }
+
+/* ---------- Phones ---------- */
+/* Long role names and selects never push buttons off the screen. */
+.list-item__actions { flex-wrap: wrap; min-width: 0; max-width: 100%; }
+.list-item__actions form { flex-wrap: wrap; max-width: 100%; }
+.select-sm, .list-item__actions select { max-width: 100%; min-width: 0; }
+
+/* A wide table that scrolls sideways shows a soft fade at the edge, so people know there's more. */
+.table-wrap {
+  background:
+    linear-gradient(to right, var(--white) 30%, rgba(255, 255, 255, 0)) left center / 28px 100% no-repeat local,
+    linear-gradient(to left, var(--white) 30%, rgba(255, 255, 255, 0)) right center / 28px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgba(10, 29, 63, 0.16), transparent) left center / 12px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgba(10, 29, 63, 0.16), transparent) right center / 12px 100% no-repeat scroll;
+}
+
+/* The most used lists become cards on phones: each cell on its own line with its column name. */
+@media (max-width: 640px) {
+  .table--cards { min-width: 0 !important; }
+  .table--cards thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .table--cards, .table--cards tbody, .table--cards tr, .table--cards td { display: block; width: 100%; }
+  .table--cards tr { padding: 12px 16px; border-top: 1px solid var(--admin-line, var(--line)); }
+  .table--cards td { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; justify-content: space-between; padding: 4px 0 !important; border: 0 !important; text-align: right; max-width: none !important; white-space: normal; }
+  .table--cards td::before { content: attr(data-label); flex: none; font-size: 12px; font-weight: 800; letter-spacing: 0.04em; color: var(--slate); text-align: left; }
+  .table--cards td[data-label=""]::before, .table--cards td:not([data-label])::before { content: none; }
+  .table--cards td:first-child { justify-content: flex-start; text-align: left; font-size: 16px; }
+  .table--cards td.num:last-child, .table--cards td:last-child:not([data-label]), .table--cards td[data-label=""]:last-child { justify-content: flex-start; padding-top: 8px !important; }
+  .table--cards td > form, .table--cards td > details { text-align: left; }
+  .table--cards td[colspan] { display: block; text-align: center; }
+}
+
+/* Phones: room at the bottom so the floating Help button never hides the last thing on a page. */
+@media (max-width: 760px) {
+  .admin-main { padding-bottom: 96px; }
+}
