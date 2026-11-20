@@ -6,6 +6,7 @@ use App\Http\Controllers\AppController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\Community;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\EmpowermentController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\GiveController;
@@ -60,6 +61,12 @@ Route::get('/gallery/{album}', [GalleryController::class, 'show'])->name('galler
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 // Member marketplace.
+// Youth empowerment: the programme page and its application form.
+Route::get('/empowerment', [EmpowermentController::class, 'current'])->name('empowerment.index');
+Route::get('/empowerment/{programme}', [EmpowermentController::class, 'show'])->name('empowerment.show');
+Route::post('/empowerment/{programme}', [EmpowermentController::class, 'apply'])->middleware('throttle:6,1')->name('empowerment.apply');
+Route::get('/empowerment/applications/{application}', [EmpowermentController::class, 'status'])->middleware('signed')->name('empowerment.status');
+
 Route::get('/market', [MarketController::class, 'index'])->name('market.index');
 Route::get('/market/open-a-shop', [MarketController::class, 'apply'])->name('market.apply');
 Route::post('/market/open-a-shop', [MarketController::class, 'storeApplication'])->middleware('throttle:5,1')->name('market.apply.store');
@@ -420,6 +427,21 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Pastors reach welfare cases through the welfare unit's area.
         Route::get('/welfare', [Admin\UnitController::class, 'welfare'])->middleware('can:manage,"welfare"')->name('welfare');
+
+        Route::middleware('can:manage,"empowerment"')->prefix('empowerment')->name('empowerment.')->group(function () {
+            Route::get('/', [Admin\EmpowermentController::class, 'index'])->name('index');
+            Route::post('/', [Admin\EmpowermentController::class, 'store'])->name('store');
+            Route::get('/{programme}', [Admin\EmpowermentController::class, 'show'])->name('show');
+            Route::get('/{programme}/settings', [Admin\EmpowermentController::class, 'edit'])->name('edit');
+            Route::post('/{programme}/settings', [Admin\EmpowermentController::class, 'update'])->name('update');
+            Route::put('/{programme}/choices', [Admin\EmpowermentController::class, 'tracks'])->name('tracks');
+            Route::put('/{programme}/form', [Admin\EmpowermentController::class, 'questions'])->name('questions');
+            Route::delete('/{programme}', [Admin\EmpowermentController::class, 'destroy'])->name('destroy');
+            Route::get('/{programme}/export', [Admin\EmpowermentController::class, 'export'])->name('export');
+            Route::post('/{programme}/bulk', [Admin\EmpowermentController::class, 'bulk'])->name('bulk');
+            Route::get('/{programme}/applications/{application}', [Admin\EmpowermentController::class, 'application'])->name('application');
+            Route::post('/{programme}/applications/{application}', [Admin\EmpowermentController::class, 'decide'])->name('decide');
+        });
 
         // Reports to Excel: administrators and the pastor in charge.
         Route::middleware('can:run-reports')->group(function () {

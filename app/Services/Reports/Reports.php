@@ -5,6 +5,7 @@ namespace App\Services\Reports;
 use App\Models\Appointment;
 use App\Models\BookLoan;
 use App\Models\Campaign;
+use App\Models\EmpowermentApplication;
 use App\Models\Event;
 use App\Models\Expense;
 use App\Models\FirstTimer;
@@ -47,6 +48,7 @@ class Reports
             'units' => ['title' => 'Units', 'about' => 'Each unit with its heads, workers, ministers, training, meetings and attendance, and everyone in each unit.'],
             'giving' => ['title' => 'Giving', 'about' => 'Every gift in the dates chosen, by fund and method, with totals. For the pastor in charge only.', 'giving' => true],
             'finance' => ['title' => 'Income & expenses', 'about' => 'Income received and money spent, by category, with the balance for the dates chosen.'],
+            'empowerment' => ['title' => 'Youth empowerment', 'about' => 'Applications in the dates chosen, by programme, choice, status, gender and age, with every applicant.'],
             'welfare' => ['title' => 'Welfare', 'about' => 'Welfare cases raised and amounts approved, and applications for welfare packages.'],
             'market' => ['title' => 'Tribe Market', 'about' => 'Shops, and seller subscriptions paid in the dates chosen.'],
             'events' => ['title' => 'Events & tickets', 'about' => 'Events in the dates chosen with tickets sold, money taken and check-ins, and every confirmed order.'],
@@ -290,6 +292,37 @@ class Reports
                 'rows' => $income->map(fn (Income $i) => [$i->received_on->toDateString(), $i->title, $i->category, Income::METHODS[$i->method] ?? $i->method, $naira($i->amount), ucfirst($i->status), $i->recorder?->name, $i->description])->all()],
             ['name' => 'Expenses', 'columns' => [['Date', 'date'], ['Title'], ['Category'], ['Amount', 'money'], ['Status'], ['Requested by'], ['Description'], ['Why declined']],
                 'rows' => $expenses->map(fn (Expense $e) => [$e->spent_on->toDateString(), $e->title, $e->category, $naira($e->amount), ucfirst($e->status), $e->requester?->name, $e->description, $e->decline_reason])->all()],
+        ];
+    }
+
+    // ---------------------------------------------------------------- Youth empowerment
+
+    private function empowerment(Carbon $from, Carbon $to): array
+    {
+        $apps = EmpowermentApplication::with('programme', 'choices', 'track')->whereBetween('created_at', [$from, $to])->oldest()->get();
+        $firstChoices = $apps->map(fn ($a) => $a->choices->first()?->name)->filter()->countBy()->sortDesc();
+        $ages = $apps->map->age()->filter();
+
+        return [
+            ['name' => 'Summary', 'pairs' => [
+                ['Applications', $apps->count()],
+                ['Accepted (or completed)', $apps->whereIn('status', ['accepted', 'completed'])->count()],
+                ['Average age', $ages->isNotEmpty() ? round($ages->avg(), 1) : '—', 'text'],
+                ['Female', $apps->where('gender', 'female')->count()],
+                ['Male', $apps->where('gender', 'male')->count()],
+                ['', null],
+                ['By status', null],
+                ...collect(EmpowermentApplication::STATUSES)->map(fn ($l, $k) => [$l, $apps->where('status', $k)->count()])->values()->all(),
+                ['', null],
+                ['By programme', null],
+                ...$apps->groupBy(fn ($a) => $a->programme?->title ?? 'Removed')->map(fn ($g, $t) => [$t, $g->count()])->values()->all(),
+                ['', null],
+                ['First choices', null],
+                ...$firstChoices->map(fn ($n, $name) => [$name, $n])->values()->all(),
+            ]],
+            ['name' => 'Applications', 'columns' => [['Applied', 'date'], ['Programme'], ['Reference'], ['Name'], ['Phone'], ['Email'], ['Gender'], ['Age', 'int'], ['Location'], ['Choices'], ['Status'], ['Accepted for']],
+                'rows' => $apps->map(fn ($a) => [$a->created_at->toDateString(), $a->programme?->title, $a->reference, $a->name, $a->phone, $a->email, ucfirst((string) $a->gender), $a->age(), $a->location,
+                    $a->choices->map(fn ($c) => $c->pivot->rank.'. '.$c->name)->join(', '), $a->statusLabel(), $a->track?->name])->all()],
         ];
     }
 

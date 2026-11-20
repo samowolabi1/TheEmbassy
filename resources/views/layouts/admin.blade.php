@@ -24,6 +24,8 @@
                 'badge' => $count('welfare', fn () => \App\Models\WelfareCase::where('status', 'awaiting_pastor')->count())],
             ['id' => 'units', 'area' => 'units', 'label' => 'Units & fellowships', 'route' => 'admin.units.index',
                 'badge' => $count('units', fn () => \App\Models\UnitRequest::where('status', \App\Models\UnitRequest::PENDING)->count())],
+            ['id' => 'empowerment', 'area' => 'empowerment', 'label' => 'Youth empowerment', 'route' => 'admin.empowerment.index',
+                'badge' => $count('empowerment', fn () => \App\Models\EmpowermentApplication::where('status', 'new')->count())],
             ['id' => 'subscribers', 'area' => 'subscribers', 'label' => 'Weekly email', 'route' => 'admin.subscribers.index'],
         ],
         'MONEY' => [

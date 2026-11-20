@@ -1,0 +1,29 @@
+/* Youth empowerment: banner, about, the choices and the application form. */
+.empower-top { display: flex; flex-direction: column; gap: 22px; padding-top: 28px; }
+.empower-intro { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 18px 28px; }
+.empower-title { margin: 0; font-size: clamp(34px, 6vw, 60px); line-height: 1.02; color: var(--navy); overflow-wrap: anywhere; }
+.empower-facts { display: flex; flex-wrap: wrap; gap: 8px; }
+.empower-chip { padding: 6px 12px; border-radius: 999px; background: var(--white); border: 1px solid var(--line); font-size: 14px; font-weight: 700; color: var(--navy); }
+.empower-chip--open { background: #e3f4ea; border-color: #bfe3cc; color: #1d6b3c; }
+.empower-cta { flex: none; }
+.empower-about { max-width: 820px; font-size: 17px; line-height: 1.7; color: var(--body); white-space: pre-line; }
+.empower-tracks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 16px; margin-top: 18px; }
+.empower-track { display: flex; flex-direction: column; gap: 8px; padding: 22px; border-radius: 22px; background: var(--white); border: 1px solid var(--line); }
+.empower-track h3 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 20px; color: var(--navy); }
+.empower-track p { margin: 0; color: var(--body); line-height: 1.55; }
+.empower-places { margin-top: auto; align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: var(--wash); color: var(--bronze); font-size: 13px; font-weight: 800; }
+.empower-places.is-full { background: #fdecea; color: #8a1c12; }
+.empower-form { margin-top: 18px; }
+.empower-form .notice-form__main { max-width: 860px; }
+.empower-q { border: 0; padding: 0; margin: 0; }
+.empower-q legend { font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+.empower-done { display: flex; flex-direction: column; gap: 10px; padding: clamp(22px, 4vw, 36px); max-width: 720px; }
+.empower-done h2 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 28px; color: var(--navy); }
+.empower-done p { margin: 0; font-size: 16px; line-height: 1.6; }
+.empower-done__tick { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: #1f7a4a; color: var(--white); font-size: 26px; font-weight: 800; }
+.empower-status { font-size: 18px !important; }
+@media (max-width: 600px) {
+  .empower-hero { border-radius: 20px; aspect-ratio: 16 / 9; }
+  .empower-cta { width: 100%; }
+}
+.btn--lg { height: 56px; padding: 0 30px; font-size: 17px; }

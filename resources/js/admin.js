@@ -211,3 +211,17 @@ if (outreach) {
         }
     });
 })();
+
+// "Select all" boxes in a table header tick every box in its form.
+document.querySelectorAll('[data-check-all]').forEach((all) => all.addEventListener('change', () => {
+    all.closest('form')?.querySelectorAll('tbody input[type=checkbox]').forEach((box) => { box.checked = all.checked; });
+}));
+
+// Empowerment form builder: show the options box only for questions with options.
+document.querySelectorAll('[data-question-type]').forEach((select) => {
+    const box = select.closest('.builder-row')?.querySelector('[data-question-options]');
+    if (!box) return;
+    const sync = () => { box.hidden = !['select', 'radio', 'checkboxes'].includes(select.value); };
+    select.addEventListener('change', sync);
+    sync();
+});

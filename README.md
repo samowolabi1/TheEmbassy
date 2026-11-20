@@ -489,6 +489,17 @@ Use the full path to PHP if the host asks for it (e.g. `/usr/local/bin/php` or `
 
 Repeat the steps above on a new server, with the new church's `CHURCH_*` and `BRAND_*` values in `.env` and its logo in `public/images/`. Everything else (address, bank accounts, leaders, links, staff) is set in admin, so the code doesn't change between churches.
 
+## Youth empowerment
+
+Young people apply for empowerment programmes at **`/empowerment`** (linked in the footer under Get involved). Admin › **Youth empowerment** is for the pastors and the church office (the "empowerment" area):
+- **Programmes:** start one with a name; it begins as a draft with ages 16 to 35, two choices each and four sample questions, all changeable. The public page shows the open programme (or the latest published one); each programme also has its own address.
+- **The page:** a **banner** that can be changed any time (the old picture is removed; a designed banner shows until one is added), a name, tagline and about text, when applications open and close, an age range (applicants give their date of birth and anyone outside it is told kindly), how many choices each person picks (one, or a ranked first, second and third), a thank-you line for after they apply, and Published.
+- **Choices:** the empowerment options people pick from (e.g. Catering and baking, Fashion design, Phone repair), each with what they'll learn and optional **places**; the page shows how many are left, and a full choice can still be picked for the waiting list. Choices can be reordered, switched off or removed (ones already picked are switched off, so applications stay whole). A programme can't be published without at least one choice.
+- **The form:** name, phone, email (optional), gender, date of birth, where they live and their choices are always asked. Admins add their own questions: short answer, paragraph, number, date, dropdown, multiple choice, checkboxes or yes/no, each with a hint, required or optional, in any order.
+- **Applying:** members' details are filled in when they're logged in. Each application gets a reference (EMP-…), a confirmation email (and WhatsApp if it's on) with a private link to see its status, and the thank-you shows on the page. One application per phone number per programme; a hidden field stops bots.
+- **Reviewing:** applications by status (new, shortlisted, accepted, waiting list, not selected, completed) and by choice, with search; how many picked and were accepted for each choice. Open one to see every answer, set its status, choose what they're accepted for, keep a private note, and let them know (a message for each status). Tick several to change them together. **Download Excel** gives every application with each answer in its own column, plus a summary. Reports › Youth empowerment covers all programmes for any dates.
+- **Demo:** `php artisan db:seed --class=EmpowermentDemoSeeder` adds an open programme with six choices, five questions and 24 applications at different stages.
+
 ## Reports (Excel)
 
 Admin › **Reports**, for administrators and the pastor in charge only (nobody else sees the page or can download). Choose the dates (or This month, Last month, This quarter, This year, Last year) and download a report as an Excel workbook (`.xlsx`). Each has a **Summary** sheet with the key figures, then sheets with every record behind them; header rows stay in view, every column can be filtered and sorted, money is in naira and dates are real dates Excel can sort. Text is stored as text, so nothing in a cell can run as a formula.

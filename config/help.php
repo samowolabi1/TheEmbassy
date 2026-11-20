@@ -75,6 +75,20 @@ return [
             ],
         ],
 
+        'empowerment' => [
+            'title' => 'Youth empowerment',
+            'area' => 'empowerment',
+            'about' => 'Programmes young people apply to on the website: each has a banner you can change any time, the choices on offer, and an application form you design. Review applications here and let people know.',
+            'faqs' => [
+                ['How do I start a programme?', 'Press "New programme", give it a name, then on "Page, choices & form" add a banner, write about it, set the dates and ages, add the choices people pick from, check the questions, and tick Published.'],
+                ['Can I change the banner later?', 'Yes, any time: choose a new picture on "Page, choices & form" and save. The old one is removed. Without one, a designed banner shows.'],
+                ['What can I ask on the form?', 'Name, phone, email, gender, date of birth, where they live and their choices are always asked. Add your own questions: short or long answers, numbers, dates, dropdowns, multiple choice, checkboxes and yes/no, each required or optional.'],
+                ['How do I accept people?', 'Open an application, set it to Accepted, choose which option they\'re accepted for, and keep "Let them know" ticked to email (and WhatsApp) them. To do many at once, tick them in the list and use the bar at the bottom.'],
+                ['What happens when a choice is full?', 'When you set places, the page shows how many are left. When none are left people can still pick it and go on the waiting list.'],
+                ['How do I get the list into Excel?', 'Press "Download Excel" on the programme: every application with each answer in its own column, and a summary.'],
+            ],
+        ],
+
         'reports' => [
             'title' => 'Reports',
             'about' => 'Excel workbooks for each part of church life, for the dates you choose. Administrators and the pastor in charge only.',
@@ -547,6 +561,25 @@ return [
         'admin.visits.index' => [
             ['.tabs', 'Coming up and done', 'Visits still to make, the ones you\'re going on, and reports from visits made.'],
             ['#new-visit', 'Plan a visit', 'Choose the person, why, when and who\'s going. Everyone going is emailed and reminded the day before.'],
+        ],
+
+        'admin.empowerment.index' => [
+            ['.box--flush', 'Programmes', 'Each programme, whether it\'s open, and how many have applied (and how many are new).'],
+            ['#new-programme', 'Start one', 'Name it here; you\'ll add the banner, choices and form next.'],
+        ],
+        'admin.empowerment.show' => [
+            ['#choices-summary', 'Choices', 'How many picked each option and how many you\'ve accepted. Tap one to see just those applicants.'],
+            ['.tabs', 'By status', 'New, shortlisted, accepted, waiting list, not selected and completed.'],
+            ['.bulk-bar', 'Many at once', 'Tick applications and change their status together, letting them know.'],
+            ['.page-head .actions', 'View and export', 'See the page as applicants do, or download every application to Excel.'],
+        ],
+        'admin.empowerment.edit' => [
+            ['#page', 'The page', 'Banner, words, dates, ages and how many choices each person picks. Tick Published to put it on the website.'],
+            ['#choices', 'Choices', 'The empowerment options people pick from, with optional places.'],
+            ['#form', 'The form', 'Add, reorder or remove questions, and choose which are required.'],
+        ],
+        'admin.empowerment.application' => [
+            ['#decide', 'Decision', 'Set the status, choose what they\'re accepted for, keep a private note, and let them know.'],
         ],
 
         'admin.reports.index' => [

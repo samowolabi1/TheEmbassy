@@ -72,6 +72,7 @@
                 <a href="{{ route('give') }}">Give</a>
                 <a href="{{ route('home') }}#prayer">Prayer request</a>
                 <a href="{{ route('about') }}#units">Join a unit</a>
+                <a href="{{ route('empowerment.index') }}">Youth empowerment</a>
                 <a href="{{ route('notices.create') }}">Advertise with us</a>
                 <a href="{{ route('contact') }}">Contact us</a>
             </div>

@@ -2243,3 +2243,23 @@ input[type='file'] {
 .form .field .photo-tile input { width: auto; height: auto; min-height: 0; padding: 0; margin: 0; border: 0; background: none; box-shadow: none; flex: none; }
 .photo-tile { width: min(120px, calc(50% - 5px)); }
 .photo-tile__img { width: 100%; }
+
+/* Youth empowerment: choice figures and the bulk action bar. */
+.track-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 10px; }
+.track-stat { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 16px; border: 1px solid var(--admin-line, var(--line)); background: var(--white); color: var(--ink); }
+.track-stat:hover, .track-stat.is-current { border-color: var(--gold); }
+.track-stat strong { color: var(--navy); }
+.track-stat > span { font-size: 13px; color: var(--slate); }
+.bulk-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 14px 18px; border-top: 1px solid var(--admin-line, var(--line)); }
+.answer-list { margin: 0; display: flex; flex-direction: column; gap: 14px; }
+.answer-list dt { font-size: 13px; font-weight: 700; color: var(--slate); }
+.answer-list dd { margin: 3px 0 0; color: var(--ink); white-space: pre-line; }
+.builder-row { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--admin-line, var(--line)); border-radius: 16px; background: var(--white); }
+.builder-row__top { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.builder-row__top > .field { flex: 1 1 220px; }
+.builder-row__checks { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; }
+.empower-banner-preview { max-width: 720px; }
+.empower-banner-preview img { width: 100%; aspect-ratio: 16 / 6; object-fit: cover; border-radius: 20px; display: block; }
+.empower-banner-preview .empower-hero { border-radius: 20px; min-height: 140px; }
+.switch-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 12px 14px; border-radius: 14px; background: var(--sand); }
+.switch-row input { width: 20px; height: 20px; accent-color: var(--navy); }
