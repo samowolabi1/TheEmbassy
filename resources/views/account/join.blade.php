@@ -29,10 +29,7 @@
                                 <option value="male" @selected(old('gender') === 'male')>Male</option>
                             </select>
                         </label>
-                        <label class="field">Birthday (optional)
-                            <input type="date" name="birthday" value="{{ old('birthday') }}" max="{{ today()->subDay()->toDateString() }}">
-                            @error('birthday') <span class="field-error">{{ $message }}</span> @enderror
-                        </label>
+                        <x-birthday-input />
                     </div>
                     <label class="field">Address or area (optional)
                         <input type="text" name="address" value="{{ old('address') }}" maxlength="255" autocomplete="street-address">
@@ -41,13 +38,14 @@
                 <fieldset class="notice-form__group">
                     <legend>Get connected (optional)</legend>
                     <div class="grid-auto" style="--min: 220px; --gap: 14px">
-                        <label class="field">Unit you'd like to serve in <span style="font-weight: 500; color: var(--slate)">(the church office approves it)</span>
+                        <label class="field">Unit you'd like to serve in
                             <select name="unit_id">
                                 <option value="">Not sure yet</option>
                                 @foreach ($units as $unit)
                                     <option value="{{ $unit->id }}" @selected((int) old('unit_id') === $unit->id)>{{ $unit->name }}</option>
                                 @endforeach
                             </select>
+                            <span class="field-hint">The church office approves it.</span>
                         </label>
                         <label class="field">House fellowship near you
                             <select name="fellowship_id">

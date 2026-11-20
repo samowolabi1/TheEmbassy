@@ -114,7 +114,7 @@ class Reports
                 ['Name'], ['Phone'], ['Email'], ['Gender'], ['Birthday', 'date'], ['Address'], ['Status'], ['Role'], ['Units'], ['Fellowship'],
                 ['Joined', 'date'], ['Last at church', 'date'], ...collect(Member::MILESTONES)->map(fn ($l) => [$l])->values()->all(), ['Has a login'],
             ], 'rows' => $members->map(fn (Member $m) => [
-                $m->name, $m->phone, $m->email, ucfirst((string) $m->gender), $m->birthday?->toDateString(), $m->address, $m->statusLabel(), $m->rankLabel(),
+                $m->name, $m->phone, $m->email, ucfirst((string) $m->gender), $m->birthdayLabel(), $m->address, $m->statusLabel(), $m->rankLabel(),
                 $m->unitNames(), $m->fellowship?->name, $m->joined_on?->toDateString(), $m->last_attended_on?->toDateString(),
                 ...collect(Member::MILESTONES)->keys()->map(fn ($f) => $m->{$f} ? 'Yes' : 'No')->all(), $m->user_id ? 'Yes' : 'No',
             ])->all()],

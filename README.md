@@ -521,6 +521,10 @@ Most people use the app on a phone, so every page is built for one and checked a
 - the busiest admin lists (members, unit members, empowerment applications, contacts) turn into cards, each value labelled with its column; other wide tables scroll inside their box, with a soft fade at the edge to show there's more;
 - the announcement bar at the top is one compact, tappable row, and admin pages leave room so the floating Help button never covers the last item.
 
+## Birthdays
+
+Birthday boxes ask for the day and the month; the year is optional. Under them: "For birthday wishes from the church. The year is optional." Without a year, the date is saved with the year 1904 (`Member::NO_BIRTH_YEAR`, a leap year so 29 February works), and pages show just "15 November". `$member->birthdayLabel()` and `birthdayYearKnown()` give the right wording. The boxes are `<x-birthday-input>`; `App\Http\Middleware\CombineBirthday` joins them into `birthday` before the controllers see the form. A member list CSV can give a full date or just "15/11".
+
 ## Pop-up messages and questions
 
 Every "saved", "sent" or "something went wrong" message pops up as a toast, using [Laravel Notify](https://github.com/mckenziearts/laravel-notify). They come in at the top of the screen, across the full width on a phone and in the top-right corner on a computer. Green means done, red means a form needs fixing (with the first problem spelled out). They close on their own after a few seconds, or with the ×.

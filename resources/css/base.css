@@ -906,3 +906,21 @@ input[type='file']:not(.sr-only) {
     height: 52px;
   }
 }
+
+/* Birthday: day, month and an optional year side by side, on a row of
+   its own in a form grid so the month name always fits. */
+:is(.grid-auto, .form-row) > .birthday-input {
+  grid-column: 1 / -1;
+}
+.birthday-input__boxes,
+.birthday-input > .field-hint {
+  max-width: 520px;
+}
+.birthday-input__boxes {
+  display: grid;
+  grid-template-columns: minmax(76px, 0.8fr) minmax(0, 1.6fr) minmax(76px, 0.9fr);
+  gap: 8px;
+}
+.birthday-input__boxes > * {
+  min-width: 0;
+}

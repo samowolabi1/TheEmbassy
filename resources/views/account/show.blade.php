@@ -231,10 +231,7 @@
                             <input type="tel" name="phone" value="{{ old('phone', $member->phone) }}" required maxlength="40">
                             @error('phone') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
-                        <label class="field">Birthday
-                            <input type="date" name="birthday" value="{{ old('birthday', $member->birthday?->toDateString()) }}" max="{{ today()->subDay()->toDateString() }}">
-                            @error('birthday') <span class="field-error">{{ $message }}</span> @enderror
-                        </label>
+                        <x-birthday-input :value="$member->birthday" />
                         <label class="field">Wedding anniversary (optional)
                             <input type="date" name="anniversary" value="{{ old('anniversary', $member->anniversary?->toDateString()) }}" max="{{ today()->toDateString() }}">
                         </label>

@@ -57,7 +57,7 @@
                             <option value="male" @selected($o('member', 'gender') === 'male')>Male</option>
                         </select>
                     </label>
-                    <label class="field">Birthday (optional) <input type="date" name="birthday" value="{{ $o('member', 'birthday') }}" max="{{ today()->subDay()->toDateString() }}"></label>
+                    <x-birthday-input old-form="member" />
                 </div>
                 <label class="field">Address or area (optional) <input type="text" name="address" value="{{ $o('member', 'address') }}" maxlength="255"></label>
                 <div class="form-row">

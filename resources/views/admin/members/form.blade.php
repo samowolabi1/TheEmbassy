@@ -38,10 +38,7 @@
                 </label>
             </div>
             <div class="form-row">
-                <label class="field">Birthday
-                    <input type="date" name="birthday" value="{{ old('birthday', $member->birthday?->toDateString()) }}">
-                    @error('birthday') <span class="field-error">{{ $message }}</span> @enderror
-                </label>
+                <x-birthday-input :value="$member->birthday" hint="For birthday wishes from the church. The year is optional." />
                 <label class="field">Wedding anniversary
                     <input type="date" name="anniversary" value="{{ old('anniversary', $member->anniversary?->toDateString()) }}">
                 </label>

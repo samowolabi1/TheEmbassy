@@ -2272,3 +2272,29 @@ input[type='file'] {
 /* A temporary password, shown once to the staff member who made it. */
 .temp-password { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; background: var(--wash); border: 1px dashed var(--gold); }
 .temp-password__code { font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 20px; font-weight: 700; color: var(--navy); letter-spacing: 0.03em; overflow-wrap: anywhere; user-select: all; }
+
+/* Settings: boxes in a row line up even when one label runs to two lines.
+   Each field takes three shared rows (label, box, hint), so the boxes sit
+   on the same line. */
+.settings-grid > * {
+  grid-row: span 3;
+}
+.settings-grid > .field {
+  display: grid;
+  grid-template-rows: subgrid;
+  row-gap: 6px;
+}
+.settings-grid > .field > span:first-child {
+  align-self: end;
+}
+.settings-grid > .field > .field__more {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.settings-grid > .field > .field__more:empty {
+  display: none;
+}
+.settings-grid > .login__remember {
+  align-self: center;
+}

@@ -354,6 +354,25 @@ class Member extends Model
     }
 
     /**
+     * The year saved when someone gives only the day and month of their
+     * birthday. A leap year, so 29 February birthdays can be kept.
+     */
+    public const NO_BIRTH_YEAR = 1904;
+
+    public function birthdayYearKnown(): bool
+    {
+        return $this->birthday && $this->birthday->year !== self::NO_BIRTH_YEAR;
+    }
+
+    /**
+     * "15 November", or "15 November 1990" when they gave the year.
+     */
+    public function birthdayLabel(): ?string
+    {
+        return $this->birthday?->format($this->birthdayYearKnown() ? 'j F Y' : 'j F');
+    }
+
+    /**
      * Whether today is their birthday (29 February birthdays are kept on the 28th in other years).
      */
     public function hasBirthdayToday(): bool

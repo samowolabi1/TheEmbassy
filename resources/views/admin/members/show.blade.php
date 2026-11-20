@@ -55,7 +55,7 @@
                 </dd>
                 <dt>Fellowship</dt><dd>{{ $member->fellowship?->name ?? '—' }}</dd>
                 <dt>Member since</dt><dd>{{ $member->joined_on?->format('F Y') ?? '—' }}</dd>
-                <dt>Birthday</dt><dd>{{ $member->birthday?->format('j F') ?? '—' }}</dd>
+                <dt>Birthday</dt><dd>{{ $member->birthdayLabel() ?? '—' }}</dd>
                 <dt>Address</dt><dd>{{ $member->address ?? '—' }}</dd>
                 @if ($givingThisYear !== null)
                     <dt>Giving ({{ now()->year }})</dt><dd>₦{{ number_format($givingThisYear / 100) }}</dd>

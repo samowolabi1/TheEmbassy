@@ -97,33 +97,37 @@
         @foreach ($groups as $groupKey => $group)
             <section class="box form" id="{{ $groupKey }}">
                 <h2>{{ $group['title'] }}</h2>
-                <div class="grid-auto" style="--min: 260px; --gap: 14px 18px">
+                <div class="grid-auto settings-grid" style="--min: 260px; --gap: 14px 18px">
                     @foreach ($group['fields'] as $key => $field)
                         @php($input = $name($key))
                         @if ($field['type'] === 'checkbox')
-                            <label class="login__remember" style="align-self: end">
+                            <label class="login__remember">
                                 <input type="hidden" name="{{ $input }}" value="0">
                                 <input type="checkbox" name="{{ $input }}" value="1" @checked(old($input, $values[$key]))> {{ $field['label'] }}
                             </label>
                         @elseif ($field['type'] === 'secret')
-                            <label class="field">{{ $field['label'] }}
+                            <label class="field"><span>{{ $field['label'] }}</span>
                                 <input type="password" name="{{ $input }}" value="" autocomplete="off" placeholder="{{ in_array($key, $savedSecrets, true) ? 'Saved. Type a new one to replace it' : 'Not set' }}">
+                                <span class="field__more">
                                 @isset($field['hint']) <span class="field__hint">{{ $field['hint'] }}</span> @endisset
                                 @if (in_array($key, $savedSecrets, true))
                                     <span class="login__remember" style="font-weight: 500"><input type="checkbox" name="clear__{{ $input }}" value="1"> Remove the saved token</span>
                                 @endif
                                 @error($input) <span class="field-error">{{ $message }}</span> @enderror
+                                </span>
                             </label>
                         @elseif ($field['type'] === 'textarea')
-                            <label class="field" style="grid-column: 1 / -1">{{ $field['label'] }}
+                            <label class="field" style="grid-column: 1 / -1"><span>{{ $field['label'] }}</span>
                                 <textarea name="{{ $input }}" maxlength="1000" style="height: 90px">{{ old($input, $values[$key]) }}</textarea>
                                 @error($input) <span class="field-error">{{ $message }}</span> @enderror
                             </label>
                         @else
-                            <label class="field">{{ $field['label'] }}
+                            <label class="field"><span>{{ $field['label'] }}</span>
                                 <input type="{{ $field['type'] }}" name="{{ $input }}" value="{{ old($input, $values[$key]) }}" @if (! empty($field['money'])) data-money min="0" @else maxlength="500" @endif>
+                                <span class="field__more">
                                 @isset($field['hint']) <span class="field__hint">{{ $field['hint'] }}</span> @endisset
                                 @error($input) <span class="field-error">{{ $message }}</span> @enderror
+                                </span>
                             </label>
                         @endif
                     @endforeach

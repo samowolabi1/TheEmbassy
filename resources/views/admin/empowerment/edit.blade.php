@@ -15,7 +15,7 @@
             @endif
         </div>
         <div class="form-row">
-            <label class="field">Banner <x-tip text="A wide picture across the top of the page. Change it any time; the old one is removed. Best at least 1600 × 600, with the important part in the middle." />
+            <label class="field"><span>Banner <x-tip text="A wide picture across the top of the page. Change it any time; the old one is removed. Best at least 1600 × 600, with the important part in the middle." /></span>
                 <input type="file" name="banner" accept="image/jpeg,image/png,image/webp" style="height: auto; padding: 12px">
                 <span class="field__hint">JPG, PNG or WebP, up to 8 MB. Without one, a designed banner shows.</span>
                 @if ($programme->bannerUrl())<label class="login__remember"><input type="checkbox" name="remove_banner" value="1">Remove the banner</label>@endif
@@ -44,7 +44,7 @@
             <label class="field">Oldest age (optional) <input type="number" name="max_age" value="{{ old('max_age', $programme->max_age) }}" min="5" max="99"></label>
         </div>
         <span class="field__hint">With an age range, applicants give their date of birth and anyone outside it is told kindly.</span>
-        <label class="field">After they apply (optional) <x-tip text="Added to the thank-you message on the page and in their confirmation email, e.g. when you'll be in touch or an orientation date." />
+        <label class="field"><span>After they apply (optional) <x-tip text="Added to the thank-you message on the page and in their confirmation email, e.g. when you'll be in touch or an orientation date." /></span>
             <textarea name="thank_you" rows="2" maxlength="600" placeholder="e.g. Shortlisted applicants will be called by 15 January for a short chat.">{{ old('thank_you', $programme->thank_you) }}</textarea>
         </label>
         <label class="switch-row"><input type="checkbox" name="is_published" value="1" @checked(old('is_published', $programme->is_published))> <strong>Published</strong> <span class="box__note" style="margin: 0">The page is on the website. People can apply between the dates above.</span></label>

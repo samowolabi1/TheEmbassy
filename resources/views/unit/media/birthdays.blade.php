@@ -82,11 +82,12 @@
                     <input type="text" name="name" required maxlength="80" placeholder="e.g. Christmas birthdays" value="{{ old('name') }}">
                     @error('name') <span class="field-error">{{ $message }}</span> @enderror
                 </label>
-                <label class="field">The design (JPG, PNG or WebP)
+                <label class="field">The design
                     <input type="file" name="image" required accept="image/jpeg,image/png,image/webp">
+                    <span class="field__hint">JPG, PNG or WebP.</span>
                     @error('image') <span class="field-error">{{ $message }}</span> @enderror
                 </label>
-                <div style="align-self: end"><button type="submit" class="btn btn--navy">Upload</button></div>
+                <div style="align-self: start; padding-top: 26px"><button type="submit" class="btn btn--navy">Upload</button></div>
             </form>
         </section>
     @endif

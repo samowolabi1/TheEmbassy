@@ -25,12 +25,12 @@
                 </div>
             </div>
             <div class="form-row">
-                <label class="field">Banner <x-tip text="A wide picture across the top of your shop: your best products, your kitchen, your studio. It's cropped to fit, so keep the important part in the middle. Best at least 1600 × 600." />
+                <label class="field"><span>Banner <x-tip text="A wide picture across the top of your shop: your best products, your kitchen, your studio. It's cropped to fit, so keep the important part in the middle. Best at least 1600 × 600." /></span>
                     <input type="file" name="banner" accept="image/jpeg,image/png,image/webp" data-preview-input="banner" style="height: auto; padding: 12px">
                     <span class="field__hint">JPG, PNG or WebP, up to 8 MB.</span>
                     @if ($shop->bannerUrl())<label class="login__remember"><input type="checkbox" name="remove_banner" value="1">Remove my banner</label>@endif
                 </label>
-                <label class="field">Logo <x-tip text="Square works best. Without one, your shop shows its initials in your colour." />
+                <label class="field"><span>Logo <x-tip text="Square works best. Without one, your shop shows its initials in your colour." /></span>
                     <input type="file" name="logo" accept="image/jpeg,image/png,image/webp" data-preview-input="logo" style="height: auto; padding: 12px">
                     <span class="field__hint">Square, up to 4 MB.</span>
                     @if ($shop->logoUrl())<label class="login__remember"><input type="checkbox" name="remove_logo" value="1">Remove my logo</label>@endif
@@ -50,7 +50,7 @@
             <label class="field">Tagline <span class="field__hint" style="display: inline">(one line under your name)</span>
                 <input type="text" name="tagline" value="{{ old('tagline', $shop->tagline) }}" maxlength="120" placeholder="e.g. Home-made cakes for every celebration" data-preview-text="tagline" data-fallback="{{ $shop->category }}">
             </label>
-            <label class="field">Announcement <x-tip text="A short notice in a bar at the top of your shop: a sale, a new product, holiday hours. Leave empty to hide it." />
+            <label class="field"><span>Announcement <x-tip text="A short notice in a bar at the top of your shop: a sale, a new product, holiday hours. Leave empty to hide it." /></span>
                 <input type="text" name="announcement" value="{{ old('announcement', $shop->announcement) }}" maxlength="160" placeholder="e.g. 10% off all birthday cakes this December 🎂">
             </label>
         </section>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CombineBirthday;
 use App\Http\Middleware\RequirePasswordChange;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SecurityHeaders::class);
         $middleware->appendToGroup('web', RequirePasswordChange::class);
+        $middleware->appendToGroup('web', CombineBirthday::class);
         // Sellers sign in at /vendor, church staff at /admin, and members at /login.
         $middleware->redirectGuestsTo(fn (Request $request) => match (true) {
             $request->is('vendor*') => route('vendor.login'),

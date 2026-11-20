@@ -342,7 +342,15 @@ class MemberController extends Controller
             return null;
         }
         try {
-            $date = Carbon::parse(str_replace('/', '-', trim($value)));
+            $value = trim($value);
+            // Day and month only ("15/11", "15 Nov"): the year is optional.
+            if (preg_match('#^(\d{1,2})[/.-](\d{1,2})$#', $value, $m)) {
+                return checkdate((int) $m[2], (int) $m[1], Member::NO_BIRTH_YEAR) ? sprintf('%04d-%02d-%02d', Member::NO_BIRTH_YEAR, $m[2], $m[1]) : null;
+            }
+            $date = Carbon::parse(str_replace('/', '-', $value));
+            if (! preg_match('/\d{4}/', $value)) {
+                $date->year(Member::NO_BIRTH_YEAR);
+            }
 
             return $date->isFuture() ? null : $date->toDateString();
         } catch (Throwable) {

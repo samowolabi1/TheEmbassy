@@ -35,7 +35,7 @@
                     <input type="number" data-money name="price" value="{{ old('price', $product->price ? $product->price / 100 : '') }}" required min="100" step="1">
                     @error('price') <span class="field-error">{{ $message }}</span> @enderror
                 </label>
-                <label class="field">Was (optional) <x-tip text="On sale? Put the old, higher price here. Buyers see it crossed out with how much they save." />
+                <label class="field"><span>Was (optional) <x-tip text="On sale? Put the old, higher price here. Buyers see it crossed out with how much they save." /></span>
                     <input type="number" data-money name="compare_price" value="{{ old('compare_price', $product->compare_price ? $product->compare_price / 100 : '') }}" min="100" step="1" placeholder="Not on sale">
                     @error('compare_price') <span class="field-error">{{ $message }}</span> @enderror
                 </label>

@@ -104,7 +104,7 @@
                                 @error('email') <span class="field-error">{{ $message }}</span> @enderror
                             </label>
                             <label class="field">Date of birth{{ $programme->min_age || $programme->max_age ? '' : ' (optional)' }}
-                                <input type="date" name="date_of_birth" value="{{ old('date_of_birth', $member?->birthday?->toDateString()) }}" max="{{ today()->subDay()->toDateString() }}" @if ($programme->min_age || $programme->max_age) required @endif @error('date_of_birth') aria-invalid="true" @enderror>
+                                <input type="date" name="date_of_birth" value="{{ old('date_of_birth', $member?->birthdayYearKnown() ? $member->birthday->toDateString() : null) }}" max="{{ today()->subDay()->toDateString() }}" @if ($programme->min_age || $programme->max_age) required @endif @error('date_of_birth') aria-invalid="true" @enderror>
                                 @error('date_of_birth') <span class="field-error">{{ $message }}</span> @enderror
                             </label>
                             <label class="field">Where you live (area)

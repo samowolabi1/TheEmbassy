@@ -46,7 +46,7 @@
                         @endforeach
                     </select>
                 </label>
-                <label class="field">Accepted for <x-tip text="When you accept someone, choose which choice they're accepted for. Their first choice is used if you leave it." />
+                <label class="field"><span>Accepted for <x-tip text="When you accept someone, choose which choice they're accepted for. Their first choice is used if you leave it." /></span>
                     <select name="empowerment_track_id">
                         <option value="">Their first choice</option>
                         @foreach ($tracks as $t)
