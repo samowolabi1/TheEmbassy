@@ -271,6 +271,7 @@ return [
                 ['How do I deal with a reported message?', 'Read it in context, then press Remove, Remove and mute, or Keep it if it\'s fine.'],
                 ['What does muting do?', 'A muted member can read but can\'t post messages or book reviews until the mute ends.'],
                 ['How do quizzes work?', 'Write the questions, set when it opens and closes and the seconds per question. Members get one go each; answers show after it closes.'],
+                ['What are the Job vacancies, Business and Career groups?', 'Rooms for work life. In each, members get a helper beside the message box: "Post a job" (role, company, place, type, pay, how to apply, closing date), "Share my business" (with their market shop link when they have one) and "Share an opportunity" (courses, internships, scholarships), so posts are laid out the same way. Rename, reorder or lock them like any room.'],
             ],
         ],
 

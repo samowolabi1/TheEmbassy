@@ -80,6 +80,7 @@
                             </select>
                         </label>
                     </details>
+                    @include('community.partials.templates')
                     <div class="composer__row">
                         <label class="composer__tool" title="Add a photo">
                             <x-icon name="image" :size="20" /><span class="sr-only">Add a photo</span>

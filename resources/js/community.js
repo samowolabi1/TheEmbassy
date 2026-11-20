@@ -246,3 +246,34 @@ if (quiz) {
     }, 1000);
     show(0);
 }
+
+
+// Work-group helpers ("Post a job", "Share my business"…): write the boxes into the message.
+document.querySelectorAll('[data-template]').forEach((panel) => {
+    const composer = panel.closest('[data-composer]');
+    const body = composer?.querySelector('[data-composer-body]');
+    const error = panel.querySelector('[data-template-error]');
+    panel.querySelector('[data-template-fill]')?.addEventListener('click', () => {
+        const fields = [...panel.querySelectorAll('[data-line]')];
+        const missing = fields.find((f) => f.dataset.needed && !f.value.trim());
+        if (missing) {
+            error.textContent = `Fill in "${missing.dataset.needed}".`;
+            error.hidden = false;
+            missing.focus();
+            return;
+        }
+        error.hidden = true;
+        const lines = fields.filter((f) => f.value.trim()).map((f) => {
+            let value = f.value.trim();
+            if (f.type === 'date') {
+                value = new Date(`${value}T12:00:00`).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+            }
+            return f.dataset.line.replace('%s', value);
+        });
+        body.value = [body.value.trim(), lines.join('\n')].filter(Boolean).join('\n\n').slice(0, 2000);
+        body.dispatchEvent(new Event('input', { bubbles: true }));
+        fields.forEach((f) => { if (!f.defaultValue) f.value = ''; });
+        panel.open = false;
+        body.focus();
+    });
+});

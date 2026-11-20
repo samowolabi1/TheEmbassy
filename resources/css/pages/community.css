@@ -810,3 +810,12 @@
   background: #fff1c7;
   font-size: 18px;
 }
+
+/* Work-group helpers: Post a job, Share my business, Share an opportunity. */
+.composer__helper[open] { max-height: min(60vh, 520px); overflow-y: auto; }
+.composer__helper-note { margin: 0; font-size: 13px; color: var(--slate); }
+.composer__helper-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 8px; }
+.composer__helper-wide { grid-column: 1 / -1; }
+.composer__helper textarea { border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; font: inherit; font-size: 14px; background: var(--white); resize: vertical; }
+.composer__helper .btn { align-self: flex-start; }
+.composer__helper .field-error { margin: 0; }
