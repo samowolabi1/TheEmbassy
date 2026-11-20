@@ -19,9 +19,6 @@
         <div class="card notice-status stack" style="gap: 16px">
             <span class="eyebrow">YOUR NOTICE</span>
             <h1 class="h2">{{ $heading }}</h1>
-            @if (session('payment_error'))
-                <p class="notice-alert" role="alert" style="margin: 0">{{ session('payment_error') }}</p>
-            @endif
             <p class="lede" style="margin: 0">{{ $text }}</p>
             <dl class="notice-status__facts">
                 <dt>Headline</dt><dd>{{ $notice->title }}</dd>

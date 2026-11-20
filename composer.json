@@ -13,6 +13,7 @@
         "bacon/bacon-qr-code": "^3.1",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
+        "mckenziearts/laravel-notify": "^3.2",
         "minishlink/web-push": "^11.0"
     },
     "require-dev": {

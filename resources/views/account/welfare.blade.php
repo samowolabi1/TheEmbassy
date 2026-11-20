@@ -9,9 +9,6 @@
     </section>
 
     <section class="container section--tight section--last stack" style="gap: 20px">
-        @if (session('status'))
-            <p class="notice-alert" role="status" style="margin: 0">{{ session('status') }}</p>
-        @endif
 
         @if ($member->status === 'active' && $packages->isNotEmpty())
             @foreach ($packages as $package)

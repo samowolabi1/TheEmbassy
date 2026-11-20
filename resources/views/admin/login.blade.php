@@ -37,5 +37,6 @@
             <a href="{{ route('home') }}" class="box__link">← Back to the website</a>
         </div>
     </main>
+    @include('partials.notify')
 </body>
 </html>

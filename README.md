@@ -521,6 +521,15 @@ Most people use the app on a phone, so every page is built for one and checked a
 - the busiest admin lists (members, unit members, empowerment applications, contacts) turn into cards, each value labelled with its column; other wide tables scroll inside their box, with a soft fade at the edge to show there's more;
 - the announcement bar at the top is one compact, tappable row, and admin pages leave room so the floating Help button never covers the last item.
 
+## Pop-up messages
+
+Every "saved", "sent" or "something went wrong" message pops up as a toast, using [Laravel Notify](https://github.com/mckenziearts/laravel-notify). They come in at the top of the screen, across the full width on a phone and in the top-right corner on a computer. Green means done, red means a form needs fixing (with the first problem spelled out). They close on their own after a few seconds, or with the ×.
+
+- `resources/views/partials/notify.blade.php` is included by every layout. It turns `->with('status', '...')` and form errors into toasts, so controllers don't need to change.
+- New code can call the package directly: `notify()->success()->title('Saved')->message('...')->send();` (also `error()`, `warning()` and `info()`).
+- The package's CSS and JS live in `public/vendor/mckenziearts/laravel-notify` and are committed, because shared hosting can't run `vendor:publish`. They only load on pages that show a message. Colours are set in `resources/css/base.css` under "Pop-up messages".
+- Thank-you panels that replace a form, like "Message sent" on the contact page, stay on the page as before.
+
 ## Reports (Excel)
 
 Admin › **Reports**, for administrators and the pastor in charge only (nobody else sees the page or can download). Choose the dates (or This month, Last month, This quarter, This year, Last year) and download a report as an Excel workbook (`.xlsx`). Each has a **Summary** sheet with the key figures, then sheets with every record behind them; header rows stay in view, every column can be filtered and sorted, money is in naira and dates are real dates Excel can sort. Text is stored as text, so nothing in a cell can run as a formula.

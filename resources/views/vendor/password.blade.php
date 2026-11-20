@@ -38,5 +38,6 @@
             </form>
         </div>
     </main>
+    @include('partials.notify')
 </body>
 </html>

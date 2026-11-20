@@ -8,7 +8,6 @@
             @if ($forced)
                 <p class="lede" style="margin: 0">Welcome! You signed in with a temporary password from the church office. Choose your own now: only you will know it.</p>
             @endif
-            @if (session('status'))<p class="notice-alert" role="status" style="margin: 0">{{ session('status') }}</p>@endif
             <form method="POST" action="{{ route('account.password.update') }}" class="notice-form__group">
                 @csrf
                 @method('PUT')

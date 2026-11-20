@@ -703,3 +703,84 @@ input[type='file']:not(.sr-only) {
   html .brand__sub { font-size: 9px; }
   html .star-input label { padding: 4px 2px; }
 }
+
+/* Pop-up messages (Laravel Notify): church colours, top of the screen,
+   full width on phones, a big close button. These rules sit outside the
+   package's CSS layers, so they win over its defaults, dark mode included. */
+.notify > div {
+  z-index: 1000;
+  align-items: flex-start;
+  padding: 12px;
+}
+.notify > div > div {
+  align-items: center;
+}
+@media (min-width: 640px) {
+  .notify > div {
+    padding: 20px 24px;
+  }
+  .notify > div > div {
+    align-items: flex-end;
+  }
+}
+.notify [x-data] {
+  max-width: 420px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--navy);
+  border-radius: 16px;
+  box-shadow: 0 14px 36px rgb(10 29 63 / 0.2);
+  font-family: var(--font-body);
+  color: var(--body);
+}
+.notify [x-data] > div {
+  padding: 14px 10px 14px 16px;
+}
+.notify .border-green-500 { border-left-color: #1e7a4c; }
+.notify .border-red-500 { border-left-color: #b3261e; }
+.notify .border-yellow-500 { border-left-color: var(--gold); }
+.notify .border-blue-500 { border-left-color: var(--navy); }
+.notify svg.text-green-400 { color: #1e7a4c; }
+.notify svg.text-red-500 { color: #b3261e; }
+.notify svg.text-yellow-500 { color: var(--bronze); }
+.notify svg.text-blue-500 { color: var(--navy); }
+.notify svg.size-5 {
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+}
+.notify p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.notify p.font-medium {
+  color: var(--navy);
+  font-weight: 800;
+}
+.notify p.mt-1 {
+  margin-top: 3px;
+  color: var(--slate);
+  font-size: 14px;
+}
+.notify button {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: -9px 0 -9px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--slate);
+  cursor: pointer;
+}
+.notify button:hover,
+.notify button:focus-visible {
+  background: var(--sand);
+  color: var(--navy);
+}
+.notify .ms-4 {
+  margin-left: 6px;
+}

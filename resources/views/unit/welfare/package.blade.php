@@ -13,9 +13,6 @@
         <div class="actions"><a href="{{ route('unit.welfare.packages.export', [$unit, $package]) }}" class="btn btn--outline">Download CSV</a></div>
     </header>
 
-    @if ($errors->any())
-        <p class="flash flash--error" role="alert">{{ $errors->first() }}</p>
-    @endif
 
     <div class="row">
         <div class="grow stack" style="gap: 16px">

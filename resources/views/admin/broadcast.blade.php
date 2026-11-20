@@ -13,9 +13,6 @@
         </div>
     </header>
 
-    @if ($errors->any())
-        <p class="flash flash--error" role="alert">{{ $errors->first() }}</p>
-    @endif
 
     <div class="row">
         <form method="POST" action="{{ route('admin.announcements.send.store', $announcement) }}" class="box grow form" data-confirm="Send this now?">

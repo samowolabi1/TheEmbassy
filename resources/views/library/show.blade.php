@@ -9,12 +9,6 @@
 @section('content')
     <section class="container section--tight stack" style="gap: 24px; padding-top: 32px">
         <a href="{{ route('library.index') }}" class="back-link"><x-icon name="chevron-left" :size="16" />Library</a>
-        @if (session('status'))
-            <p class="notice-alert" role="status" style="margin: 0">{{ session('status') }}</p>
-        @endif
-        @if ($errors->any())
-            <p class="notice-alert" role="alert" style="margin: 0">{{ $errors->first() }}</p>
-        @endif
 
         <div class="book-detail">
             <div class="book-detail__cover">@include('library.cover', ['book' => $book])</div>

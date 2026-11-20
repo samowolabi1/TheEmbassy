@@ -16,9 +16,6 @@
             @endforeach
         </div>
 
-        @if (session('status'))
-            <p class="notice-alert" role="status" style="margin: 0">{{ session('status') }}</p>
-        @endif
         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
             @auth
                 <form method="POST" action="{{ route('testimonies.praise', $testimony) }}">

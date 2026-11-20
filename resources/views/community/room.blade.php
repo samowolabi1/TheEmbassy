@@ -47,12 +47,6 @@
                 </ol>
             </div>
 
-            @if ($errors->any())
-                <p class="chat__error" role="alert">{{ $errors->first() }}</p>
-            @endif
-            @if (session('status'))
-                <p class="chat__note" role="status">{{ session('status') }}</p>
-            @endif
 
             @if ($room->canPost($viewer))
                 <form method="POST" action="{{ route('community.messages.store', $room) }}" enctype="multipart/form-data" class="composer" data-composer>

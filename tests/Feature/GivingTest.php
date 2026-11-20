@@ -147,6 +147,7 @@ class GivingTest extends TestCase
 
         $this->put(route('admin.accounts.update', $account), [...$account->only(['currency', 'bank_name', 'account_name', 'account_number', 'use_for'])]);
         $this->assertFalse($account->fresh()->is_active);
+        session()->forget('status'); // The saved message would pop up on the next page.
         $this->get(route('give'))->assertDontSee('Access Bank');
 
         $this->delete(route('admin.accounts.destroy', $account))->assertRedirect();

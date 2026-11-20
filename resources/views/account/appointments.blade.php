@@ -9,12 +9,6 @@
     </section>
 
     <section class="container section--tight section--last stack" style="gap: 20px">
-        @if (session('status'))
-            <p class="notice-alert" role="status" style="margin: 0">{{ session('status') }}</p>
-        @endif
-        @if ($errors->any())
-            <p class="notice-alert" role="alert" style="margin: 0">{{ $errors->first() }}</p>
-        @endif
 
         @if ($mine->isNotEmpty())
             <div class="card notice-form__main" style="flex: none">

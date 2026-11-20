@@ -143,6 +143,7 @@ class MarketplaceTest extends TestCase
 
         $product = Product::sole();
         $this->assertSame(2_500_000, $product->price);
+        session()->forget('status'); // The saved message would pop up on the next page.
         $this->get(route('market.index'))->assertDontSee('Party jollof tray');
         // The owner can preview it; nobody else can.
         $this->get(route('market.product', $product))->assertOk()->assertSee('Only you can see this listing');

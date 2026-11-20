@@ -19,9 +19,6 @@
                 <span class="side__words"><span class="side__name" style="color: var(--navy)">{{ config('church.brand.wordmark') }}</span><span class="side__role" style="color: var(--bronze)">{{ config('church.brand.market_name') }} sellers</span></span>
             </div>
             <h1>Seller sign in</h1>
-            @if (session('status'))
-                <p class="flash" role="status" style="margin: 0">{{ session('status') }}</p>
-            @endif
             <form method="POST" action="{{ route('vendor.login.store') }}" class="form">
                 @csrf
                 <label class="field">Email
@@ -40,5 +37,6 @@
             <a href="{{ route('market.apply') }}" class="box__link">Don't have a shop? Apply to sell</a>
         </div>
     </main>
+    @include('partials.notify')
 </body>
 </html>

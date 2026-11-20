@@ -8,12 +8,6 @@
     <section class="container section section--last tokens-page">
         <a href="{{ route('account') }}" class="back"><x-icon name="chevron-left" :size="16" />My account</a>
 
-        @if (session('status'))
-            <p class="notice-alert" role="status" style="margin: 0">{{ session('status') }}</p>
-        @endif
-        @if ($errors->any())
-            <p class="notice-alert" role="alert" style="margin: 0; background: #fdecea; color: #8a1c12">{{ $errors->first() }}</p>
-        @endif
 
         <div class="tokens-hero bg-navy on-dark">
             <h1 class="eyebrow" style="margin: 0">MY {{ mb_strtoupper(TokenName::many()) }}</h1>

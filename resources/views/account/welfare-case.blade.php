@@ -3,9 +3,6 @@
 @section('content')
     <section class="container section--tight section--last stack" style="gap: 20px">
         <a href="{{ route('account.welfare') }}" class="back-link"><x-icon name="chevron-left" :size="16" />Welfare</a>
-        @if (session('status'))
-            <p class="notice-alert" role="status" style="margin: 0">{{ session('status') }}</p>
-        @endif
         <div class="card notice-form__main" style="flex: none">
             <span class="eyebrow">{{ $case->reference }} · CONFIDENTIAL</span>
             <h1 class="h2" style="margin: 0">{{ $case->personName() }}</h1>

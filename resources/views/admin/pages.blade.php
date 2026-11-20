@@ -24,9 +24,6 @@
         <a href="{{ route('admin.pages.edit', 'home') }}" class="tab" @if ($page === 'home') aria-current="page" @endif>Home page</a>
     </nav>
 
-    @if ($errors->any())
-        <p class="flash flash--error" role="alert">Please check the highlighted fields.</p>
-    @endif
 
     <form method="POST" action="{{ route('admin.pages.update', $page) }}" enctype="multipart/form-data" class="stack" style="gap: 16px" data-unsaved-warning>
         @csrf

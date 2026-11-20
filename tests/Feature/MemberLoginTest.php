@@ -60,7 +60,7 @@ class MemberLoginTest extends TestCase
     public function test_a_temporary_password_must_be_changed_at_first_sign_in(): void
     {
         $member = Member::factory()->active()->create(['name' => 'Tunde Bello', 'email' => null, 'phone' => '0805 999 0000', 'user_id' => null]);
-        $this->actingAs($this->office)->get(route('admin.members.show', $member))->assertOk()->assertSee('No login yet')->assertSee('Give a temporary password')->assertDontSee('Send a link to set a password');
+        $this->actingAs($this->office)->get(route('admin.members.show', $member))->assertOk()->assertSee('No login yet')->assertSee('Give a temporary password')->assertDontSee('Send a link to set a password</button>', false);
         $this->post(route('admin.members.login.temporary', $member))->assertRedirect(route('admin.members.show', $member).'#login')->assertSessionHas('tempPassword');
         $temp = session('tempPassword');
         $this->get(route('admin.members.show', $member))->assertSee($temp)->assertSee('Send on WhatsApp');

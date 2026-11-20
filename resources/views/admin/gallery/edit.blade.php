@@ -15,9 +15,6 @@
         @endif
     </header>
 
-    @if ($errors->any())
-        <p class="flash flash--error" role="alert">{{ $errors->first() }}</p>
-    @endif
 
     <div class="row">
         <section class="box grow form">

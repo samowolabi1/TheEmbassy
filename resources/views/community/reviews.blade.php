@@ -14,9 +14,6 @@
 
     <section class="container section--tight section--last reviews-layout">
         <div class="stack" style="gap: 14px">
-            @if (session('status'))
-                <p class="notice-alert" role="status" style="margin: 0">{{ session('status') }}</p>
-            @endif
             @forelse ($reviews as $r)
                 <article class="card review-card">
                     <a href="{{ route('library.show', $r->book) }}" class="review-card__book">

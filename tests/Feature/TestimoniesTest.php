@@ -52,6 +52,7 @@ class TestimoniesTest extends TestCase
         $this->assertSame(5, $this->member->user->tokenBalance());
 
         // On the website, under the first name only; people praise God for it once each.
+        session()->forget('status'); // The saved message would pop up on the next page.
         $this->get(route('testimonies.index'))->assertSee('God healed my mum')->assertSee('Adaeze')->assertDontSee('Obi');
         $this->get(route('testimonies.index', ['category' => 'provision']))->assertDontSee('God healed my mum');
         $friend = Member::factory()->active()->create();

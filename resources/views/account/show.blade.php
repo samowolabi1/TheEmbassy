@@ -101,9 +101,6 @@
     </section>
 
     <section class="container section--tight section--last stack" style="gap: 20px">
-        @if (session('status'))
-            <p class="notice-alert" role="status" style="margin: 0">{{ session('status') }}</p>
-        @endif
 
         @unless ($member)
             <div class="card auth" style="max-width: none; margin: 0">

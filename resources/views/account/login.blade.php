@@ -4,9 +4,6 @@
     <section class="container section section--last">
         <div class="card auth">
             <h1 class="auth__title">Welcome back</h1>
-            @if (session('status'))
-                <p class="notice-alert" role="status" style="margin: 0">{{ session('status') }}</p>
-            @endif
             <form method="POST" action="{{ route('login.store') }}" class="notice-form__group">
                 @csrf
                 <label class="field">Email or phone number

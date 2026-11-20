@@ -16,9 +16,6 @@
             <p class="quiz-page__meta">{{ $quiz->questions->count() }} questions · {{ $quiz->seconds_per_question }} seconds each · {{ $quiz->isOpen() ? 'closes '.$quiz->closes_at->format('D j M, g:i A') : 'closed' }} · {{ $players }} {{ \Illuminate\Support\Str::plural('player', $players) }}</p>
         </div>
 
-        @if (session('status'))
-            <p class="quiz-result" role="status">{{ session('status') }}</p>
-        @endif
 
         <div class="quiz-grid">
             <div class="card quiz-card">

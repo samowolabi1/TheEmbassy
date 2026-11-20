@@ -30,9 +30,6 @@
     </section>
 
     <section class="container section--tight section--last" id="book">
-        @if (session('booking_error'))
-            <p class="notice-alert" role="alert">{{ session('booking_error') }}</p>
-        @endif
 
         @if ($types->isEmpty())
             <div class="card notices-empty"><p class="lede" style="margin: 0">No booking needed. Just come along.</p></div>

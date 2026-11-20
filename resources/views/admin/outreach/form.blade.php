@@ -14,9 +14,6 @@
         </div>
     </header>
 
-    @if ($errors->any())
-        <p class="flash flash--error" role="alert">{{ $errors->first() }}</p>
-    @endif
 
     <form method="POST" action="{{ $campaign->exists ? route('admin.outreach.update', $campaign) : route('admin.outreach.store') }}" class="row" data-outreach-form data-reach-url="{{ route('admin.outreach.reach') }}">
         @csrf

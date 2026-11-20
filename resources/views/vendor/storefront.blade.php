@@ -11,9 +11,6 @@
 
     <form method="POST" action="{{ route('vendor.storefront.update') }}" enctype="multipart/form-data" class="stack" style="gap: 20px">
         @csrf
-        @if ($errors->any() && ! $errors->collections->any())
-            <p class="field-error" role="alert" style="margin: 0">{{ $errors->first() }}</p>
-        @endif
 
         <section class="box form">
             <h2>Look</h2>

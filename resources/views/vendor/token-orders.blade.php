@@ -8,9 +8,6 @@
         </div>
     </header>
 
-    @if ($errors->any())
-        <p class="flash flash--error" role="alert">{{ $errors->first() }}</p>
-    @endif
 
     <div class="stats">
         <div class="stat-tile stat-tile--navy">

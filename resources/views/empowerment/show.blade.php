@@ -87,7 +87,6 @@
                 @csrf
                 <label class="honeypot" aria-hidden="true">Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
                 <div class="card notice-form__main">
-                    @if ($errors->any())<p class="notice-alert" role="alert" style="margin: 0">Please check the answers marked below.</p>@endif
                     <fieldset class="notice-form__group">
                         <legend>About you</legend>
                         <div class="grid-auto" style="--min: 220px; --gap: 14px">

@@ -147,6 +147,7 @@ class AdminTest extends TestCase
         ]);
 
         $this->assertSame('draft', Announcement::sole()->status());
+        session()->forget('status'); // The saved message would pop up on the next page.
         $this->get('/')->assertDontSee('Secret plan');
     }
 
@@ -160,6 +161,7 @@ class AdminTest extends TestCase
             'when' => 'schedule', 'publish_at' => $at->format('Y-m-d\TH:i'),
         ])->assertSessionHasNoErrors();
 
+        session()->forget('status');
         $this->get('/')->assertDontSee('Fasting week');
         $this->travelTo($at->copy()->addMinute());
         $this->get('/')->assertSee('Fasting week');

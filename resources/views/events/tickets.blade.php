@@ -9,9 +9,6 @@
             <h1 class="h2">{{ $event->title }}</h1>
             <p class="lede" style="margin: 0">{{ $event->starts_at->format('l j F, g:i A') }} · {{ $event->venue }}</p>
 
-            @if (session('payment_error'))
-                <p class="notice-alert" role="alert" style="margin: 0">{{ session('payment_error') }}</p>
-            @endif
 
             @if ($order->isConfirmed())
                 <p class="notice-alert notice-alert--ok" role="status" style="margin: 0">

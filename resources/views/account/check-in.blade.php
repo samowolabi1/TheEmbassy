@@ -5,12 +5,6 @@
         <div class="card auth">
             <span class="eyebrow">ATTENDANCE</span>
             <h1 class="auth__title">Check in</h1>
-            @if (session('status'))
-                <p class="notice-alert" role="status" style="margin: 0">{{ session('status') }}</p>
-            @endif
-            @if ($errors->any())
-                <p class="notice-alert" role="alert" style="margin: 0; background: #fdecea; color: #8a1c12">{{ $errors->first() }}</p>
-            @endif
 
             @if (! $member)
                 <p class="lede" style="margin: 0">Check-in is for members on the church register.</p>

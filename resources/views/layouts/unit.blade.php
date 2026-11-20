@@ -74,11 +74,9 @@
         </aside>
         @include('partials.side-reopen')
         <main id="main" class="admin-main">
-            @if (session('status'))
-                <p class="flash" role="status">{{ session('status') }}</p>
-            @endif
             @yield('content')
         </main>
     </div>
+    @include('partials.notify')
 </body>
 </html>

@@ -21,9 +21,6 @@
         @endif
     </header>
 
-    @if ($errors->any())
-        <p class="flash flash--error" role="alert">{{ $errors->first() }}</p>
-    @endif
 
     <form method="POST" action="{{ $quiz->exists ? route('admin.community.quizzes.update', $quiz) : route('admin.community.quizzes.store') }}" class="row">
         @csrf

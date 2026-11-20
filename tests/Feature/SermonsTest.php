@@ -33,6 +33,7 @@ class SermonsTest extends TestCase
         }
         $this->post(route('admin.sermons.store'), ['title' => 'Draft talk', 'kind' => 'podcast', 'preached_on' => today()->toDateString(), 'swatch' => 'ice']);
 
+        session()->forget('status'); // The saved message would pop up on the next page.
         $this->get(route('watch'))
             ->assertSee('Building on the rock')->assertSee('Kingdom Builders · Week 2')->assertSee('Sunday service: Kingdom Builders, week 2')
             ->assertDontSee('A royal priesthood')->assertDontSee('Draft talk');

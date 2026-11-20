@@ -5,9 +5,6 @@
         <div class="card auth">
             <h1 class="auth__title">Set a new password</h1>
             <p class="lede" style="margin: 0">Enter your email and we'll send you a link.</p>
-            @if (session('status'))
-                <p class="notice-alert" role="status" style="margin: 0">{{ session('status') }}</p>
-            @endif
             <form method="POST" action="{{ route('password.email') }}" class="notice-form__group">
                 @csrf
                 <label class="field">Email

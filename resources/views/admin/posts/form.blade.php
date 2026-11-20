@@ -29,9 +29,6 @@
     @if (session('preview'))
         <p class="flash" role="status">Saved. <a href="{{ session('preview') }}" target="_blank" class="box__link">Open the preview</a></p>
     @endif
-    @if ($errors->any())
-        <p class="flash flash--error" role="alert">Please check the highlighted fields.</p>
-    @endif
 
     <form method="POST" action="{{ $post->exists ? route('admin.posts.update', $post) : route('admin.posts.store') }}" enctype="multipart/form-data" class="row" data-unsaved-warning>
         @csrf

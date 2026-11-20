@@ -59,9 +59,6 @@
         </aside>
         @include('partials.side-reopen')
         <main id="main" class="admin-main">
-            @if (session('status'))
-                <p class="flash" role="status">{{ session('status') }}</p>
-            @endif
             @if ($active !== 'subscription' && ! $shop->isSubscribed())
                 <p class="flash" style="background: var(--wash); color: var(--navy)" role="status">Your listings are hidden from the market until you subscribe. <a href="{{ route('vendor.subscription.index') }}" style="font-weight: 800">Choose a plan</a></p>
             @endif
@@ -69,5 +66,6 @@
         </main>
     </div>
     @include('vendor.partials.help-panel')
+    @include('partials.notify')
 </body>
 </html>
