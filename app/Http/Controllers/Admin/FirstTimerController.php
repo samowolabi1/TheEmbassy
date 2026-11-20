@@ -8,6 +8,7 @@ use App\Models\Member;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -57,6 +58,9 @@ class FirstTimerController extends Controller
         if (! $firstTimer->member_id) {
             $member = Member::create([
                 'name' => $firstTimer->name,
+                'first_name' => $firstTimer->first_name,
+                'last_name' => $firstTimer->last_name,
+                'gender' => $firstTimer->gender,
                 'phone' => $firstTimer->phone,
                 'email' => $firstTimer->email,
                 'notes' => trim('First visit '.$firstTimer->visited_on->format('j M Y').($firstTimer->invited_by ? ', invited by '.$firstTimer->invited_by : '').'. '.$firstTimer->notes),
@@ -91,7 +95,10 @@ class FirstTimerController extends Controller
     public static function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:100'],
+            'first_name' => ['required', 'string', 'max:60'],
+            'last_name' => ['required', 'string', 'max:60'],
+            'name' => ['nullable', 'string', 'max:121'],
+            'gender' => ['required', Rule::in(['female', 'male'])],
             'phone' => ['required', 'string', 'max:40'],
             'email' => ['nullable', 'email', 'max:255'],
             'invited_by' => ['nullable', 'string', 'max:100'],

@@ -22,7 +22,7 @@ class MemberAccountTest extends TestCase
     private function joinData(array $overrides = []): array
     {
         return [
-            'name' => 'Ada Obi', 'email' => 'ada@example.com', 'phone' => '0803 000 0000', 'password' => 'a-long-password',
+            'first_name' => 'Ada', 'last_name' => 'Obi', 'gender' => 'female', 'email' => 'ada@example.com', 'phone' => '0803 000 0000', 'password' => 'a-long-password',
             'password_confirmation' => 'a-long-password', 'agree' => '1', ...$overrides,
         ];
     }
@@ -65,7 +65,7 @@ class MemberAccountTest extends TestCase
         $user = User::factory()->create();
         Shop::factory()->approved()->create(['user_id' => $user->id]);
 
-        $this->actingAs($user)->post(route('join.store'), ['name' => $user->name, 'phone' => '0803', 'agree' => '1'])->assertRedirect(route('account'));
+        $this->actingAs($user)->post(route('join.store'), ['first_name' => 'Kemi', 'last_name' => 'Bello', 'gender' => 'female', 'phone' => '0803', 'agree' => '1'])->assertRedirect(route('account'));
 
         $this->assertSame($user->id, Member::sole()->user_id);
         $this->get(route('account'))->assertSee('My shop');

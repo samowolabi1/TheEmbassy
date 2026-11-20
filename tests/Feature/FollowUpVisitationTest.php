@@ -109,21 +109,21 @@ class FollowUpVisitationTest extends TestCase
         $office = User::factory()->create(['role' => 'secretary']);
 
         $this->actingAs($usher)->get(route('admin.register.index'))->assertOk()->assertSee('A first-timer')->assertSee('A new member');
-        $this->post(route('admin.register.first-timer'), ['name' => 'Grace Ade', 'phone' => '0805 000 1111', 'visited_on' => today()->toDateString()])
+        $this->post(route('admin.register.first-timer'), ['first_name' => 'Grace', 'last_name' => 'Ade', 'gender' => 'female', 'phone' => '0805 000 1111', 'visited_on' => today()->toDateString()])
             ->assertSessionHas('status', fn ($s) => str_contains($s, 'Welcome card added for Grace Ade'));
         $this->assertSame(1, FollowUp::where('reason', 'first_timer')->count());
 
         // An usher's new member waits for approval; their unit is a request.
-        $this->post(route('admin.register.member'), ['name' => 'John Eze', 'phone' => '0806 222 3333', 'unit_id' => $this->choir->id])
+        $this->post(route('admin.register.member'), ['first_name' => 'John', 'last_name' => 'Eze', 'gender' => 'female', 'phone' => '0806 222 3333', 'unit_id' => $this->choir->id])
             ->assertSessionHas('status', 'John Eze is on the register, waiting for the church office to approve them.');
         $john = Member::where('name', 'John Eze')->sole();
         $this->assertSame([Member::PENDING, []], [$john->status, $john->unitIds()]);
         $this->assertSame($this->choir->id, $john->unitRequests()->value('unit_id'));
         // The same phone twice is caught.
-        $this->post(route('admin.register.member'), ['name' => 'John Again', 'phone' => '+2348062223333'])->assertSessionHasErrors('phone', null, 'member');
+        $this->post(route('admin.register.member'), ['first_name' => 'John', 'last_name' => 'Again', 'gender' => 'female', 'phone' => '+2348062223333'])->assertSessionHasErrors('phone', null, 'member');
 
         // The office's are approved straight away, in the unit.
-        $this->actingAs($office)->post(route('admin.register.member'), ['name' => 'Mary Obi', 'phone' => '0807 444 5555', 'unit_id' => $this->choir->id])
+        $this->actingAs($office)->post(route('admin.register.member'), ['first_name' => 'Mary', 'last_name' => 'Obi', 'gender' => 'female', 'phone' => '0807 444 5555', 'unit_id' => $this->choir->id])
             ->assertSessionHas('status', 'Mary Obi is on the register. They\'re in Choir.');
         $mary = Member::where('name', 'Mary Obi')->sole();
         $this->assertSame([Member::ACTIVE, 'worker'], [$mary->status, $mary->rank]);

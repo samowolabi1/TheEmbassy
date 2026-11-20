@@ -67,7 +67,8 @@
         <form method="POST" action="{{ route('admin.first-timers.store') }}" class="form">
             @csrf
             <div class="form-row">
-                <label class="field">Name <input type="text" name="name" value="{{ old('name') }}" required maxlength="100">@error('name') <span class="field-error">{{ $message }}</span> @enderror</label>
+                <x-person-name :autocomplete="false" />
+                <x-gender-select />
                 <label class="field">Phone <input type="tel" name="phone" value="{{ old('phone') }}" required maxlength="40">@error('phone') <span class="field-error">{{ $message }}</span> @enderror</label>
                 <label class="field">Email (optional) <input type="email" name="email" value="{{ old('email') }}"></label>
             </div>

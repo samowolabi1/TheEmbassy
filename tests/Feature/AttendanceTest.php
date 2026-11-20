@@ -65,7 +65,7 @@ class AttendanceTest extends TestCase
     public function test_visitors_fill_in_a_first_timer_card(): void
     {
         $this->get(route('welcome'))->assertOk()->assertSee('Say hello');
-        $this->post(route('welcome.store'), ['name' => 'Bisi Eze', 'phone' => '0803 555 0000', 'invited_by' => 'Ada O.', 'wants_to_join' => '1'])
+        $this->post(route('welcome.store'), ['first_name' => 'Bisi', 'last_name' => 'Eze', 'gender' => 'female', 'phone' => '0803 555 0000', 'invited_by' => 'Ada O.', 'wants_to_join' => '1'])
             ->assertRedirect(route('welcome'))->assertSessionHas('welcomed', 'Bisi');
 
         $card = FirstTimer::sole();

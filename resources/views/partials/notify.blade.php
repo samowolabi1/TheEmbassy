@@ -24,13 +24,13 @@
 
     if (! session()->has('notify')) {
         $problem = session('payment_error') ?? session('booking_error');
-        $newsletter = $errors->getBag('newsletter');
+        // Forms on busy pages keep their errors in their own named bag ("member", "visitor", "newsletter"...).
+        $bag = collect($errors->getBags())->first(fn ($b) => $b->any());
 
-        if ($errors->any()) {
-            $more = $errors->count() - 1;
-            $toast(NotificationType::Error, 'Please check the form', $errors->first().($more > 0 ? ' (and '.$more.' more)' : ''), 9000);
-        } elseif ($newsletter->any()) {
-            $toast(NotificationType::Error, 'Newsletter', $newsletter->first(), 9000);
+        if ($bag) {
+            $more = $bag->count() - 1;
+            $title = $bag === $errors->getBag('newsletter') ? 'Newsletter' : 'Please check the form';
+            $toast(NotificationType::Error, $title, $bag->first().($more > 0 ? ' (and '.$more.' more)' : ''), 9000);
         } elseif ($problem) {
             $toast(NotificationType::Error, 'That did not go through', $problem, 9000);
         } elseif (session('status')) {

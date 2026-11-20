@@ -36,7 +36,7 @@ class CareTest extends TestCase
 
     public function test_first_timer_cards_get_a_call_within_two_days(): void
     {
-        $this->post(route('welcome.store'), ['name' => 'Bisi Eze', 'phone' => '0803 555 0000', 'wants_to_join' => '1']);
+        $this->post(route('welcome.store'), ['first_name' => 'Bisi', 'last_name' => 'Eze', 'gender' => 'female', 'phone' => '0803 555 0000', 'wants_to_join' => '1']);
 
         $followUp = FollowUp::sole();
         $this->assertSame('first_timer', $followUp->reason);
@@ -63,7 +63,7 @@ class CareTest extends TestCase
 
         $this->assertSame('new_member', FollowUp::sole()->reason);
 
-        $this->post(route('admin.members.store'), ['name' => 'Added by office']);
+        $this->post(route('admin.members.store'), ['first_name' => 'Added', 'last_name' => 'by office', 'gender' => 'female']);
         $this->assertSame(1, FollowUp::count());
     }
 

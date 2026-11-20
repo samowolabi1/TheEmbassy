@@ -53,4 +53,12 @@ class NotifyTest extends TestCase
 
         $this->assertSame([], $offenders->map(fn ($f) => $f->getFilename())->values()->all(), 'Use data-confirm or ask() from resources/js/dialog.js instead.');
     }
+
+    public function test_errors_in_a_named_form_bag_pop_up_too(): void
+    {
+        $office = User::factory()->create(['role' => 'secretary']);
+        $this->actingAs($office)->from(route('admin.register.index'))->followingRedirects()
+            ->post(route('admin.register.member'), ['_form' => 'member', 'phone' => '0803'])
+            ->assertSee('Please check the form')->assertSee('border-red-500', false);
+    }
 }

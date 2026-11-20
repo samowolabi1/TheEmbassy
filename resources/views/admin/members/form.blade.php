@@ -15,10 +15,7 @@
         <section class="box grow form">
             <h2>Details</h2>
             <div class="form-row">
-                <label class="field">Full name
-                    <input type="text" name="name" value="{{ old('name', $member->name) }}" required maxlength="100">
-                    @error('name') <span class="field-error">{{ $message }}</span> @enderror
-                </label>
+                <x-person-name :first="$member->first_name" :last="$member->last_name" :autocomplete="false" />
                 <label class="field">Phone
                     <input type="tel" name="phone" value="{{ old('phone', $member->phone) }}" maxlength="40">
                     @error('phone') <span class="field-error">{{ $message }}</span> @enderror
@@ -29,13 +26,7 @@
                     <input type="email" name="email" value="{{ old('email', $member->email) }}">
                     @error('email') <span class="field-error">{{ $message }}</span> @enderror
                 </label>
-                <label class="field">Gender
-                    <select name="gender">
-                        <option value="">—</option>
-                        <option value="female" @selected(old('gender', $member->gender) === 'female')>Female</option>
-                        <option value="male" @selected(old('gender', $member->gender) === 'male')>Male</option>
-                    </select>
-                </label>
+                <x-gender-select :value="$member->gender" />
             </div>
             <div class="form-row">
                 <x-birthday-input :value="$member->birthday" hint="For birthday wishes from the church. The year is optional." />

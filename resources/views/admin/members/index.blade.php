@@ -110,7 +110,7 @@
     <section class="box">
         <div class="box__head">
             <h2>Import from a spreadsheet <x-tip text="Upload a CSV file whose first row is headings, including a name column (phone, email and the rest are optional). Anyone already on the register with the same email or phone is skipped, so nobody is added twice." /></h2>
-            <span class="box__note">A CSV with headings in the first row: <code>name</code> (required), and any of <code>phone</code>, <code>email</code>, <code>gender</code>, <code>birthday</code> (a full date, or just the day and month like 15/11), <code>address</code>, <code>unit</code>, <code>fellowship</code>, <code>joined_on</code>. Unit and fellowship names must match the ones set up already. People already on the register (same email or phone) are skipped.</span>
+            <span class="box__note">A CSV with headings in the first row: <code>first_name</code> and <code>last_name</code> (or one <code>name</code> column), and any of <code>phone</code>, <code>email</code>, <code>gender</code>, <code>birthday</code> (a full date, or just the day and month like 15/11), <code>address</code>, <code>unit</code>, <code>fellowship</code>, <code>joined_on</code>. Unit and fellowship names must match the ones set up already. People already on the register (same email or phone) are skipped.</span>
         </div>
         <form method="POST" action="{{ route('admin.members.import') }}" enctype="multipart/form-data" class="form" style="flex-direction: row; flex-wrap: wrap; align-items: center">
             @csrf

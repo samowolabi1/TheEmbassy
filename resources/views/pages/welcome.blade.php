@@ -18,10 +18,10 @@
                 <form method="POST" action="{{ route('welcome.store') }}" class="notice-form__group" novalidate>
                     @csrf
                     <label class="honeypot" aria-hidden="true">Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
-                    <label class="field">Your name
-                        <input type="text" name="name" value="{{ old('name') }}" required maxlength="100" autocomplete="name">
-                        @error('name') <span class="field-error">{{ $message }}</span> @enderror
-                    </label>
+                    <div class="grid-auto" style="--min: 180px; --gap: 14px">
+                        <x-person-name />
+                    </div>
+                    <x-gender-select />
                     <label class="field">Phone (WhatsApp if you have it)
                         <input type="tel" name="phone" value="{{ old('phone') }}" required maxlength="40" autocomplete="tel">
                         @error('phone') <span class="field-error">{{ $message }}</span> @enderror

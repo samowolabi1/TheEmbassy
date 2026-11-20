@@ -143,11 +143,11 @@ class MemberRanksTest extends TestCase
 
         // The office ticks several units on the profile.
         $office = User::factory()->create(['role' => 'secretary']);
-        $this->actingAs($office)->put(route('admin.members.update', $ada), ['name' => 'Ada Obi', 'status' => 'active', 'units' => [$this->choir->id, $ushering->id]])->assertSessionHasNoErrors();
+        $this->actingAs($office)->put(route('admin.members.update', $ada), ['first_name' => 'Ada', 'last_name' => 'Obi', 'gender' => 'female', 'status' => 'active', 'units' => [$this->choir->id, $ushering->id]])->assertSessionHasNoErrors();
         $this->assertSame(['worker', [$this->choir->id, $ushering->id]], [$ada->fresh()->rank, $ada->fresh()->unitIds()]);
         $this->get(route('admin.members.index', ['unit' => $ushering->id]))->assertOk()->assertSee('Ada Obi');
         // A head stays in the unit they lead even if it's unticked.
-        $this->put(route('admin.members.update', $this->hod), ['name' => 'Samuel Ojo', 'status' => 'active', 'units' => []]);
+        $this->put(route('admin.members.update', $this->hod), ['first_name' => 'Samuel', 'last_name' => 'Ojo', 'gender' => 'female', 'status' => 'active', 'units' => []]);
         $this->assertTrue($this->hod->fresh()->inUnit($this->choir));
     }
 
@@ -212,7 +212,7 @@ class MemberRanksTest extends TestCase
 
     public function test_choosing_a_unit_when_signing_up_is_a_request_and_staff_add_units(): void
     {
-        $this->post(route('join.store'), ['name' => 'New Person', 'email' => 'new@example.com', 'phone' => '0803', 'unit_id' => $this->choir->id, 'password' => 'a-long-password', 'password_confirmation' => 'a-long-password', 'agree' => '1'])->assertRedirect(route('account'));
+        $this->post(route('join.store'), ['first_name' => 'New', 'last_name' => 'Person', 'gender' => 'female', 'email' => 'new@example.com', 'phone' => '0803', 'unit_id' => $this->choir->id, 'password' => 'a-long-password', 'password_confirmation' => 'a-long-password', 'agree' => '1'])->assertRedirect(route('account'));
         $member = Member::where('email', 'new@example.com')->first();
         $this->assertSame([[], 'pending'], [$member->unitIds(), $member->unitRequests()->value('status')]);
 

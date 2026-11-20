@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasFirstAndLastName;
 use App\Services\Care\FollowUps;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,10 +13,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * A visitor's first-timer card, and whether someone has called them.
  */
-#[Fillable(['name', 'phone', 'email', 'invited_by', 'visited_on', 'wants_to_join', 'notes'])]
+#[Fillable(['name', 'first_name', 'last_name', 'gender', 'phone', 'email', 'invited_by', 'visited_on', 'wants_to_join', 'notes'])]
 class FirstTimer extends Model
 {
-    use HasFactory;
+    use HasFactory, HasFirstAndLastName;
 
     protected static function booted(): void
     {

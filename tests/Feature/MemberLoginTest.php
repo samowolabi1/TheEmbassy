@@ -34,7 +34,7 @@ class MemberLoginTest extends TestCase
     public function test_the_office_adds_a_member_and_sends_a_link_that_works_for_a_week(): void
     {
         $this->actingAs($this->office)->post(route('admin.members.store'), [
-            'name' => 'Ada Obi', 'phone' => '0803 123 4567', 'email' => 'ada@example.com', 'login' => 'link',
+            'first_name' => 'Ada', 'last_name' => 'Obi', 'gender' => 'female', 'phone' => '0803 123 4567', 'email' => 'ada@example.com', 'login' => 'link',
         ])->assertSessionHas('status', fn ($s) => str_contains($s, 'sent a link to choose a password'));
         $member = Member::where('email', 'ada@example.com')->sole();
         $this->assertNotNull($member->user);

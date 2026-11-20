@@ -521,6 +521,10 @@ Most people use the app on a phone, so every page is built for one and checked a
 - the busiest admin lists (members, unit members, empowerment applications, contacts) turn into cards, each value labelled with its column; other wide tables scroll inside their box, with a soft fade at the edge to show there's more;
 - the announcement bar at the top is one compact, tappable row, and admin pages leave room so the floating Help button never covers the last item.
 
+## Names and gender
+
+Members and first-timers have a first name and a last name, and gender (female or male) is required on every form that adds or edits one: joining, the welcome card, Register someone, first-timer cards and the member editor. The full `name` is still stored and kept in step (`App\Models\Concerns\HasFirstAndLastName`), so lists, search and messages keep working; `App\Http\Middleware\CombineName` joins the two boxes for the controllers. People already on the register were split with the last word as the last name ("Sis. Adaeze Obi" became "Sis. Adaeze" and "Obi"); fix any odd ones in the member editor. A member list CSV can have `first_name` and `last_name` columns, or one `name` column.
+
 ## Birthdays
 
 Birthday boxes ask for the day and the month; the year is optional. Under them: "For birthday wishes from the church. The year is optional." Without a year, the date is saved with the year 1904 (`Member::NO_BIRTH_YEAR`, a leap year so 29 February works), and pages show just "15 November". `$member->birthdayLabel()` and `birthdayYearKnown()` give the right wording. The boxes are `<x-birthday-input>`; `App\Http\Middleware\CombineBirthday` joins them into `birthday` before the controllers see the form. A member list CSV can give a full date or just "15/11".

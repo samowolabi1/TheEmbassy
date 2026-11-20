@@ -14,21 +14,13 @@
                 <fieldset class="notice-form__group">
                     <legend>About you</legend>
                     <div class="grid-auto" style="--min: 220px; --gap: 14px">
-                        <label class="field">Full name
-                            <input type="text" name="name" value="{{ old('name', auth()->user()?->name) }}" required maxlength="100" autocomplete="name">
-                            @error('name') <span class="field-error">{{ $message }}</span> @enderror
-                        </label>
+                        @php([$prefillFirst, $prefillLast] = \App\Models\Concerns\HasFirstAndLastName::split((string) auth()->user()?->name))
+                        <x-person-name :first="$prefillFirst ?: null" :last="$prefillLast" />
                         <label class="field">Phone
                             <input type="tel" name="phone" value="{{ old('phone') }}" required maxlength="40" autocomplete="tel">
                             @error('phone') <span class="field-error">{{ $message }}</span> @enderror
                         </label>
-                        <label class="field">Gender (optional)
-                            <select name="gender">
-                                <option value="">Prefer not to say</option>
-                                <option value="female" @selected(old('gender') === 'female')>Female</option>
-                                <option value="male" @selected(old('gender') === 'male')>Male</option>
-                            </select>
-                        </label>
+                        <x-gender-select />
                         <x-birthday-input />
                     </div>
                     <label class="field">Address or area (optional)

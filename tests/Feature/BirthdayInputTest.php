@@ -15,7 +15,7 @@ class BirthdayInputTest extends TestCase
     private function joinData(array $overrides = []): array
     {
         return [
-            'name' => 'Ada Obi', 'email' => 'ada@example.com', 'phone' => '0803 000 0000', 'password' => 'a-long-password',
+            'first_name' => 'Ada', 'last_name' => 'Obi', 'gender' => 'female', 'email' => 'ada@example.com', 'phone' => '0803 000 0000', 'password' => 'a-long-password',
             'password_confirmation' => 'a-long-password', 'agree' => '1', ...$overrides,
         ];
     }

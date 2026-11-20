@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasFirstAndLastName;
 use App\Services\Care\FollowUps;
 use App\Services\Tokens\Rewards;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -18,10 +19,10 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Someone in the church family. They may have a login (user) or be on the register only.
  */
-#[Fillable(['name', 'phone', 'email', 'gender', 'birthday', 'anniversary', 'address', 'unit_id', 'fellowship_id', 'joined_on', 'baptised', 'believers_class', 'workers_training', 'sod', 'bible_college', 'notes', 'notify_sms', 'celebrate_birthday'])]
+#[Fillable(['name', 'first_name', 'last_name', 'phone', 'email', 'gender', 'birthday', 'anniversary', 'address', 'unit_id', 'fellowship_id', 'joined_on', 'baptised', 'believers_class', 'workers_training', 'sod', 'bible_college', 'notes', 'notify_sms', 'celebrate_birthday'])]
 class Member extends Model
 {
-    use HasFactory;
+    use HasFactory, HasFirstAndLastName;
 
     /**
      * Ranks, in order: every member; workers (everyone serving in a unit); ministers, who work

@@ -19,10 +19,11 @@
                 @csrf
                 <input type="hidden" name="_form" value="visitor">
                 <div class="form-row">
-                    <label class="field">Name <input type="text" name="name" value="{{ $o('visitor', 'name') }}" required maxlength="100" autocomplete="off"></label>
+                    <x-person-name old-form="visitor" :autocomplete="false" />
                     <label class="field">Phone <input type="tel" name="phone" value="{{ $o('visitor', 'phone') }}" required maxlength="40"></label>
+                    <x-gender-select old-form="visitor" />
                 </div>
-                @foreach (['name', 'phone', 'email', 'visited_on'] as $f)
+                @foreach (['first_name', 'last_name', 'gender', 'phone', 'email', 'visited_on'] as $f)
                     @error($f, 'visitor') <span class="field-error">{{ $message }}</span> @enderror
                 @endforeach
                 <div class="form-row">
@@ -42,21 +43,15 @@
                 @csrf
                 <input type="hidden" name="_form" value="member">
                 <div class="form-row">
-                    <label class="field">Full name <input type="text" name="name" value="{{ $o('member', 'name') }}" required maxlength="100" autocomplete="off"></label>
+                    <x-person-name old-form="member" :autocomplete="false" />
                     <label class="field">Phone <input type="tel" name="phone" value="{{ $o('member', 'phone') }}" required maxlength="40"></label>
+                    <x-gender-select old-form="member" />
                 </div>
-                @foreach (['name', 'phone', 'email', 'birthday'] as $f)
+                @foreach (['first_name', 'last_name', 'gender', 'phone', 'email', 'birthday'] as $f)
                     @error($f, 'member') <span class="field-error">{{ $message }}</span> @enderror
                 @endforeach
                 <div class="form-row">
                     <label class="field">Email (optional) <input type="email" name="email" value="{{ $o('member', 'email') }}" maxlength="255"></label>
-                    <label class="field">Gender
-                        <select name="gender">
-                            <option value="">Not given</option>
-                            <option value="female" @selected($o('member', 'gender') === 'female')>Female</option>
-                            <option value="male" @selected($o('member', 'gender') === 'male')>Male</option>
-                        </select>
-                    </label>
                     <x-birthday-input old-form="member" />
                 </div>
                 <label class="field">Address or area (optional) <input type="text" name="address" value="{{ $o('member', 'address') }}" maxlength="255"></label>

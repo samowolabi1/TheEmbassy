@@ -39,7 +39,7 @@ class MembersAdminTest extends TestCase
         $this->actingAs($this->office());
 
         $this->post(route('admin.members.store'), [
-            'name' => 'David Musa', 'phone' => '0803 111 2222', 'fellowship_id' => $house->id, 'baptised' => '1',
+            'first_name' => 'David', 'last_name' => 'Musa', 'gender' => 'female', 'phone' => '0803 111 2222', 'fellowship_id' => $house->id, 'baptised' => '1',
         ])->assertRedirect();
 
         $member = Member::sole();
@@ -50,7 +50,7 @@ class MembersAdminTest extends TestCase
 
         $this->get(route('admin.members.show', $member))->assertOk()->assertSee('House 4')->assertSee('Baptismal class');
 
-        $this->put(route('admin.members.update', $member), ['name' => 'David Musa', 'status' => 'inactive', 'workers_training' => '1'])->assertRedirect();
+        $this->put(route('admin.members.update', $member), ['first_name' => 'David', 'last_name' => 'Musa', 'gender' => 'female', 'status' => 'inactive', 'workers_training' => '1'])->assertRedirect();
         $member->refresh();
         $this->assertSame(Member::INACTIVE, $member->status);
         $this->assertTrue($member->workers_training);

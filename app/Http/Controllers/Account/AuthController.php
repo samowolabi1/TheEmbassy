@@ -95,10 +95,12 @@ class AuthController extends Controller
         }
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:100'],
+            'first_name' => ['required', 'string', 'max:60'],
+            'last_name' => ['required', 'string', 'max:60'],
+            'name' => ['nullable', 'string', 'max:121'],
             'email' => $user ? ['nullable'] : ['required', 'email', 'max:255', Rule::unique('users', 'email')],
             'phone' => ['required', 'string', 'max:40'],
-            'gender' => ['nullable', Rule::in(['female', 'male'])],
+            'gender' => ['required', Rule::in(['female', 'male'])],
             'birthday' => ['nullable', 'date', 'before:today'],
             'address' => ['nullable', 'string', 'max:255'],
             'unit_id' => ['nullable', Rule::exists('units', 'id')],

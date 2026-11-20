@@ -212,10 +212,10 @@ class MemberController extends Controller
 
         $handle = fopen($request->file('file')->getRealPath(), 'r');
         $header = array_map(fn ($h) => Str::snake(trim(preg_replace('/^\xEF\xBB\xBF/', '', (string) $h))), fgetcsv($handle) ?: []);
-        if (! in_array('name', $header, true)) {
+        if (! in_array('name', $header, true) && ! in_array('first_name', $header, true)) {
             fclose($handle);
 
-            return back()->withErrors(['file' => 'The first row must be headings, including a "name" column.']);
+            return back()->withErrors(['file' => 'The first row must be headings, including "first_name" and "last_name" (or one "name" column).']);
         }
 
         $units = Unit::pluck('id', 'name')->mapWithKeys(fn ($id, $name) => [Str::lower($name) => $id]);
@@ -224,7 +224,9 @@ class MemberController extends Controller
 
         while (($row = fgetcsv($handle)) !== false) {
             $data = array_combine($header, array_pad(array_slice($row, 0, count($header)), count($header), null));
-            $name = trim((string) ($data['name'] ?? ''));
+            $first = trim((string) ($data['first_name'] ?? ''));
+            $last = trim((string) ($data['last_name'] ?? ''));
+            $name = $first !== '' ? trim($first.' '.$last) : trim((string) ($data['name'] ?? ''));
             $email = Str::lower(trim((string) ($data['email'] ?? '')));
             $phone = trim((string) ($data['phone'] ?? ''));
 
@@ -237,6 +239,7 @@ class MemberController extends Controller
 
             $member = new Member([
                 'name' => $name,
+                ...($first !== '' ? ['first_name' => $first, 'last_name' => $last ?: null] : []),
                 'email' => $email ?: null,
                 'phone' => Str::limit($phone, 40, '') ?: null,
                 'gender' => in_array(Str::lower((string) ($data['gender'] ?? '')), ['female', 'male'], true) ? Str::lower($data['gender']) : null,
@@ -302,10 +305,12 @@ class MemberController extends Controller
     private function validated(Request $request, ?Member $member = null): array
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:100'],
+            'first_name' => ['required', 'string', 'max:60'],
+            'last_name' => ['required', 'string', 'max:60'],
+            'name' => ['nullable', 'string', 'max:121'],
             'phone' => ['nullable', 'string', 'max:40'],
             'email' => ['nullable', 'email', 'max:255', Rule::unique('members', 'email')->ignore($member?->id)],
-            'gender' => ['nullable', Rule::in(['female', 'male'])],
+            'gender' => ['required', Rule::in(['female', 'male'])],
             'birthday' => ['nullable', 'date', 'before:today'],
             'anniversary' => ['nullable', 'date', 'before_or_equal:today'],
             'address' => ['nullable', 'string', 'max:255'],
