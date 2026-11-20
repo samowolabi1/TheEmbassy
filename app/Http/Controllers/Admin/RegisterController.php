@@ -71,6 +71,10 @@ class RegisterController extends Controller
             ($approves || $user->canManage('units')) ? $member->joinUnit($unit) : $member->unitRequests()->create(['unit_id' => $unit->id]);
         }
 
+        if ($approves && in_array($request->input('login'), ['link', 'temporary'], true)) {
+            return app(MemberController::class)->giveLogin($request, $member, "{$member->name} is on the register.".($unit ? " They're in {$unit->name}." : ''));
+        }
+
         return redirect()->route('admin.register.index')->with('status', $approves
             ? "{$member->name} is on the register.".($unit ? " They're in {$unit->name}." : '')
             : "{$member->name} is on the register, waiting for the church office to approve them.");

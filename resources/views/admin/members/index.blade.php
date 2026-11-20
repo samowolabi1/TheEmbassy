@@ -12,6 +12,16 @@
         </div>
     </header>
 
+    @if ($tab === 'active' && $withoutLogin)
+        <section class="box" style="display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center">
+            <p class="box__note" style="margin: 0; flex: 1 1 260px"><strong>{{ $withoutLogin }} {{ \Illuminate\Support\Str::plural('member', $withoutLogin) }}</strong> with an email {{ $withoutLogin === 1 ? 'has' : 'have' }} no login yet. Send each a link to choose a password, or open someone's profile to give them a temporary password. <a href="{{ route('admin.members.index', ['login' => 'none']) }}" class="box__link">See who</a></p>
+            <form method="POST" action="{{ route('admin.members.login.invite-all') }}" data-confirm="Email {{ $withoutLogin }} {{ \Illuminate\Support\Str::plural('member', $withoutLogin) }} a link to choose a password?">
+                @csrf
+                <button type="submit" class="btn btn--navy btn--sm">Send {{ $withoutLogin }} {{ \Illuminate\Support\Str::plural('link', $withoutLogin) }}</button>
+            </form>
+        </section>
+    @endif
+
     <nav class="tabs" aria-label="Member status">
         @foreach ($tabs as $key => $t)
             <a href="{{ route('admin.members.index', ['tab' => $key]) }}" class="tab" @if ($tab === $key) aria-current="page" @endif>{{ $t['label'] }} <span>{{ number_format($t['count']) }}</span></a>
@@ -51,6 +61,12 @@
                 <option value="">Any training</option>
                 <option value="unanswered" @selected(($filters['training'] ?? '') === 'unanswered')>Training not answered</option>
                 <option value="missing" @selected(($filters['training'] ?? '') === 'missing')>Classes still to do</option>
+            </select>
+            <label class="sr-only" for="filter-login">Login</label>
+            <select id="filter-login" name="login" class="select-sm">
+                <option value="">With or without a login</option>
+                <option value="none" @selected(($filters['login'] ?? '') === 'none')>No login yet</option>
+                <option value="yes" @selected(($filters['login'] ?? '') === 'yes')>Has a login</option>
             </select>
             <button type="submit" class="btn btn--ghost btn--xs">Filter</button>
         </form>

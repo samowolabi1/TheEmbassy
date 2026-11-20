@@ -90,6 +90,9 @@
                     <label class="login__remember"><input type="checkbox" name="{{ $field }}" value="1" @checked(old($field, $member->{$field}))>{{ $label }}</label>
                 @endforeach
             </fieldset>
+            @unless ($member->exists)
+                @include('admin.members._login-choice')
+            @endunless
             <button type="submit" class="btn btn--navy">{{ $member->exists ? 'Save' : 'Add member' }}</button>
         </section>
     </form>

@@ -7,6 +7,7 @@
             <form method="POST" action="{{ route('password.update') }}" class="notice-form__group">
                 @csrf
                 <input type="hidden" name="token" value="{{ $token }}">
+                @if (request()->boolean('invite') || old('invite'))<input type="hidden" name="invite" value="1">@endif
                 <label class="field">Email
                     <input type="email" name="email" value="{{ old('email', $email) }}" required autocomplete="username">
                     @error('email') <span class="field-error">{{ $message }}</span> @enderror

@@ -5,7 +5,7 @@
         <div class="stack" style="gap: 4px">
             <a href="{{ route('admin.members.index', ['tab' => $member->status]) }}" class="box__link">← Members</a>
             <h1 style="display: flex; align-items: center; gap: 14px"><span class="avatar" style="width: 52px; height: 52px; font-size: 18px">{{ $member->initials() }}</span>{{ $member->name }}</h1>
-            <span class="page-head__sub">{{ $member->statusLabel() }} · {{ $member->rankLine() }}@if ($member->user) · has a login @endif</span>
+            <span class="page-head__sub">{{ $member->statusLabel() }} · {{ $member->rankLine() }}@if ($member->user) · has a login @else · <a href="#login">no login yet</a>@endif</span>
         </div>
         <div class="actions">
             @if ($member->whatsappUrl())
@@ -68,6 +68,47 @@
         </section>
 
         <section class="box side-col">
+            <h2 id="login">Login <x-tip text="How they sign in to the app: with their email or phone number and a password. Send a link to choose a password (it works for 7 days; send it again any time), or give a temporary password to pass on yourself. They choose their own the first time they sign in." /></h2>
+            @if (session('tempPassword'))
+                <div class="temp-password" role="status">
+                    <span class="box__note" style="margin: 0">Temporary password for {{ $member->firstName() }}, shown only now:</span>
+                    <code class="temp-password__code">{{ session('tempPassword') }}</code>
+                    <span style="display: flex; gap: 8px; flex-wrap: wrap">
+                        <button type="button" class="btn btn--ghost btn--xs" data-copy="{{ session('tempPassword') }}" data-copy-label="Copy">Copy</button>
+                        @if ($member->whatsappUrl())
+                            <a href="{{ $member->whatsappUrl() }}?text={{ rawurlencode('Hi '.$member->firstName().', here is your '.config('church.short_name').' login. Go to '.route('login').' and sign in with '.($member->user?->email ?: 'your phone number '.$member->phone).' and the password '.session('tempPassword').'. You will choose your own password after you sign in.') }}" class="btn btn--gold btn--xs" target="_blank" rel="noopener">Send on WhatsApp</a>
+                        @endif
+                    </span>
+                </div>
+            @endif
+            @error('login') <p class="field-error" role="alert" style="margin: 0">{{ $message }}</p> @enderror
+            <p class="box__note" style="margin: 0">
+                @if (! $member->user)
+                    No login yet. They'll sign in with {{ $member->email ? 'their email ('.$member->email.')' : '' }}{{ $member->email && $member->phone ? ' or ' : '' }}{{ $member->phone ? 'their phone number' : '' }}{{ ! $member->email && ! $member->phone ? 'an email or phone number: add one first' : '' }}.
+                @elseif ($member->user->must_change_password)
+                    Has a temporary password and hasn't signed in to choose their own yet.
+                @elseif ($member->user->last_login_at)
+                    Has a login. Last signed in {{ $member->user->last_login_at->diffForHumans() }}.
+                @elseif ($member->user->invited_at)
+                    Sent a link {{ $member->user->invited_at->diffForHumans() }}; hasn't signed in yet.
+                @else
+                    Has a login{{ $member->user->email ? ' ('.$member->user->email.')' : '' }}.
+                @endif
+            </p>
+            @if ($member->email || $member->phone)
+                <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                    @if ($member->user?->email ?? $member->email)
+                        <form method="POST" action="{{ route('admin.members.login.invite', $member) }}">
+                            @csrf
+                            <button type="submit" class="btn btn--navy btn--xs">{{ $member->user ? 'Send a password link' : 'Send a link to set a password' }}</button>
+                        </form>
+                    @endif
+                    <form method="POST" action="{{ route('admin.members.login.temporary', $member) }}" data-confirm="Give {{ $member->firstName() }} a new temporary password?{{ $member->user ? ' Their current password will stop working.' : '' }}">
+                        @csrf
+                        <button type="submit" class="btn btn--ghost btn--xs">Give a temporary password</button>
+                    </form>
+                </div>
+            @endif
             <h2>Training</h2>
             <p style="margin: 0">@include('unit.partials.training-status', ['m' => $member])</p>
             <ul class="check-list">

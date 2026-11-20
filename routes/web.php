@@ -155,6 +155,8 @@ Route::get('/join', [Account\AuthController::class, 'join'])->name('join');
 Route::post('/join', [Account\AuthController::class, 'storeJoin'])->middleware('throttle:5,1')->name('join.store');
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [Account\AuthController::class, 'destroy'])->name('logout');
+    Route::get('/account/password', [Account\PasswordController::class, 'edit'])->name('account.password.edit');
+    Route::put('/account/password', [Account\PasswordController::class, 'update'])->middleware('throttle:10,1')->name('account.password.update');
     Route::get('/account', [Account\AccountController::class, 'show'])->name('account');
     Route::put('/account', [Account\AccountController::class, 'update'])->name('account.update');
     Route::get('/account/tokens', [Account\AccountController::class, 'tokens'])->name('account.tokens');
@@ -393,6 +395,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/members/import', [Admin\MemberController::class, 'import'])->name('members.import');
             Route::post('/members/{member}/approve', [Admin\MemberController::class, 'approve'])->name('members.approve');
             Route::post('/members/{member}/rank', [Admin\MemberController::class, 'rank'])->name('members.rank');
+            Route::post('/members/{member}/login-link', [Admin\MemberController::class, 'inviteLogin'])->middleware('throttle:20,1')->name('members.login.invite');
+            Route::post('/members/{member}/temporary-password', [Admin\MemberController::class, 'temporaryPassword'])->middleware('throttle:20,1')->name('members.login.temporary');
+            Route::post('/members/login-links', [Admin\MemberController::class, 'inviteAll'])->middleware('throttle:3,1')->name('members.login.invite-all');
             Route::resource('members', Admin\MemberController::class);
         });
 

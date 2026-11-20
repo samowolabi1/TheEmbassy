@@ -9,14 +9,14 @@
             @endif
             <form method="POST" action="{{ route('login.store') }}" class="notice-form__group">
                 @csrf
-                <label class="field">Email
-                    <input type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" @error('email') aria-invalid="true" aria-describedby="login-error" @enderror>
+                <label class="field">Email or phone number
+                    <input type="text" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="e.g. 0803 123 4567" @error('email') aria-invalid="true" aria-describedby="login-error" @enderror>
                 </label>
                 <label class="field">Password
                     <input type="password" name="password" required autocomplete="current-password">
                 </label>
                 @error('email') <p class="field-error" id="login-error" role="alert" style="margin: 0">{{ $message }}</p> @enderror
-                <label class="check"><input type="checkbox" name="remember" value="1"> Keep me signed in on this device</label>
+                <label class="check"><input type="checkbox" name="remember" value="1" @checked(old('remember', true))> Keep me signed in on this phone ({{ intdiv((int) config('auth.guards.web.remember'), 1440) }} days)</label>
                 <button type="submit" class="btn btn--navy">Log in</button>
             </form>
             <div class="auth__links">

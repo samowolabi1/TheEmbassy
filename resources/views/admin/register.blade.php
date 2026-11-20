@@ -78,7 +78,11 @@
                         </select>
                     </label>
                 </div>
-                <span class="field__hint">{{ $approves ? 'They\'re approved straight away.' : 'The church office approves new members.' }} They can create a login later with the same email.</span>
+                @if ($approves)
+                    @include('admin.members._login-choice')
+                @else
+                    <span class="field__hint">The church office approves new members and gives them a login.</span>
+                @endif
                 <div><button type="submit" class="btn btn--navy">Add to the register</button></div>
             </form>
         </section>

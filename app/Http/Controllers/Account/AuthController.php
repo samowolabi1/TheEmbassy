@@ -8,11 +8,13 @@ use App\Models\Member;
 use App\Models\Unit;
 use App\Models\UnitRequest;
 use App\Models\User;
+use App\Services\People\Logins;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -32,25 +34,33 @@ class AuthController extends Controller
         return view('account.login');
     }
 
+    /**
+     * Sign in with an email or the phone number on the register.
+     */
     public function store(Request $request): RedirectResponse
     {
-        $credentials = $request->validate(['email' => ['required', 'email'], 'password' => ['required', 'string']]);
+        $data = $request->validate(['email' => ['required', 'string', 'max:255'], 'password' => ['required', 'string']], ['email.required' => 'Enter your email or phone number.']);
 
-        $key = 'login:'.Str::lower($credentials['email']).'|'.$request->ip();
+        $key = 'login:'.Str::lower(preg_replace('/\s+/', '', $data['email'])).'|'.$request->ip();
         if (RateLimiter::tooManyAttempts($key, 5)) {
             throw ValidationException::withMessages(['email' => 'Too many attempts. Try again in '.RateLimiter::availableIn($key).' seconds.']);
         }
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        $user = Logins::findForLogin($data['email']);
+        if (! $user || ! Hash::check($data['password'], $user->password)) {
             RateLimiter::hit($key);
 
-            throw ValidationException::withMessages(['email' => 'That email and password don\'t match an account.']);
+            throw ValidationException::withMessages(['email' => 'That email or phone number and password don\'t match an account.']);
         }
 
         RateLimiter::clear($key);
+        Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
+        $user->forceFill(['last_login_at' => now()])->save();
 
-        return redirect()->intended($this->home($request->user()));
+        return $user->must_change_password
+            ? redirect()->route('account.password.edit')
+            : redirect()->intended($this->home($user));
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -119,7 +129,7 @@ class AuthController extends Controller
         });
 
         if (! $request->user()) {
-            Auth::login($user);
+            Auth::login($user, remember: true); // new members stay signed in on their phone
             $request->session()->regenerate();
         }
 
@@ -153,10 +163,11 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', PasswordRule::min(10)],
         ]);
 
-        $status = Password::broker()->reset(
+        // A link the church office sent to set a first password works for a week.
+        $status = Password::broker($request->boolean('invite') ? 'invites' : null)->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password) {
-                $user->forceFill(['password' => $password, 'remember_token' => Str::random(60)])->save();
+                $user->forceFill(['password' => $password, 'remember_token' => Str::random(60), 'must_change_password' => false])->save();
                 event(new PasswordReset($user));
             }
         );

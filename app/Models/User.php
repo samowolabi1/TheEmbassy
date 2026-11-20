@@ -32,6 +32,9 @@ class User extends Authenticatable
             'community_muted_until' => 'datetime',
             'inbox_read_at' => 'datetime',
             'password' => 'hashed',
+            'must_change_password' => 'boolean',
+            'invited_at' => 'datetime',
+            'last_login_at' => 'datetime',
         ];
     }
 

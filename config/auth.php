@@ -41,6 +41,8 @@ return [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
+            // "Keep me signed in" lasts this long (in minutes) on that phone or computer.
+            'remember' => (int) env('AUTH_REMEMBER_DAYS', 90) * 1440,
         ],
     ],
 
@@ -98,6 +100,13 @@ return [
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
             'expire' => 60,
             'throttle' => 60,
+        ],
+        // Links the office sends members to set their first password: valid for a week.
+        'invites' => [
+            'provider' => 'users',
+            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire' => 10080,
+            'throttle' => 0,
         ],
     ],
 

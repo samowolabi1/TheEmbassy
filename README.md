@@ -501,6 +501,17 @@ Young people apply for empowerment programmes at **`/empowerment`** (linked in t
 - **Reviewing:** applications by status (new, shortlisted, accepted, waiting list, not selected, completed) and by choice, with search; how many picked and were accepted for each choice. Open one to see every answer, set its status, choose what they're accepted for, keep a private note, and let them know (a message for each status). Tick several to change them together. **Download Excel** gives every application with each answer in its own column, plus a summary. Reports › Youth empowerment covers all programmes for any dates.
 - **Demo:** `php artisan db:seed --class=EmpowermentDemoSeeder` adds an open programme with six choices, five questions and 24 applications at different stages.
 
+## Member logins
+
+Members sign in at `/login` with their **email or phone number** (written any way: 0803…, +234 803…) and a password. **"Keep me signed in"** is ticked to start and lasts **90 days** on that phone (`AUTH_REMEMBER_DAYS` in `.env` changes it), and people who join online stay signed in too.
+
+Members the office adds (Add member, Register someone, or a spreadsheet import) get a login from their profile in admin, under **Login**, or straight away from the form:
+- **Send a link to set a password:** emailed (and sent on WhatsApp when it's on). It works for **7 days** and can be sent again any time; the profile shows when it was sent and when they last signed in.
+- **Give a temporary password:** shown to the staff member once (with Copy and **Send on WhatsApp**) to pass on. It works for members with only a phone number. The member must choose their own password the first time they sign in, before anything else.
+- **Send links to everyone:** the members list shows how many members with an email have no login, with one button to send them all a link, and a "No login yet" filter.
+
+Members change their password from their account page ("Change password"); a new password signs out "keep me signed in" on their other devices. There's no shared default password: anyone who knew it could sign in as any member, so each temporary password is different and must be changed.
+
 ## Phones first
 
 Most people use the app on a phone, so every page is built for one and checked at 360px wide (and on tablets): nothing scrolls sideways or runs off the screen. On phones and touch screens:

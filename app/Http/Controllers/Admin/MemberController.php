@@ -8,6 +8,7 @@ use App\Models\Member;
 use App\Models\TokenTransfer;
 use App\Models\Unit;
 use App\Services\Care\FollowUps;
+use App\Services\People\Logins;
 use App\Services\People\Ranks;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
@@ -15,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
@@ -36,7 +38,8 @@ class MemberController extends Controller
             'tabs' => collect(self::TABS)->map(fn ($label, $key) => ['label' => $label, 'count' => Member::where('status', $key)->count()]),
             'units' => Unit::orderBy('name')->get(),
             'fellowships' => Fellowship::orderBy('name')->get(),
-            'filters' => $request->only(['q', 'unit', 'fellowship', 'rank', 'training']),
+            'filters' => $request->only(['q', 'unit', 'fellowship', 'rank', 'training', 'login']),
+            'withoutLogin' => Member::active()->whereNull('user_id')->whereNotNull('email')->where('email', '!=', '')->count(),
             'totals' => [
                 'members' => Member::active()->count(),
                 'units' => Unit::count(),
@@ -56,6 +59,70 @@ class MemberController extends Controller
         ]);
     }
 
+    /**
+     * Send the member a link to set their password (making their login if they have none).
+     */
+    public function inviteLogin(Member $member, Logins $logins): RedirectResponse
+    {
+        $went = $logins->invite($member);
+
+        return back()->with('status', $went
+            ? 'Sent '.$member->firstName().' a link to choose a password, by '.implode(' and ', $went).'. It works for 7 days.'
+            : 'The link couldn\'t be sent: check email is set up in Settings & roles, or give a temporary password instead.');
+    }
+
+    /**
+     * Give the member a temporary password to pass on; they choose their own when they sign in.
+     */
+    public function temporaryPassword(Member $member, Logins $logins): RedirectResponse
+    {
+        $password = $logins->temporaryPassword($member);
+
+        return redirect()->to(route('admin.members.show', $member).'#login')->with('tempPassword', $password)->with('status', 'Temporary password made for '.$member->firstName().'. It\'s shown once below.');
+    }
+
+    /**
+     * After adding someone: send their link or make a temporary password, as chosen on the form.
+     */
+    public function giveLogin(Request $request, Member $member, string $status): RedirectResponse
+    {
+        $choice = in_array($request->input('login'), ['link', 'temporary', 'none'], true) ? $request->input('login') : 'none';
+        $to = redirect()->route('admin.members.show', $member);
+        try {
+            if ($choice === 'link' && $member->email) {
+                $went = app(Logins::class)->invite($member);
+
+                return $to->with('status', $status.($went ? ' They\'ve been sent a link to choose a password.' : ' The login link couldn\'t be sent; try again from their profile.'));
+            }
+            if ($choice === 'temporary' || ($choice === 'link' && ! $member->email && $member->phone)) {
+                return redirect()->to(route('admin.members.show', $member).'#login')->with('tempPassword', app(Logins::class)->temporaryPassword($member))
+                    ->with('status', $status.($choice === 'link' ? ' They have no email, so here\'s a temporary password to pass on instead.' : ' Here\'s their temporary password.'));
+            }
+        } catch (ValidationException $e) {
+            return $to->with('status', $status)->withErrors($e->errors());
+        }
+
+        return $to->with('status', $status);
+    }
+
+    /**
+     * Links for every approved member with an email and no login yet.
+     */
+    public function inviteAll(Logins $logins): RedirectResponse
+    {
+        $members = Member::active()->whereNull('user_id')->whereNotNull('email')->where('email', '!=', '')->get();
+        $sent = 0;
+        foreach ($members as $member) {
+            try {
+                $logins->invite($member) && $sent++;
+            } catch (ValidationException) {
+                // e.g. their email is already used by someone else's login: skipped
+            }
+        }
+
+        return back()->with('status', "Sent set-password links to {$sent} ".Str::plural('member', $sent).'.'.($members->count() > $sent ? ' '.($members->count() - $sent).' couldn\'t be sent; open their profiles to see why.' : ''));
+    }
+
     public function create(): View
     {
         return view('admin.members.form', $this->formData(new Member(['joined_on' => today()])));
@@ -71,7 +138,7 @@ class MemberController extends Controller
         $member->forceFill(['training_answered_at' => now()])->save(); // the training ticks on the form are the answers
         $member->approve();
 
-        return redirect()->route('admin.members.show', $member)->with('status', "{$member->name} added to the register.");
+        return $this->giveLogin($request, $member, "{$member->name} added to the register.");
     }
 
     public function edit(Member $member): View
@@ -219,6 +286,8 @@ class MemberController extends Controller
             ->when($request->filled('unit'), fn ($q) => $q->whereHas('units', fn ($u) => $u->whereKey($request->integer('unit'))))
             ->when($request->filled('fellowship'), fn ($q) => $q->where('fellowship_id', $request->integer('fellowship')))
             ->when(array_key_exists((string) $request->query('rank'), Member::RANKS), fn ($q) => $q->where('rank', $request->query('rank')))
+            ->when($request->query('login') === 'none', fn ($q) => $q->whereNull('user_id'))
+            ->when($request->query('login') === 'yes', fn ($q) => $q->whereNotNull('user_id'))
             ->when($request->query('training') === 'unanswered', fn ($q) => $q->whereIn('rank', ['worker', 'minister'])->whereNull('training_answered_at'))
             ->when($request->query('training') === 'missing', fn ($q) => $q->where(function ($q) {
                 foreach (Member::REQUIREMENTS as $rank => $fields) {

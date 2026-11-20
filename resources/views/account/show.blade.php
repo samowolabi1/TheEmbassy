@@ -92,6 +92,7 @@
             @can('run-shop')
                 <a href="{{ route('vendor.products.index') }}" class="btn btn--outline btn--sm">My shop</a>
             @endcan
+            <a href="{{ route('account.password.edit') }}" class="btn btn--outline btn--sm">Change password</a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="btn btn--outline btn--sm">Log out</button>
