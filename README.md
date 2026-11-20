@@ -521,7 +521,7 @@ Most people use the app on a phone, so every page is built for one and checked a
 - the busiest admin lists (members, unit members, empowerment applications, contacts) turn into cards, each value labelled with its column; other wide tables scroll inside their box, with a soft fade at the edge to show there's more;
 - the announcement bar at the top is one compact, tappable row, and admin pages leave room so the floating Help button never covers the last item.
 
-## Pop-up messages
+## Pop-up messages and questions
 
 Every "saved", "sent" or "something went wrong" message pops up as a toast, using [Laravel Notify](https://github.com/mckenziearts/laravel-notify). They come in at the top of the screen, across the full width on a phone and in the top-right corner on a computer. Green means done, red means a form needs fixing (with the first problem spelled out). They close on their own after a few seconds, or with the ×.
 
@@ -529,6 +529,8 @@ Every "saved", "sent" or "something went wrong" message pops up as a toast, usin
 - New code can call the package directly: `notify()->success()->title('Saved')->message('...')->send();` (also `error()`, `warning()` and `info()`).
 - The package's CSS and JS live in `public/vendor/mckenziearts/laravel-notify` and are committed, because shared hosting can't run `vendor:publish`. They only load on pages that show a message. Colours are set in `resources/css/base.css` under "Pop-up messages".
 - Thank-you panels that replace a form, like "Message sent" on the contact page, stay on the page as before.
+
+Questions like "Remove this member?" or "Give Seun a new temporary password?" open the app's own box instead of the browser's grey one. It is a card in the middle of a computer screen and a sheet from the bottom on a phone, with big buttons. The OK button repeats the action ("Give a temporary password"), and it turns red for anything that deletes, removes or cancels. Add `data-confirm="Question? Optional detail."` to any form; in JavaScript, `await ask({ title, text, ok, input })` from `resources/js/dialog.js` replaces `confirm()` and `prompt()`. A test fails if `confirm(`, `prompt(` or `alert(` comes back.
 
 ## Reports (Excel)
 

@@ -40,7 +40,7 @@
                                 </form>
                             @endif
                             @if (in_array($loan->status, ['requested', 'waiting'], true))
-                                <form method="POST" action="{{ route('library.cancel', $loan) }}" onsubmit="return confirm('Cancel this reservation?')">
+                                <form method="POST" action="{{ route('library.cancel', $loan) }}" data-confirm="Cancel this reservation?">
                                     @csrf
                                     <button type="submit" class="btn btn--outline btn--sm">Cancel</button>
                                 </form>

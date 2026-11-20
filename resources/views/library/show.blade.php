@@ -82,7 +82,7 @@
                 </div>
                 <p style="margin: 0; white-space: pre-line">{{ $r->body }}</p>
                 @if ($r->member_id === auth()->user()->member?->id || auth()->user()->moderatesCommunity())
-                    <form method="POST" action="{{ route('community.reviews.destroy', $r) }}" onsubmit="return confirm('{{ $r->member_id === auth()->user()->member?->id ? 'Delete your review?' : 'Take this review down?' }}')">
+                    <form method="POST" action="{{ route('community.reviews.destroy', $r) }}" data-confirm="{{ $r->member_id === auth()->user()->member?->id ? 'Delete your review?' : 'Take this review down?' }}">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn--outline btn--sm">{{ $r->member_id === auth()->user()->member?->id ? 'Delete' : 'Take down' }}</button>

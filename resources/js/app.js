@@ -13,6 +13,7 @@ import './app-shell';
 import './community';
 import './join';
 import './fields';
+import './dialog';
 
 // Product photos: arrows, thumbnails and keyboard move the gallery; swiping works by itself.
 document.querySelectorAll('[data-gallery]').forEach((gallery) => {

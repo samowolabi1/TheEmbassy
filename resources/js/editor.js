@@ -1,6 +1,7 @@
 // Article editor: Markdown toolbar, picture upload, word count, status date picker,
 // and a warning before leaving with unsaved changes. The plain textarea works without it.
 
+import { ask } from './dialog';
 const editor = document.querySelector('[data-md-editor]');
 
 if (editor) {
@@ -37,8 +38,8 @@ if (editor) {
         h3: () => prefixLines(() => '### '),
         bold: () => wrap('**'),
         italic: () => wrap('*'),
-        link: () => {
-            const url = window.prompt('Link address (https://…)');
+        link: async () => {
+            const url = await ask({ title: 'Add a link', ok: 'Add link', cancel: 'Cancel', danger: false, input: { label: 'Link address', type: 'url', placeholder: 'https://…' } });
             if (url) wrap('[', `](${url.trim()})`, 'link text');
         },
         list: () => prefixLines(() => '- '),

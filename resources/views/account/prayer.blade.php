@@ -88,7 +88,7 @@
                                     </form>
                                 </details>
                             @endunless
-                            <form method="POST" action="{{ route('account.prayer.destroy', $p) }}" onsubmit="return confirm('Remove this prayer request?')">
+                            <form method="POST" action="{{ route('account.prayer.destroy', $p) }}" data-confirm="Remove this prayer request?">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn--outline btn--sm">Remove</button>

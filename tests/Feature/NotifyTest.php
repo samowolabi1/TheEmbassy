@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 class NotifyTest extends TestCase
@@ -42,5 +43,14 @@ class NotifyTest extends TestCase
         notify()->info()->title('Heads up')->message('Service starts at 9.')->send();
 
         $this->get('/')->assertSee('Heads up')->assertSee('Service starts at 9.');
+    }
+
+    public function test_no_page_uses_the_browser_s_own_confirm_or_prompt_boxes(): void
+    {
+        $files = collect([...File::allFiles(resource_path('views')), ...File::allFiles(resource_path('js'))])
+            ->reject(fn ($f) => $f->getFilename() === 'dialog.js');
+        $offenders = $files->filter(fn ($f) => preg_match('/(^|[^.\w])(window\.)?(confirm|prompt|alert)\(/m', preg_replace('#//.*$#m', '', $f->getContents())));
+
+        $this->assertSame([], $offenders->map(fn ($f) => $f->getFilename())->values()->all(), 'Use data-confirm or ask() from resources/js/dialog.js instead.');
     }
 }

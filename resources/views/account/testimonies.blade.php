@@ -64,7 +64,7 @@
                                 <a href="{{ route('testimonies.show', $t) }}" class="btn btn--outline btn--sm">View</a>
                             @endif
                             @if (in_array($t->status, ['pending', 'published']))
-                                <form method="POST" action="{{ route('account.testimonies.withdraw', $t) }}" onsubmit="return confirm('Withdraw this testimony?')">
+                                <form method="POST" action="{{ route('account.testimonies.withdraw', $t) }}" data-confirm="Withdraw this testimony?">
                                     @csrf
                                     <button type="submit" class="btn btn--outline btn--sm">Withdraw</button>
                                 </form>

@@ -7,13 +7,9 @@ import './studio';
 import './birthday-design';
 import './fields';
 import './help';
-
 // Ask before destructive actions: <form data-confirm="Delete this?">.
-for (const form of document.querySelectorAll('form[data-confirm]')) {
-    form.addEventListener('submit', (e) => {
-        if (!window.confirm(form.dataset.confirm)) e.preventDefault();
-    });
-}
+import { ask } from './dialog';
+
 
 // Live phone preview of an announcement while it's being written.
 for (const [field, target] of [['title', 'preview-title'], ['body', 'preview-body']]) {
@@ -142,9 +138,15 @@ if (outreach) {
             count();
         }
     });
-    outreach.querySelector('[data-confirm-send]')?.addEventListener('click', (e) => {
+    outreach.querySelector('[data-confirm-send]')?.addEventListener('click', async (e) => {
+        const button = e.currentTarget;
+        if (button.dataset.confirmed) return delete button.dataset.confirmed;
+        e.preventDefault();
         const people = reach.querySelector('[data-reach-people]').textContent;
-        if (!window.confirm(`Send this to ${people} people now?`)) e.preventDefault();
+        if (await ask({ title: `Send this to ${people} people now?`, ok: 'Send now' })) {
+            button.dataset.confirmed = '1';
+            button.click();
+        }
     });
     syncSections();
 }

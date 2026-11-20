@@ -65,7 +65,7 @@
         @if ($canSend && ! $account->isFrozen())
             <details class="card send-card" @if ($errors->hasAny(['to', 'amount'])) open @endif>
                 <summary>Send {{ TokenName::many() }} to another member</summary>
-                <form method="POST" action="{{ route('account.tokens.send') }}" class="notice-form__group" onsubmit="return confirm('Send these {{ TokenName::many() }}? This can\'t be undone.')">
+                <form method="POST" action="{{ route('account.tokens.send') }}" class="notice-form__group" data-confirm="Send these {{ TokenName::many() }}? This can't be undone.">
                     @csrf
                     <div class="grid-auto" style="--min: 200px; --gap: 12px">
                         <label class="field">Their phone number or email
@@ -97,7 +97,7 @@
                             @endif
                         </span>
                         @if ($order->status === 'pending')
-                            <form method="POST" action="{{ route('token-orders.cancel', $order) }}" onsubmit="return confirm('Cancel this order? Your {{ TokenName::many() }} come back to you.')">
+                            <form method="POST" action="{{ route('token-orders.cancel', $order) }}" data-confirm="Cancel this order? Your {{ TokenName::many() }} come back to you.">
                                 @csrf
                                 <button type="submit" class="btn btn--outline btn--sm">Cancel</button>
                             </form>

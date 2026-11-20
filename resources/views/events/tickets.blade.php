@@ -49,7 +49,7 @@
                     @php($tokensNeeded = \App\Services\Tokens\TokenValue::tokensFor($order->total))
                     @auth
                         @if (auth()->user()->member?->status === 'active')
-                            <form method="POST" action="{{ \Illuminate\Support\Facades\URL::signedRoute('tickets.tokens', $order) }}" onsubmit="return confirm('Pay with {{ $tokensNeeded }} {{ TokenName::many() }}?')">
+                            <form method="POST" action="{{ \Illuminate\Support\Facades\URL::signedRoute('tickets.tokens', $order) }}" data-confirm="Pay with {{ $tokensNeeded }} {{ TokenName::many() }}?">
                                 @csrf
                                 <button type="submit" class="btn btn--outline btn--md" @disabled(auth()->user()->tokenBalance() < $tokensNeeded)>Pay {{ TokenName::icon() }} {{ number_format($tokensNeeded) }} {{ TokenName::many() }}</button>
                             </form>

@@ -1,10 +1,10 @@
 {
-  "_check-in-Du3aL_Kl.js": {
-    "file": "assets/check-in-Du3aL_Kl.js",
-    "name": "check-in"
+  "_dialog-C6B6BufY.js": {
+    "file": "assets/dialog-C6B6BufY.js",
+    "name": "dialog"
   },
   "resources/css/admin.css": {
-    "file": "assets/admin-CJ7C0WuB.css",
+    "file": "assets/admin-BnK3GWzx.css",
     "name": "admin",
     "names": [
       "admin.css"
@@ -13,7 +13,7 @@
     "isEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-BIFSYlyT.css",
+    "file": "assets/app-AUjZNvsr.css",
     "name": "app",
     "names": [
       "app.css"
@@ -22,23 +22,23 @@
     "isEntry": true
   },
   "resources/js/admin.js": {
-    "file": "assets/admin-CKUn0tg6.js",
+    "file": "assets/admin-DCti_EC-.js",
     "name": "admin",
     "src": "resources/js/admin.js",
     "isEntry": true,
     "imports": [
-      "_check-in-Du3aL_Kl.js",
+      "_dialog-C6B6BufY.js",
       "resources/js/fields.js",
       "resources/js/fields.js"
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-Bwoy1DWR.js",
+    "file": "assets/app-kq-7PJil.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_check-in-Du3aL_Kl.js",
+      "_dialog-C6B6BufY.js",
       "resources/js/fields.js",
       "resources/js/fields.js"
     ]

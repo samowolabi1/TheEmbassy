@@ -91,7 +91,7 @@
                                 <p class="field-error" role="alert" style="margin: 0">{{ $errors->first('tokens') }}</p>
                             @endif
                             @if (auth()->user()->tokenBalance() >= $product->token_price)
-                                <form method="POST" action="{{ route('market.tokens', $product) }}" class="notice-form__group" onsubmit="return confirm('Use {{ $product->token_price }} of your {{ TokenName::many() }} for this?')">
+                                <form method="POST" action="{{ route('market.tokens', $product) }}" class="notice-form__group" data-confirm="Use {{ $product->token_price }} of your {{ TokenName::many() }} for this?">
                                     @csrf
                                     <label class="field">Anything the seller should know? (optional)
                                         <input type="text" name="note" maxlength="300" placeholder="{{ $product->isService() ? 'e.g. the date you need it' : 'e.g. size, colour, when to collect' }}">

@@ -28,7 +28,7 @@
                         <span style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
                             <span class="status-chip {{ $a->status === 'confirmed' ? 'status-chip--ok' : '' }}">{{ $a->statusLabel() }}</span>
                             @if ($a->isUpcoming())
-                                <form method="POST" action="{{ route('account.appointments.cancel', $a) }}" onsubmit="return confirm('Cancel this visit?')">
+                                <form method="POST" action="{{ route('account.appointments.cancel', $a) }}" data-confirm="Cancel this visit?">
                                     @csrf
                                     <button type="submit" class="btn btn--outline btn--sm">Cancel</button>
                                 </form>

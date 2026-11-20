@@ -30,7 +30,7 @@
                     </div>
                     <p style="margin: 0; white-space: pre-line">{{ $r->body }}</p>
                     @if (auth()->user()->moderatesCommunity() && $r->member_id !== auth()->user()->member?->id)
-                        <form method="POST" action="{{ route('community.reviews.destroy', $r) }}" onsubmit="return confirm('Take this review down?')">
+                        <form method="POST" action="{{ route('community.reviews.destroy', $r) }}" data-confirm="Take this review down?">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn--outline btn--sm">Take down</button>

@@ -59,7 +59,7 @@
                 @include('media-requests.files', ['files' => $attached])
             @endif
             @if ($r->isOpen())
-                <form method="POST" action="{{ route('media-requests.respond', $r) }}" onsubmit="return confirm('Cancel this request?')">
+                <form method="POST" action="{{ route('media-requests.respond', $r) }}" data-confirm="Cancel this request?">
                     @csrf
                     <button type="submit" name="answer" value="cancel" class="btn btn--outline btn--sm">Cancel request</button>
                 </form>

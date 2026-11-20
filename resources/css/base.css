@@ -784,3 +784,125 @@ input[type='file']:not(.sr-only) {
 .notify .ms-4 {
   margin-left: 6px;
 }
+
+/* Confirm and question boxes (resources/js/dialog.js), in place of the
+   browser's own. A card in the middle on a computer; a sheet from the
+   bottom on a phone, with big buttons stacked for the thumb. */
+.ask {
+  width: min(440px, calc(100vw - 32px));
+  max-width: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 24px;
+  background: var(--white);
+  color: var(--body);
+  box-shadow: 0 24px 60px rgb(6 19 43 / 0.35);
+}
+.ask::backdrop {
+  background: rgb(6 19 43 / 0.55);
+  backdrop-filter: blur(2px);
+}
+.ask[open] {
+  animation: ask-in 0.18s ease-out;
+}
+@keyframes ask-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+}
+.ask__box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px 28px 24px;
+}
+.ask__icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
+  border-radius: 999px;
+  background: var(--wash);
+  color: var(--bronze);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+}
+.ask--danger .ask__icon {
+  background: #fdecea;
+  color: #b3261e;
+}
+.ask__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1.25;
+  color: var(--navy);
+}
+.ask__text {
+  margin: 0;
+  color: var(--slate);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.ask__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--navy);
+}
+.ask__field input {
+  height: 50px;
+  padding: 0 16px;
+  border: 1px solid var(--field-line);
+  border-radius: 14px;
+  background: var(--ivory);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.ask__field input:focus {
+  outline: 3px solid var(--gold);
+  outline-offset: 1px;
+}
+.ask__actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+.ask__actions .btn {
+  height: 48px;
+  padding: 0 22px;
+  font-size: 15px;
+}
+.ask__ok--danger,
+.ask__ok--danger:hover {
+  background: #b3261e;
+  color: var(--white);
+}
+@media (max-width: 560px) {
+  .ask {
+    width: 100vw;
+    margin: auto 0 0;
+    border-radius: 24px 24px 0 0;
+  }
+  @keyframes ask-in {
+    from { transform: translateY(40px); }
+  }
+  .ask__box {
+    padding: 24px 20px calc(20px + env(safe-area-inset-bottom));
+  }
+  .ask__actions {
+    flex-direction: column-reverse;
+  }
+  .ask__actions .btn {
+    width: 100%;
+    height: 52px;
+  }
+}

@@ -59,7 +59,7 @@
                             @endif
                         </span>
                         @if (in_array($a->status, ['pending', 'waitlist', 'approved']))
-                            <form method="POST" action="{{ route('account.welfare.withdraw', $a) }}" onsubmit="return confirm('Withdraw your application?')">
+                            <form method="POST" action="{{ route('account.welfare.withdraw', $a) }}" data-confirm="Withdraw your application?">
                                 @csrf
                                 <button type="submit" class="btn btn--outline btn--sm">Withdraw</button>
                             </form>

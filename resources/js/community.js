@@ -1,6 +1,7 @@
 // Community chat: send without reloading, pick up new messages every few seconds,
 // replies, reactions, polls, and the timed Bible quiz. Every form also works without it.
 
+import { askForForm } from './dialog';
 const chat = document.querySelector('[data-chat]');
 const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
 
@@ -156,7 +157,7 @@ if (chat) {
         const form = e.target.closest('form[data-community-action]');
         if (!form) return;
         e.preventDefault();
-        if (form.dataset.confirm && !window.confirm(form.dataset.confirm)) return;
+        if (form.dataset.confirm && !(await askForForm(form, e.submitter))) return;
         try {
             const data = await request(form.action, { method: 'POST', body: new FormData(form) });
             if (form.hasAttribute('data-report')) {
