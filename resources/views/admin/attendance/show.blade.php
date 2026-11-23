@@ -101,6 +101,19 @@
                     <label class="field">In person <input type="number" name="in_person" value="{{ $service->in_person }}" min="0" required></label>
                     <label class="field">Online <input type="number" name="online" value="{{ $service->online }}" min="0" required></label>
                 </div>
+                @if ($service->youtube_peak !== null)
+                    <p class="box__note" style="margin: 0">
+                        YouTube: <strong>{{ number_format($service->youtube_peak) }}</strong> watching at the busiest point ({{ $service->youtube_peak_at?->format('g:i A') }}), including those watching in the app.
+                        @if ($service->online_typed)
+                            Online shows the number typed here instead.
+                            <button type="submit" name="online_from_youtube" value="1" class="btn btn--ghost btn--xs" formnovalidate>Use YouTube's number</button>
+                        @else
+                            Online follows it automatically; type a number to use your own.
+                        @endif
+                    </p>
+                @elseif ($service->setup?->youtube_video_id)
+                    <p class="box__note" style="margin: 0">While the stream is live, Online fills in by itself from YouTube's viewer count.</p>
+                @endif
                 <label class="field">Online link <input type="url" name="join_url" value="{{ old('join_url', $service->join_url) }}" maxlength="500" placeholder="Zoom, Google Meet or YouTube link">
                     @error('join_url') <span class="field-error">{{ $message }}</span> @enderror
                 </label>

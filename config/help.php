@@ -132,6 +132,7 @@ return [
                 ['How do members check in at church?', 'They open /check-in on their phone (or scan the QR code on the screen) during the check-in window and enter the code shown on the church screen. Their location is checked too, if that\'s set up in Settings & roles.'],
                 ['Someone couldn\'t check in. Can I mark them present?', 'Yes: open the service and tick them under "Mark members present".'],
                 ['What\'s the headcount for?', 'The total number of people in the room, members or not, and the number online. It\'s separate from members who checked in.'],
+                ['Where does the Online number come from?', 'If the service is streamed on the church\'s connected YouTube channel, it fills in by itself while the stream is live: the most people YouTube showed watching at once. That includes people watching in the app, since the app plays the YouTube stream. Type a number to use your own instead; "Use YouTube\'s number" switches back.'],
                 ['Do services repeat?', 'When adding a service you can make it repeat weekly, so Sundays and midweek services are always there.'],
             ],
         ],

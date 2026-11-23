@@ -41,6 +41,9 @@ class Service extends Model
             'online_checkin' => 'boolean',
             'in_person' => 'integer',
             'online' => 'integer',
+            'youtube_peak' => 'integer',
+            'youtube_peak_at' => 'datetime',
+            'online_typed' => 'boolean',
         ];
     }
 
@@ -204,6 +207,22 @@ class Service extends Model
     public function total(): int
     {
         return $this->in_person + $this->online;
+    }
+
+    /**
+     * YouTube says this many are watching now. Keeps the highest number seen, and puts it in
+     * the Online headcount unless staff have typed their own number.
+     */
+    public function recordYouTubeViewers(int $watching): void
+    {
+        if ($watching <= (int) $this->youtube_peak) {
+            return;
+        }
+        $this->forceFill(['youtube_peak' => $watching, 'youtube_peak_at' => now()]);
+        if (! $this->online_typed) {
+            $this->online = $watching;
+        }
+        $this->save();
     }
 
     public function label(): string

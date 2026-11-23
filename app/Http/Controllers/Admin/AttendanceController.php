@@ -39,6 +39,10 @@ class AttendanceController extends Controller
         $data = $this->validated($request);
         $repeat = (int) ($request->validate(['repeat' => ['nullable', 'integer', 'min:0', 'max:12']])['repeat'] ?? 0);
         $service = Service::create($data);
+        if ($data['online'] > 0) {
+            // A number typed when adding the service is staff's own count, not YouTube's.
+            $service->forceFill(['online_typed' => true])->save();
+        }
 
         // "Repeat weekly" adds the same service for the following weeks, skipping any already there.
         $added = 1;
@@ -79,9 +83,19 @@ class AttendanceController extends Controller
 
     public function update(Request $request, Service $service): RedirectResponse
     {
-        $service->update($this->validated($request, $service));
+        $data = $this->validated($request, $service);
 
-        return back()->with('status', 'Numbers saved.');
+        // The Online number follows YouTube's peak until someone types a different one;
+        // "Use YouTube's number" hands it back.
+        if ($request->boolean('online_from_youtube') && $service->youtube_peak !== null) {
+            $data['online'] = $service->youtube_peak;
+            $data['online_typed'] = false;
+        } elseif ($data['online'] !== (int) $service->online) {
+            $data['online_typed'] = true;
+        }
+        $service->forceFill($data)->save();
+
+        return back()->with('status', $request->boolean('online_from_youtube') ? 'Online now follows YouTube: '.number_format($service->youtube_peak).' at the busiest point.' : 'Numbers saved.');
     }
 
     /**

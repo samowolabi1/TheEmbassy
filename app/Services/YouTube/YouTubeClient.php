@@ -177,6 +177,24 @@ class YouTubeClient
     }
 
     /**
+     * How many people are watching each broadcast right now. Only broadcasts that are live
+     * (and whose channel shows the count) are in the result.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, int>
+     */
+    public function liveViewers(YouTubeConnection $connection, array $ids): array
+    {
+        if (! $ids) {
+            return [];
+        }
+        $items = $this->check($this->api($connection)->get('videos', ['part' => 'liveStreamingDetails', 'id' => implode(',', $ids)]))['items'] ?? [];
+
+        return collect($items)->filter(fn ($v) => isset($v['liveStreamingDetails']['concurrentViewers']))
+            ->mapWithKeys(fn ($v) => [$v['id'] => (int) $v['liveStreamingDetails']['concurrentViewers']])->all();
+    }
+
+    /**
      * An API client with a fresh access token (refreshed when it's about to run out).
      */
     private function api(YouTubeConnection $connection): PendingRequest

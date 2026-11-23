@@ -5,6 +5,7 @@ namespace App\Services\YouTube;
 use App\Models\Service;
 use App\Models\ServiceSetup;
 use App\Models\YouTubeConnection;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -72,6 +73,31 @@ class YouTubeBroadcasts
     }
 
     /**
+     * While a broadcast is live, note how many are watching, keeping each service's highest
+     * number. A failure here only skips this minute; it never stops the rest of the sync.
+     *
+     * @param  Collection<int, ServiceSetup>  $live
+     */
+    private function countViewers(YouTubeConnection $connection, $live): void
+    {
+        if ($live->isEmpty()) {
+            return;
+        }
+        try {
+            $viewers = $this->youtube->liveViewers($connection, $live->pluck('youtube_video_id')->all());
+        } catch (YouTubeException $e) {
+            Log::info('Could not read YouTube viewer numbers this time', ['error' => $e->getMessage()]);
+
+            return;
+        }
+        foreach ($live as $setup) {
+            if (isset($viewers[$setup->youtube_video_id])) {
+                $setup->service->recordYouTubeViewers($viewers[$setup->youtube_video_id]);
+            }
+        }
+    }
+
+    /**
      * Follow YouTube's state for broadcasts around now, and switch the Watch page to match.
      */
     private function syncLive(YouTubeConnection $connection): int
@@ -98,6 +124,8 @@ class YouTubeBroadcasts
                 $setup->endLive();
             }
         }
+
+        $this->countViewers($connection, $setups->where('youtube_status', 'live'));
 
         return $setups->count();
     }

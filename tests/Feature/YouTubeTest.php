@@ -27,6 +27,7 @@ class YouTubeTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Http::preventStrayRequests();
 
         config(['services.google' => ['client_id' => 'client-123', 'client_secret' => 'secret-456'], 'church.youtube' => ['days_ahead' => 7, 'privacy' => 'public']]);
         $this->unit = Unit::factory()->media()->create();
@@ -151,7 +152,8 @@ class YouTubeTest extends TestCase
         Http::fake(['www.googleapis.com/youtube/v3/liveBroadcasts*' => Http::sequence()
             ->push(['items' => [['id' => 'Bcast123456', 'status' => ['lifeCycleStatus' => 'ready']]]])
             ->push(['items' => [['id' => 'Bcast123456', 'status' => ['lifeCycleStatus' => 'live']]]])
-            ->push(['items' => [['id' => 'Bcast123456', 'status' => ['lifeCycleStatus' => 'complete']]]])]);
+            ->push(['items' => [['id' => 'Bcast123456', 'status' => ['lifeCycleStatus' => 'complete']]]]),
+            'www.googleapis.com/youtube/v3/videos*' => Http::response(['items' => [['id' => 'Bcast123456', 'liveStreamingDetails' => ['concurrentViewers' => '87']]]])]);
         config(['church.youtube.days_ahead' => 0]);
         $this->connection();
         $service = $this->streamedService(['held_on' => today(), 'starts_at' => now()->subMinutes(5)]);
@@ -173,6 +175,46 @@ class YouTubeTest extends TestCase
 
         // Finished broadcasts aren't checked again.
         $this->artisan('youtube:sync')->expectsOutput('Created 0 YouTube broadcasts, checked 0, 0 problems.');
+    }
+
+    public function test_the_online_headcount_follows_youtube_until_staff_type_their_own(): void
+    {
+        Http::fake([
+            'www.googleapis.com/youtube/v3/liveBroadcasts*' => Http::response(['items' => [['id' => 'Bcast123456', 'status' => ['lifeCycleStatus' => 'live']]]]),
+            'www.googleapis.com/youtube/v3/videos*' => Http::sequence()
+                ->push(['items' => [['id' => 'Bcast123456', 'liveStreamingDetails' => ['concurrentViewers' => '120']]]])
+                ->push(['items' => [['id' => 'Bcast123456', 'liveStreamingDetails' => ['concurrentViewers' => '342']]]])
+                ->push(['items' => [['id' => 'Bcast123456', 'liveStreamingDetails' => ['concurrentViewers' => '290']]]])
+                ->push(['error' => ['errors' => [['reason' => 'quotaExceeded']]]], 403)
+                ->push(['items' => [['id' => 'Bcast123456', 'liveStreamingDetails' => ['concurrentViewers' => '410']]]]),
+        ]);
+        config(['church.youtube.days_ahead' => 0]);
+        $this->connection();
+        $service = $this->streamedService(['held_on' => today(), 'starts_at' => now()->subMinutes(30)]);
+        ServiceSetup::forService($service)->forceFill(['youtube_video_id' => 'Bcast123456', 'youtube_managed' => true, 'youtube_status' => 'ready'])->save();
+
+        // Each minute: the highest number so far becomes the Online headcount.
+        foreach ([120, 342, 342] as $expected) {
+            $this->artisan('youtube:sync');
+            $this->assertSame([$expected, $expected], [$service->fresh()->youtube_peak, $service->fresh()->online]);
+        }
+        Http::assertSent(fn (HttpRequest $r) => str_contains($r->url(), 'videos?part=liveStreamingDetails') && str_contains($r->url(), 'id=Bcast123456'));
+
+        // A YouTube hiccup skips that minute without upsetting the rest of the sync.
+        $this->artisan('youtube:sync')->expectsOutput('Created 0 YouTube broadcasts, checked 1, 0 problems.');
+        $this->assertTrue(ServiceSetup::sole()->isLive());
+
+        // Staff type their own number: it stays, while YouTube's peak is still noted.
+        $staff = User::factory()->staff('usher')->create();
+        $form = ['held_on' => today()->toDateString(), 'kind' => 'sunday', 'start_time' => $service->starts_at->format('H:i'), 'in_person' => 250, 'online' => 300, 'online_checkin' => '1'];
+        $this->actingAs($staff)->put(route('admin.attendance.update', $service), $form)->assertSessionHasNoErrors();
+        $this->artisan('youtube:sync');
+        $this->assertSame([410, 300, true], [$service->fresh()->youtube_peak, $service->fresh()->online, $service->fresh()->online_typed]);
+        $this->get(route('admin.attendance.show', $service))->assertSee('410')->assertSee('Use YouTube');
+
+        // And can hand it back to YouTube.
+        $this->put(route('admin.attendance.update', $service), [...$form, 'online_from_youtube' => '1'])->assertSessionHasNoErrors();
+        $this->assertSame([410, false, 660], [$service->fresh()->online, $service->fresh()->online_typed, $service->fresh()->total()]);
     }
 
     public function test_expired_tokens_refresh_and_a_revoked_sign_in_asks_to_reconnect(): void
