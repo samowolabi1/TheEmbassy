@@ -4,9 +4,9 @@ namespace App\Services\Celebrations;
 
 use App\Models\BirthdayDesign;
 use App\Models\Member;
+use App\Support\ImageCache;
 use GdImage;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
@@ -55,7 +55,7 @@ class BirthdayCard
         $template = $this->template();
         $key = 'birthday-card:'.md5(json_encode([$member->id, $member->name, $member->photo_path, $member->birthday?->format('m-d'), $design, $template, BirthdayDesign::stamp()]));
 
-        return Cache::remember($key, now()->addDay(), fn () => $this->render($member->name, $this->dayFor($member), $member->photo_path, $design, $member->id));
+        return ImageCache::remember($key, now()->addDay(), fn () => $this->render($member->name, $this->dayFor($member), $member->photo_path, $design, $member->id));
     }
 
     /**

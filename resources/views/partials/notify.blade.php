@@ -41,7 +41,7 @@
     }
 @endphp
 @if (session()->has('notify'))
-    <link rel="stylesheet" href="{{ asset('vendor/mckenziearts/laravel-notify/dist/notify.css') }}">
+    <link rel="stylesheet" href="{{ asset('notify/notify.css') }}">
     <x-notify::notify />
-    <script src="{{ asset('vendor/mckenziearts/laravel-notify/dist/notify.js') }}" defer></script>
+    <script src="{{ asset('notify/notify.js') }}" defer></script>
 @endif

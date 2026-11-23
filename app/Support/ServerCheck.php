@@ -29,7 +29,8 @@ class ServerCheck
 
         // PHP
         $add('PHP', 'PHP version', version_compare(PHP_VERSION, '8.3.0', '>=') ? 'ok' : 'fail', PHP_VERSION, 'Choose PHP 8.3 or newer in your hosting control panel (cPanel › Select PHP Version or MultiPHP Manager).');
-        $driver = DB::connection()->getDriverName();
+        // MariaDB is reached through PHP's MySQL driver; there is no pdo_mariadb.
+        $driver = DB::connection()->getDriverName() === 'mariadb' ? 'mysql' : DB::connection()->getDriverName();
         $required = ['mbstring', 'openssl', 'tokenizer', 'xml', 'ctype', 'fileinfo', 'curl', 'gd', 'dom', 'filter', 'pdo_'.$driver];
         foreach ($required as $ext) {
             $add('PHP', "Extension: {$ext}", extension_loaded($ext) ? 'ok' : 'fail', extension_loaded($ext) ? 'Installed' : 'Missing', "Turn on the {$ext} extension in your hosting control panel (Select PHP Version › Extensions).");

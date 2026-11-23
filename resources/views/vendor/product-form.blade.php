@@ -66,7 +66,7 @@
                     </div>
                 @endif
                 @if ($images->count() < $maxPhotos)
-                    <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp" data-photo-input data-max="{{ $maxPhotos }}" style="height: auto; padding: 12px">
+                    <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp" aria-label="Add photos" data-photo-input data-max="{{ $maxPhotos }}" style="height: auto; padding: 12px">
                     <span class="field__hint">{{ $images->isEmpty() ? 'Choose one or more photos (hold Ctrl or ⌘ to pick several, or select several on your phone). The first is the cover.' : 'Add more photos: '.($maxPhotos - $images->count()).' more fit.' }} JPG, PNG or WebP, up to 8 MB each; large photos are made smaller for you.</span>
                     <div class="photo-grid" data-photo-new style="margin-top: 8px"></div>
                     <span class="field__hint" data-photo-note style="color: #a6531a" aria-live="polite"></span>

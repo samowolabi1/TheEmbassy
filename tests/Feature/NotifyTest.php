@@ -19,7 +19,7 @@ class NotifyTest extends TestCase
             'title' => 'Fasting week', 'body' => 'Starts Monday.', 'tag' => 'Prayer', 'tone' => 'wash', 'when' => 'draft',
         ]);
         $page->assertOk()->assertSee('class="notify"', false)->assertSee('border-green-500', false)
-            ->assertSee('laravel-notify/dist/notify.js', false);
+            ->assertSee('notify/notify.js', false);
 
         // Shown on that page only, not again on the next one.
         $this->get(route('admin.dashboard'))->assertDontSee('notify.js');
@@ -60,5 +60,17 @@ class NotifyTest extends TestCase
         $this->actingAs($office)->from(route('admin.register.index'))->followingRedirects()
             ->post(route('admin.register.member'), ['_form' => 'member', 'phone' => '0803'])
             ->assertSee('Please check the form')->assertSee('border-red-500', false);
+    }
+
+    public function test_no_folder_in_public_hides_a_page_with_the_same_address(): void
+    {
+        // The web server serves a real folder before Laravel sees the request, so public/vendor
+        // would hide the seller area at /vendor.
+        $firstSegments = collect(app('router')->getRoutes()->getRoutes())
+            ->map(fn ($r) => explode('/', trim($r->uri(), '/'))[0])->filter()->unique();
+        // storage/ is the one meant to overlap: the route only serves files when the folder link can't be made.
+        $folders = collect(File::directories(public_path()))->map(fn ($d) => basename($d))->reject(fn ($d) => $d === 'storage');
+
+        $this->assertSame([], $folders->intersect($firstSegments)->values()->all());
     }
 }

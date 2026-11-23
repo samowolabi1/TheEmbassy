@@ -20,10 +20,14 @@ class PermissionController extends Controller
     {
         $base = PermissionRequest::forUnits([$unit->id])->with('member', 'service', 'answeredBy.member');
 
+        $upcoming = (clone $base)->upcoming()->where('status', '!=', 'cancelled')->orderBy('on_date')->orderByRaw("status = 'pending' desc")->get();
+        $past = (clone $base)->where('on_date', '<', today()->toDateString())->where('on_date', '>=', today()->subDays(60)->toDateString())->latest('on_date')->get();
+
         return view('unit.permissions', [
             'unit' => $unit,
-            'upcoming' => (clone $base)->upcoming()->where('status', '!=', 'cancelled')->orderBy('on_date')->orderByRaw("status = 'pending' desc")->get(),
-            'past' => (clone $base)->where('on_date', '<', today()->toDateString())->where('on_date', '>=', today()->subDays(60)->toDateString())->latest('on_date')->get(),
+            'upcoming' => $upcoming,
+            'past' => $past,
+            'rota' => PermissionRequest::rotaFor($upcoming->concat($past)),
         ]);
     }
 

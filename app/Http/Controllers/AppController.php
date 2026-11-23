@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\PushSubscription;
+use App\Support\ImageCache;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 /**
@@ -56,7 +56,7 @@ class AppController extends Controller
         $logo = public_path(config('church.brand.logo'));
         $key = 'app-icon.'.$size.'.'.md5($logo.'|'.(is_file($logo) ? filemtime($logo) : 0));
 
-        $png = Cache::rememberForever($key, function () use ($logo, $size) {
+        $png = ImageCache::remember($key, null, function () use ($logo, $size) {
             $canvas = imagecreatetruecolor($size, $size);
             imagefill($canvas, 0, 0, imagecolorallocate($canvas, 255, 255, 255));
             $source = is_file($logo) ? @imagecreatefromstring((string) file_get_contents($logo)) : false;

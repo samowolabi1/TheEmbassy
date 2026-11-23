@@ -1,6 +1,6 @@
 {{-- One worker's permission request, for a unit head or a pastor. $p, $action (the answer URL), $showUnits. --}}
 @php
-    $onRota = $p->service_id ? \App\Models\Duty::where('service_id', $p->service_id)->where('member_id', $p->member_id)->with('unit')->get() : collect();
+    $onRota = ($rota ?? collect())->get($p->service_id.'-'.$p->member_id, collect());
 @endphp
 <article class="prayer-card" id="permission-{{ $p->id }}">
     <div class="prayer-card__head">

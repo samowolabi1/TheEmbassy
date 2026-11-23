@@ -523,7 +523,7 @@ Most people use the app on a phone, so every page is built for one and checked a
 
 ## Workers' permission
 
-Workers (and ministers, and anyone serving in a unit) find **Permission** on their account page. They say whether they won't be in church or will be coming late (and about when), pick the service (or a day that isn't listed), and give their reason. The HOD and assistant of every unit they serve in, and the pastors, are told at once by app notification, WhatsApp and email. The request then appears under **Permission** in each HOD's unit area and under **Workers' permission** in the church admin. The church office doesn't see these requests unless an administrator gives their role the "Workers' permission" area. Either the HOD or a pastor can grant or decline it with a short note, and change their mind until the day; the worker hears back each time. If the worker is on the rota for that service, the request says so, so someone can arrange cover. A Sunday a worker asked to miss doesn't count towards a "we missed you" follow-up.
+Workers (and ministers, and anyone serving in a unit) find **Permission** on their account page. They say whether they won't be in church or will be coming late (and about when), pick the service (or a day that isn't listed), and give their reason. The HOD and assistant of every unit they serve in, and the pastors, are told at once by app notification, WhatsApp and email. The request then appears under **Permission** in each HOD's unit area and under **Workers' permission** in the church admin. Only the pastor in charge, administrators and pastors see them there, not the church office; which roles cover the area is set in `config/roles.php`. Either the HOD or a pastor can grant or decline it with a short note, and change their mind until the day; the worker hears back each time. If the worker is on the rota for that service, the request says so, so someone can arrange cover. A Sunday a worker asked to miss doesn't count towards a "we missed you" follow-up.
 
 ## Names and gender
 
@@ -539,7 +539,7 @@ Every "saved", "sent" or "something went wrong" message pops up as a toast, usin
 
 - `resources/views/partials/notify.blade.php` is included by every layout. It turns `->with('status', '...')` and form errors into toasts, so controllers don't need to change.
 - New code can call the package directly: `notify()->success()->title('Saved')->message('...')->send();` (also `error()`, `warning()` and `info()`).
-- The package's CSS and JS live in `public/vendor/mckenziearts/laravel-notify` and are committed, because shared hosting can't run `vendor:publish`. They only load on pages that show a message. Colours are set in `resources/css/base.css` under "Pop-up messages".
+- The package's CSS and JS live in `public/notify` (not the package's usual `public/vendor`, which would hide the seller area at /vendor) and are committed, because shared hosting can't run `vendor:publish`. They only load on pages that show a message. Colours are set in `resources/css/base.css` under "Pop-up messages".
 - Thank-you panels that replace a form, like "Message sent" on the contact page, stay on the page as before.
 
 Questions like "Remove this member?" or "Give Seun a new temporary password?" open the app's own box instead of the browser's grey one. It is a card in the middle of a computer screen and a sheet from the bottom on a phone, with big buttons. The OK button repeats the action ("Give a temporary password"), and it turns red for anything that deletes, removes or cancels. Add `data-confirm="Question? Optional detail."` to any form; in JavaScript, `await ask({ title, text, ok, input })` from `resources/js/dialog.js` replaces `confirm()` and `prompt()`. A test fails if `confirm(`, `prompt(` or `alert(` comes back.
@@ -664,6 +664,12 @@ Four demo staff record and check them, signing in at `/admin/login` with the pas
 ```sh
 php artisan test
 ./vendor/bin/pint
+```
+
+The tests use SQLite in memory. Before a release, also run them against MySQL (or MariaDB) with the cache in the database, as on shared hosting. MySQL is stricter: it found a bug that SQLite let through, where generated pictures couldn't be stored in the cache table.
+
+```sh
+DB_CONNECTION=mysql DB_HOST=127.0.0.1 DB_DATABASE=embassy_test DB_USERNAME=... DB_PASSWORD=... DB_URL= CACHE_STORE=database php artisan test
 ```
 
 ## Editing content

@@ -5,10 +5,10 @@ namespace App\Services\Market;
 use App\Models\Post;
 use App\Models\Product;
 use App\Models\Shop;
+use App\Support\ImageCache;
 use BaconQrCode\Renderer\GDLibRenderer;
 use BaconQrCode\Writer;
 use GdImage;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -40,7 +40,7 @@ class ShareCards
         $shop = $product->shop;
         $key = 'share-card:p:'.md5(json_encode([$product->id, $product->updated_at, $shop->name, $format, config('church.brand.market_name'), $this->url($product)]));
 
-        return Cache::remember($key, now()->addWeek(), fn () => $this->draw($format, [
+        return ImageCache::remember($key, now()->addWeek(), fn () => $this->draw($format, [
             'title' => $product->name,
             'badge' => $product->priceLabel(),
             'byline' => 'from '.$shop->name,
@@ -56,7 +56,7 @@ class ShareCards
         $products = $shop->products()->where('is_active', true)->latest()->get(['id', 'image_path', 'updated_at']);
         $key = 'share-card:s:'.md5(json_encode([$shop->id, $shop->updated_at, $products->max('updated_at'), $products->count(), $format, config('church.brand.market_name'), $this->url($shop)]));
 
-        return Cache::remember($key, now()->addWeek(), fn () => $this->draw($format, [
+        return ImageCache::remember($key, now()->addWeek(), fn () => $this->draw($format, [
             'title' => $shop->name,
             'badge' => $shop->category,
             'byline' => 'by '.$shop->owner_name.' · '.$products->count().' '.Str::plural('listing', $products->count()),
@@ -75,7 +75,7 @@ class ShareCards
     {
         $key = 'share-card:a:'.md5(json_encode([$post->id, $post->updated_at, $post->authorName(), $format, config('church.short_name'), $post->url()]));
 
-        return Cache::remember($key, now()->addWeek(), fn () => $this->draw($format, [
+        return ImageCache::remember($key, now()->addWeek(), fn () => $this->draw($format, [
             'title' => $post->title,
             'badge' => mb_strtoupper((string) $post->topic) ?: 'BLOG',
             'byline' => 'by '.$post->authorName(),

@@ -26,6 +26,7 @@ class PermissionController extends Controller
         return view('admin.permissions', [
             'show' => $show,
             'requests' => $requests,
+            'rota' => PermissionRequest::rotaFor($requests->items()),
             'pending' => PermissionRequest::upcoming()->where('status', 'pending')->count(),
         ]);
     }

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * A worker asking permission to be away from a service, or to come late,
@@ -85,6 +86,24 @@ class PermissionRequest extends Model
     public function scopeForUnits(Builder $query, array $unitIds): void
     {
         $query->whereHas('member.units', fn ($q) => $q->whereIn('units.id', $unitIds));
+    }
+
+    /**
+     * Who is on the rota at the requests' services, keyed "service-member", so each card
+     * can say "arrange cover" without a query of its own.
+     *
+     * @param  iterable<self>  $requests
+     * @return Collection<string, Collection<int, Duty>>
+     */
+    public static function rotaFor(iterable $requests): Collection
+    {
+        $requests = collect($requests)->filter->service_id;
+        if ($requests->isEmpty()) {
+            return collect();
+        }
+
+        return Duty::whereIn('service_id', $requests->pluck('service_id')->unique())->whereIn('member_id', $requests->pluck('member_id')->unique())
+            ->with('unit')->get()->groupBy(fn (Duty $d) => $d->service_id.'-'.$d->member_id);
     }
 
     public function isPending(): bool

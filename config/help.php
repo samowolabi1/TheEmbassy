@@ -30,7 +30,7 @@ return [
             'about' => 'Workers who won\'t be in church, or will be coming late, ask here from their account with a reason. Their HOD (in the unit area) and the pastors see the same requests and can grant or decline them; the worker is told straight away by email, WhatsApp or app notification.',
             'faqs' => [
                 ['Who can ask?', 'Approved members who are workers or ministers, or who serve in a unit. They find "Permission" on their account page.'],
-                ['Who sees a request?', 'The HOD and assistant of every unit the worker is in, and the pastors (anyone whose role covers Workers\' permission). The church office doesn\'t see them unless their role is given that area.'],
+                ['Who sees a request?', 'The HOD and assistant of every unit the worker is in, and the pastors (anyone whose role covers Workers\' permission). That is the pastor in charge, administrators and pastors; the church office doesn\'t see them.'],
                 ['What does "On the rota" mean?', 'The worker is on their unit\'s rota for that service, so someone needs to cover their duty.'],
                 ['Does it affect follow-up?', 'Yes. A worker who asked to be away from a Sunday isn\'t counted as missing it, so no "we missed you" follow-up is raised for that Sunday.'],
                 ['Can a decision be changed?', 'Yes, until the day of the service: grant a declined request, or withdraw permission that was granted. The worker is told each time.'],
