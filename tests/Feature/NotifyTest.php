@@ -68,8 +68,7 @@ class NotifyTest extends TestCase
         // would hide the seller area at /vendor.
         $firstSegments = collect(app('router')->getRoutes()->getRoutes())
             ->map(fn ($r) => explode('/', trim($r->uri(), '/'))[0])->filter()->unique();
-        // storage/ is the one meant to overlap: the route only serves files when the folder link can't be made.
-        $folders = collect(File::directories(public_path()))->map(fn ($d) => basename($d))->reject(fn ($d) => $d === 'storage');
+        $folders = collect(File::directories(public_path()))->map(fn ($d) => basename($d));
 
         $this->assertSame([], $folders->intersect($firstSegments)->values()->all());
     }

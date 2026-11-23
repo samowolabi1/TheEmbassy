@@ -21,7 +21,6 @@ use App\Services\Tokens\TokenShop;
 use App\Services\Units\DutyReminders;
 use App\Services\YouTube\YouTubeBroadcasts;
 use App\Support\ServerCheck;
-use App\Support\Uploads;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
@@ -63,16 +62,6 @@ Artisan::command('admin:create {email} {--name= : Display name, e.g. "Pastor Ade
         $this->warn('Store it somewhere safe; it will not be shown again.');
     }
 })->purpose('Create a church admin (or with --super, the pastor in charge), or give an existing account that access');
-
-Artisan::command('uploads:move', function () {
-    [$moved, $kept, $failed] = Uploads::moveFromStorage();
-    $this->info("Moved {$moved} file(s) to public/uploads. {$kept} were already there.");
-    if ($failed) {
-        $this->error("{$failed} file(s) couldn't be moved. Check that public/uploads is writable, then run this again.");
-
-        return 1;
-    }
-})->purpose('Move uploaded pictures from storage/app/public into public/uploads (runs by itself on migrate)');
 
 Artisan::command('admin:revoke {email}', function (string $email) {
     $user = User::firstWhere('email', $email);

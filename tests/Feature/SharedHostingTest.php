@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Post;
 use App\Models\User;
 use App\Services\Content\Images;
 use App\Support\ServerCheck;
@@ -29,49 +30,34 @@ class SharedHostingTest extends TestCase
         }
     }
 
-    public function test_old_storage_addresses_still_work(): void
-    {
-        Storage::fake('public', ['url' => config('filesystems.disks.public.url')]);
-        Storage::disk('public')->put('gallery/2026/11/photo.webp', 'RIFF-fake-webp');
-        Storage::disk('public')->put('notes.php', '<?php echo 1;');
-        Storage::disk('public')->put('page.html', '<script>alert(1)</script>');
-
-        $this->get('/storage/gallery/2026/11/photo.webp')->assertStatus(301)->assertRedirect(url('/uploads/gallery/2026/11/photo.webp'));
-        $this->get('/storage/notes.php')->assertNotFound();
-        $this->get('/storage/page.html')->assertNotFound();
-        $this->get('/storage/../.env')->assertNotFound();
-        $this->get('/storage/missing.jpg')->assertNotFound();
-    }
-
-    public function test_old_uploads_move_across_keeping_their_paths_and_dates(): void
+    public function test_older_copies_have_their_pictures_moved_into_public_uploads(): void
     {
         $old = storage_path('app/public/move-test/2026/a.webp');
         $new = public_path('uploads/move-test/2026/a.webp');
         File::ensureDirectoryExists(dirname($old));
         file_put_contents($old, 'RIFF-old');
         touch($old, $when = now()->subDays(10)->getTimestamp());
+        $post = Post::factory()->create(['body' => 'Look ![choir](/storage/blog/inline/2026/10/choir.webp)']);
 
         try {
-            // Not moved yet: the old address still serves it.
-            $this->get('/storage/move-test/2026/a.webp')->assertOk();
-            $this->artisan('uploads:move')->assertExitCode(0);
+            (require database_path('migrations/2026_12_12_090000_move_uploads_to_public.php'))->up();
 
             $this->assertFileExists($new);
             $this->assertFileDoesNotExist($old);
-            $this->assertSame('RIFF-old', file_get_contents($new));
             $this->assertSame($when, filemtime($new));
-            $this->get('/storage/move-test/2026/a.webp')->assertRedirect(url('/uploads/move-test/2026/a.webp'));
-            $this->artisan('uploads:move')->assertExitCode(0);
+            $this->assertSame('Look ![choir](/uploads/blog/inline/2026/10/choir.webp)', $post->fresh()->body);
         } finally {
             File::deleteDirectory(storage_path('app/public/move-test'));
             File::deleteDirectory(public_path('uploads/move-test'));
         }
     }
 
-    public function test_private_files_are_not_served_from_storage_urls(): void
+    public function test_private_files_are_never_served(): void
     {
         Storage::disk('local')->put('receipts/r.pdf', 'secret');
         $this->get('/storage/receipts/r.pdf')->assertNotFound();
+        $this->get('/uploads/receipts/r.pdf')->assertNotFound();
+        $this->assertStringStartsWith(storage_path(), Storage::disk('local')->path('receipts/r.pdf'));
     }
 
     public function test_thumbnail_names_follow_the_picture_format(): void

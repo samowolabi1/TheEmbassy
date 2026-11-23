@@ -19,7 +19,6 @@ use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrayerRequestController;
-use App\Http\Controllers\PublicFileController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StudioOverlayController;
 use App\Http\Controllers\TestimonyController;
@@ -49,8 +48,6 @@ Route::get('/give/thanks/{gift}', [GiveController::class, 'thanks'])->middleware
 
 Route::get('/testimonies', [TestimonyController::class, 'index'])->name('testimonies.index');
 Route::get('/testimonies/{testimony}', [TestimonyController::class, 'show'])->name('testimonies.show');
-// Old picture addresses from before uploads moved to public/uploads.
-Route::get('/storage/{path}', PublicFileController::class)->where('path', '.*')->name('public-file');
 
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/feed', [BlogController::class, 'feed'])->name('blog.feed');

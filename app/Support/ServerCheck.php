@@ -51,16 +51,12 @@ class ServerCheck
         $add('Limits', 'Time allowed per request', $time === 0 || $time >= 60 ? 'ok' : 'warn', $time === 0 ? 'No limit' : "{$time} seconds", 'Set max_execution_time to 60 or more.');
 
         // Folders
-        foreach (['storage' => storage_path(), 'bootstrap/cache' => base_path('bootstrap/cache'), 'public/uploads (uploaded pictures)' => Uploads::folder()] as $name => $path) {
+        foreach (['storage' => storage_path(), 'bootstrap/cache' => base_path('bootstrap/cache'), 'public/uploads (uploaded pictures)' => public_path('uploads')] as $name => $path) {
             $add('Folders', "Writable: {$name}", is_dir($path) && is_writable($path) ? 'ok' : 'fail', is_dir($path) ? (is_writable($path) ? 'Writable' : 'Not writable') : 'Missing', "Set the folder's permissions to 755 (or 775) in File Manager, and make sure it belongs to your account.");
         }
-        $guarded = is_file(Uploads::folder().'/.htaccess');
+        $guarded = is_file(public_path('uploads/.htaccess'));
         $add('Folders', 'Uploads can\'t run as scripts', $guarded ? 'ok' : 'fail', $guarded ? 'public/uploads/.htaccess is in place' : 'public/uploads/.htaccess is missing',
             'Upload public/uploads/.htaccess from the project files again: it stops anything uploaded from running as a script.');
-        $left = Uploads::leftBehind();
-        if ($left > 0) {
-            $add('Folders', 'Old uploads to move', 'warn', "{$left} file(s) still in storage/app/public", 'Run php artisan uploads:move (or php artisan migrate --force) to move them into public/uploads.');
-        }
 
         // Scheduled jobs
         $beat = Cache::get(self::HEARTBEAT);

@@ -417,7 +417,7 @@ Paystack divides each payment at the moment it's made, so nothing is paid out by
 
 **Tokens are not money.** Members never pay for tokens or to use the platform; the only things paid for with money are the market subscriptions, tickets, notice board listings and donations. Tokens are free rewards (see "Tokens" below).
 
-Emails (receipts, tickets, reminders, welcome links) use Laravel's mailer: set `MAIL_*` in `.env`. Uploaded pictures go straight into `public/uploads` (the `public` disk), where the web server sends them itself: no `storage:link` shortcut is needed. That folder's `.htaccess` stops anything uploaded from running as a script or opening as a web page. Private files (expense receipts, welfare documents, the media file library) stay out of reach on the `local` disk in `storage/app/private`. Sites set up before this change have their pictures moved across by `php artisan migrate`, and old `/storage/...` picture links redirect to the new address.
+Emails (receipts, tickets, reminders, welcome links) use Laravel's mailer: set `MAIL_*` in `.env`. Uploaded pictures go straight into `public/uploads` (the `public` disk), where the web server sends them itself: no `storage:link` shortcut is needed. That folder's `.htaccess` stops anything uploaded from running as a script or opening as a web page. Private files (expense receipts, welfare documents, the media file library) stay out of reach on the `local` disk in `storage/app/private`.
 
 ## Going live
 
@@ -652,7 +652,7 @@ Four demo staff record and check them, signing in at `/admin/login` with the pas
 **Starting over:** `php artisan migrate:fresh --seed`, then `admin:create` again. **Updating** after pulling new code: `composer install && npm install && npm run build && php artisan migrate`.
 
 **If something's wrong:**
-- **Photos don't show:** check `APP_URL` matches the site's address exactly (https, with or without www), then run `php artisan config:cache`. Check that `public/uploads` exists and is writable; pictures from before the move to `public/uploads` are moved by `php artisan uploads:move` (it also runs during `php artisan migrate`).
+- **Photos don't show:** check `APP_URL` matches the site's address exactly (https, with or without www), then run `php artisan config:cache`. Check that `public/uploads` exists and is writable.
 - **Unstyled page, or "Vite manifest not found":** run `npm run build`.
 - **`could not find driver`:** the PHP `pdo_sqlite` extension is missing.
 - **Birthday cards or share pictures fail:** PHP's `gd` needs FreeType and WebP.
