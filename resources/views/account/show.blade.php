@@ -64,6 +64,9 @@
                 @endif
                 <a href="{{ route('account.prayer') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🙏</span>Prayer</a>
                 <a href="{{ route('account.appointments') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🗓️</span>See a pastor</a>
+                @if (\App\Services\People\Permissions::canAsk($member))
+                    <a href="{{ route('account.permission') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">⏰</span>Permission</a>
+                @endif
                 @if ($member?->status === 'active')
                     <a href="{{ route('account.testimonies') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🙌</span>Testimony</a>
                 @endif

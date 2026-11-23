@@ -572,3 +572,45 @@
 /* Requests to join a unit. */
 .unit-request { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line-soft); }
 .unit-request .status-chip { margin-left: 6px; }
+
+/* Two big choices side by side, e.g. "Won't be in church" / "Coming late". */
+.choice-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 10px;
+}
+.choice-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 12px 16px;
+  border: 1.5px solid var(--field-line);
+  border-radius: 16px;
+  background: var(--ivory);
+  font-weight: 800;
+  color: var(--navy);
+  cursor: pointer;
+}
+.choice-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.choice-card__icon {
+  font-size: 22px;
+}
+.choice-card:has(input:checked) {
+  border-color: var(--gold);
+  background: var(--wash);
+  box-shadow: 0 0 0 2px var(--gold) inset;
+}
+.choice-card:has(input:focus-visible) {
+  outline: 3px solid var(--navy);
+  outline-offset: 2px;
+}
+/* The arrival time only matters when they're coming late. */
+.permission-form:has(input[name='kind'][value='absent']:checked) .only-late {
+  display: none;
+}

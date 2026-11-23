@@ -194,6 +194,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/account/testimonies', [Account\TestimonyController::class, 'store'])->middleware('throttle:5,1')->name('account.testimonies.store');
     Route::post('/account/testimonies/{testimony}/withdraw', [Account\TestimonyController::class, 'withdraw'])->name('account.testimonies.withdraw');
     Route::post('/testimonies/{testimony}/praise', [TestimonyController::class, 'praise'])->middleware('throttle:30,1')->name('testimonies.praise');
+    Route::get('/account/permission', [Account\PermissionController::class, 'index'])->name('account.permission');
+    Route::post('/account/permission', [Account\PermissionController::class, 'store'])->middleware('throttle:10,1')->name('account.permission.store');
+    Route::post('/account/permission/{permission}/cancel', [Account\PermissionController::class, 'cancel'])->name('account.permission.cancel');
     Route::post('/account/tokens/send', [Account\AccountController::class, 'sendTokens'])->middleware('throttle:10,1')->name('account.tokens.send');
 });
 
@@ -239,6 +242,8 @@ Route::middleware(['auth', 'can:lead-unit,unit'])->prefix('units/{unit}')->name(
     Route::delete('/members/{member}', [Unit\UnitController::class, 'removeMember'])->name('members.remove');
     Route::post('/members/{member}/training', [Unit\UnitController::class, 'training'])->name('members.training');
     Route::get('/attendance', [Unit\UnitController::class, 'attendance'])->name('attendance');
+    Route::get('/permission', [Unit\PermissionController::class, 'index'])->name('permissions');
+    Route::post('/permission/{permission}', [Unit\PermissionController::class, 'answer'])->middleware('throttle:30,1')->name('permissions.answer');
     Route::get('/follow-ups', [Unit\FollowUpController::class, 'index'])->name('follow-ups');
     Route::post('/follow-ups/{followUp}', [Unit\FollowUpController::class, 'update'])->middleware('throttle:30,1')->name('follow-ups.update');
     Route::get('/messages', [Unit\UnitController::class, 'messages'])->name('messages');
@@ -523,6 +528,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::put('/budgets', [Admin\ExpenseController::class, 'budgets'])->name('budgets.update');
         });
 
+        Route::middleware('can:manage,"permissions"')->group(function () {
+            Route::get('/permissions', [Admin\PermissionController::class, 'index'])->name('permissions.index');
+            Route::post('/permissions/{permission}', [Admin\PermissionController::class, 'answer'])->middleware('throttle:30,1')->name('permissions.answer');
+        });
         Route::middleware('can:manage,"appointments"')->prefix('appointments')->name('appointments.')->group(function () {
             Route::get('/', [Admin\AppointmentController::class, 'index'])->name('index');
             Route::get('/hours', [Admin\AppointmentController::class, 'hours'])->name('hours');

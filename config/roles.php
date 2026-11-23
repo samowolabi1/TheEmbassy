@@ -26,6 +26,7 @@ return [
         'events' => 'Events & tickets',
         'prayer' => 'Prayer requests',
         'appointments' => 'Visits with a pastor: hours and bookings',
+        'permissions' => 'Workers\' permission: see and answer workers who will be away or late',
         'testimonies' => 'Testimonies: read and publish',
         'feedback' => 'Feedback on services, and members\' suggestions',
         'library' => 'Library: books, lending and returns',
@@ -39,7 +40,7 @@ return [
     'roles' => [
         'super' => ['name' => 'Pastor in charge (super admin)', 'areas' => ['*']],
         'admin' => ['name' => 'Administrator', 'areas' => ['*']],
-        'pastor' => ['name' => 'Pastor', 'areas' => ['members', 'attendance', 'care', 'welfare', 'units', 'subscribers', 'finance', 'expenses', 'market', 'content', 'gallery', 'community', 'tokens', 'notices', 'sermons', 'events', 'prayer', 'messages', 'appointments', 'testimonies', 'feedback', 'library', 'reminders', 'outreach', 'empowerment']],
+        'pastor' => ['name' => 'Pastor', 'areas' => ['members', 'attendance', 'care', 'welfare', 'units', 'subscribers', 'finance', 'expenses', 'market', 'content', 'gallery', 'community', 'tokens', 'notices', 'sermons', 'events', 'prayer', 'messages', 'appointments', 'testimonies', 'feedback', 'library', 'reminders', 'outreach', 'empowerment', 'permissions']],
         'finance' => ['name' => 'Finance', 'areas' => ['finance', 'expenses', 'market']],
         'secretary' => ['name' => 'Church office', 'areas' => ['members', 'attendance', 'care', 'units', 'subscribers', 'market', 'content', 'gallery', 'community', 'tokens', 'notices', 'events', 'prayer', 'messages', 'appointments', 'testimonies', 'feedback', 'library', 'reminders', 'outreach', 'empowerment']],
         'media' => ['name' => 'Media', 'areas' => ['content', 'gallery', 'community', 'notices', 'sermons', 'events', 'testimonies']],

@@ -521,6 +521,10 @@ Most people use the app on a phone, so every page is built for one and checked a
 - the busiest admin lists (members, unit members, empowerment applications, contacts) turn into cards, each value labelled with its column; other wide tables scroll inside their box, with a soft fade at the edge to show there's more;
 - the announcement bar at the top is one compact, tappable row, and admin pages leave room so the floating Help button never covers the last item.
 
+## Workers' permission
+
+Workers (and ministers, and anyone serving in a unit) find **Permission** on their account page. They say whether they won't be in church or will be coming late (and about when), pick the service (or a day that isn't listed), and give their reason. The HOD and assistant of every unit they serve in, and the pastors, are told at once by app notification, WhatsApp and email. The request then appears under **Permission** in each HOD's unit area and under **Workers' permission** in the church admin. The church office doesn't see these requests unless an administrator gives their role the "Workers' permission" area. Either the HOD or a pastor can grant or decline it with a short note, and change their mind until the day; the worker hears back each time. If the worker is on the rota for that service, the request says so, so someone can arrange cover. A Sunday a worker asked to miss doesn't count towards a "we missed you" follow-up.
+
 ## Names and gender
 
 Members and first-timers have a first name and a last name, and gender (female or male) is required on every form that adds or edits one: joining, the welcome card, Register someone, first-timer cards and the member editor. The full `name` is still stored and kept in step (`App\Models\Concerns\HasFirstAndLastName`), so lists, search and messages keep working; `App\Http\Middleware\CombineName` joins the two boxes for the controllers. People already on the register were split with the last word as the last name ("Sis. Adaeze Obi" became "Sis. Adaeze" and "Obi"); fix any odd ones in the member editor. A member list CSV can have `first_name` and `last_name` columns, or one `name` column.

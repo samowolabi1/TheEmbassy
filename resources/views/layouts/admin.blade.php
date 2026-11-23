@@ -20,6 +20,8 @@
             ['id' => 'visits', 'area' => 'care', 'label' => 'Visitation', 'route' => 'admin.visits.index',
                 'badge' => $count('care', fn () => \App\Models\Visit::planned()->where('scheduled_at', '<=', now()->addDays(7))->whereHas('visitors', fn ($q) => $q->whereKey($user->id))->count())],
             ['id' => 'attendance', 'area' => 'attendance', 'label' => 'Attendance', 'route' => 'admin.attendance.index'],
+            ['id' => 'permissions', 'area' => 'permissions', 'label' => 'Workers\' permission', 'route' => 'admin.permissions.index',
+                'badge' => $count('permissions', fn () => \App\Models\PermissionRequest::upcoming()->where('status', 'pending')->count())],
             ['id' => 'welfare', 'area' => 'welfare', 'label' => 'Welfare', 'route' => 'admin.welfare',
                 'badge' => $count('welfare', fn () => \App\Models\WelfareCase::where('status', 'awaiting_pastor')->count())],
             ['id' => 'units', 'area' => 'units', 'label' => 'Units & fellowships', 'route' => 'admin.units.index',

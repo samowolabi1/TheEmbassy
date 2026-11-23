@@ -6,6 +6,7 @@
         ['id' => 'members', 'label' => 'Members', 'route' => 'unit.members'],
         ['id' => 'follow-ups', 'label' => 'Follow-up', 'route' => 'unit.follow-ups'],
         ['id' => 'attendance', 'label' => 'Attendance', 'route' => 'unit.attendance'],
+        ['id' => 'permissions', 'label' => 'Permission', 'route' => 'unit.permissions', 'badge' => \App\Models\PermissionRequest::forUnits([$unit->id])->upcoming()->where('status', 'pending')->count() ?: null],
         ['id' => 'meetings', 'label' => 'Meetings', 'route' => 'unit.meetings.index'],
         ['id' => 'rota', 'label' => 'Rota', 'route' => 'unit.rota'],
         ['id' => 'messages', 'label' => 'Messages', 'route' => 'unit.messages'],

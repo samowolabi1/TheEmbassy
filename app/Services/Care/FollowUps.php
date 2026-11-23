@@ -6,6 +6,7 @@ use App\Mail\ReminderMail;
 use App\Models\FirstTimer;
 use App\Models\FollowUp;
 use App\Models\Member;
+use App\Models\PermissionRequest;
 use App\Models\Service;
 use App\Services\Messaging\Reminders;
 use Illuminate\Support\Carbon;
@@ -116,12 +117,16 @@ class FollowUps
 
         $oldest = $sundays->last()->held_on;
         $present = DB::table('member_service')->whereIn('service_id', $sundays->pluck('id'))->pluck('member_id')->unique()->flip();
+        // Workers who asked permission to be away from one of those Sundays aren't "missing".
+        $excused = PermissionRequest::where('kind', 'absent')->whereIn('status', ['pending', 'granted'])
+            ->where(fn ($q) => $q->whereIn('service_id', $sundays->pluck('id'))->orWhereIn('on_date', $sundays->map(fn ($s) => $s->held_on->toDateString())))
+            ->pluck('member_id')->flip();
 
         $members = Member::active()->with('user')
             ->where(fn ($q) => $q->whereNull('joined_on')->orWhere('joined_on', '<=', $oldest))
             ->where(fn ($q) => $q->whereNull('last_attended_on')->orWhere('last_attended_on', '<', $oldest))
             ->get()
-            ->reject(fn (Member $m) => $present->has($m->id))
+            ->reject(fn (Member $m) => $present->has($m->id) || $excused->has($m->id))
             ->values();
 
         return [$members, $oldest];

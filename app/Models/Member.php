@@ -108,6 +108,14 @@ class Member extends Model
     }
 
     /**
+     * @return HasMany<PermissionRequest, $this>
+     */
+    public function permissionRequests(): HasMany
+    {
+        return $this->hasMany(PermissionRequest::class);
+    }
+
+    /**
      * @return HasMany<UnitRequest, $this>
      */
     public function unitRequests(): HasMany
