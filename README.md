@@ -417,7 +417,7 @@ Paystack divides each payment at the moment it's made, so nothing is paid out by
 
 **Tokens are not money.** Members never pay for tokens or to use the platform; the only things paid for with money are the market subscriptions, tickets, notice board listings and donations. Tokens are free rewards (see "Tokens" below).
 
-Emails (receipts, tickets, reminders, welcome links) use Laravel's mailer: set `MAIL_*` in `.env`. Uploaded images live on the `public` disk, so run `php artisan storage:link` once per server. Expense receipts are private and stay on the `local` disk.
+Emails (receipts, tickets, reminders, welcome links) use Laravel's mailer: set `MAIL_*` in `.env`. Uploaded pictures go straight into `public/uploads` (the `public` disk), where the web server sends them itself: no `storage:link` shortcut is needed. That folder's `.htaccess` stops anything uploaded from running as a script or opening as a web page. Private files (expense receipts, welfare documents, the media file library) stay out of reach on the `local` disk in `storage/app/private`. Sites set up before this change have their pictures moved across by `php artisan migrate`, and old `/storage/...` picture links redirect to the new address.
 
 ## Going live
 
@@ -438,14 +438,13 @@ What the church or Donaitech needs to do; none of it can be done from the code.
 php artisan key:generate
 php artisan migrate --force
 php artisan db:seed --force          # starting units, funds and market periods
-php artisan storage:link             # optional: if it fails, pictures are served through the app instead
 php artisan admin:create you@church.org --name="Your name"
 php artisan admin:create pastor@church.org --name="Pastor's name" --super   # the pastor in charge
 php artisan config:cache && php artisan route:cache && php artisan view:cache
 php artisan app:check                # lists anything the server is still missing
 ```
 
-`storage/` and `bootstrap/cache/` must be writable (755 or 775). After changing `.env` later, run `php artisan config:cache` again. **Admin › Settings & roles › Server check** shows the same checklist in the browser, with how to fix each item in cPanel.
+`storage/`, `bootstrap/cache/` and `public/uploads/` must be writable (755 or 775). Uploaded pictures are saved in `public/uploads`; keep its `.htaccess` file, which stops uploads from running as scripts. On nginx, add the same protection: `location ^~ /uploads/ { location ~* \.(php\d?|phtml|phar|html?|js)$ { deny all; } }`. After changing `.env` later, run `php artisan config:cache` again. **Admin › Settings & roles › Server check** shows the same checklist in the browser, with how to fix each item in cPanel.
 
 **Updating** after new code is pushed: pull it (Git Version Control › *Update from Remote*), then run `composer install --no-dev --optimize-autoloader`, `php artisan migrate --force` and `php artisan optimize`.
 
@@ -484,7 +483,7 @@ Use the full path to PHP if the host asks for it (e.g. `/usr/local/bin/php` or `
 
 **10. Search engines.** Submit `https://<site>/sitemap.xml` in Google Search Console.
 
-**11. Backups.** Back up the database daily and `storage/app` (uploaded photos and receipts).
+**11. Backups.** Back up the database daily, plus `public/uploads` (uploaded photos) and `storage/app/private` (receipts and private files).
 
 ### Deploying for another church
 
@@ -653,7 +652,7 @@ Four demo staff record and check them, signing in at `/admin/login` with the pas
 **Starting over:** `php artisan migrate:fresh --seed`, then `admin:create` again. **Updating** after pulling new code: `composer install && npm install && npm run build && php artisan migrate`.
 
 **If something's wrong:**
-- **Photos don't show:** check `APP_URL` matches the site's address exactly (https, with or without www), then run `php artisan config:cache`. `php artisan storage:link` makes them load a little faster, but they show without it.
+- **Photos don't show:** check `APP_URL` matches the site's address exactly (https, with or without www), then run `php artisan config:cache`. Check that `public/uploads` exists and is writable; pictures from before the move to `public/uploads` are moved by `php artisan uploads:move` (it also runs during `php artisan migrate`).
 - **Unstyled page, or "Vite manifest not found":** run `npm run build`.
 - **`could not find driver`:** the PHP `pdo_sqlite` extension is missing.
 - **Birthday cards or share pictures fail:** PHP's `gd` needs FreeType and WebP.

@@ -1,0 +1,28 @@
+# Uploaded pictures and files. Nothing in this folder may ever run as code or be
+# shown as a web page, whatever someone manages to upload.
+
+Options -Indexes -ExecCGI
+
+# Never hand these to PHP or any other script handler.
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phar .pl .py .cgi .sh .shtml
+RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phar .pl .py .cgi .sh .shtml
+
+# Refuse scripts, web pages and server files outright.
+<FilesMatch "(?i)\.(php\d?|phtml|phps|phar|pl|py|cgi|sh|asp|aspx|jsp|html?|xhtml|shtml|svgz|js|mjs|htaccess|htpasswd|ini|env)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set Cache-Control "public, max-age=2592000"
+    # SVGs are drawings, never pages that can run scripts.
+    <FilesMatch "(?i)\.svg$">
+        Header set Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+    </FilesMatch>
+</IfModule>

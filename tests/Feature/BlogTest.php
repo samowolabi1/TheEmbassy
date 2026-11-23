@@ -144,12 +144,12 @@ class BlogTest extends TestCase
 
     public function test_inline_pictures_upload_and_return_markdown(): void
     {
-        Storage::fake('public');
+        Storage::fake('public', ['url' => config('filesystems.disks.public.url')]);
         $this->actingAs(User::factory()->staff('media')->create());
 
         $this->postJson(route('admin.posts.upload'), ['image' => UploadedFile::fake()->image('choir.png', 800, 600)])
             ->assertOk()
-            ->assertJsonPath('markdown', fn ($md) => str_starts_with($md, '![choir](') && str_contains($md, '/storage/blog/inline/'));
+            ->assertJsonPath('markdown', fn ($md) => str_starts_with($md, '![choir](') && str_contains($md, '/uploads/blog/inline/'));
         $this->postJson(route('admin.posts.upload'), ['image' => UploadedFile::fake()->create('notes.pdf', 10)])->assertUnprocessable();
     }
 

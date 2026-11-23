@@ -49,7 +49,7 @@ Route::get('/give/thanks/{gift}', [GiveController::class, 'thanks'])->middleware
 
 Route::get('/testimonies', [TestimonyController::class, 'index'])->name('testimonies.index');
 Route::get('/testimonies/{testimony}', [TestimonyController::class, 'show'])->name('testimonies.show');
-// Uploaded pictures when the public/storage shortcut can't be made (shared hosting).
+// Old picture addresses from before uploads moved to public/uploads.
 Route::get('/storage/{path}', PublicFileController::class)->where('path', '.*')->name('public-file');
 
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');

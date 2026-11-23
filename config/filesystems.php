@@ -38,10 +38,13 @@ return [
             'report' => false,
         ],
 
+        // Uploaded pictures live in public/uploads, so the web server sends them itself: no
+        // storage:link shortcut needed, which many shared hosts don't allow. The folder's
+        // .htaccess stops anything uploaded from ever running as a script.
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'root' => public_path('uploads'),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/uploads',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -74,7 +77,6 @@ return [
     */
 
     'links' => [
-        public_path('storage') => storage_path('app/public'),
     ],
 
 ];
