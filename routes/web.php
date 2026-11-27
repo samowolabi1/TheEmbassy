@@ -191,6 +191,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/account/testimonies', [Account\TestimonyController::class, 'store'])->middleware('throttle:5,1')->name('account.testimonies.store');
     Route::post('/account/testimonies/{testimony}/withdraw', [Account\TestimonyController::class, 'withdraw'])->name('account.testimonies.withdraw');
     Route::post('/testimonies/{testimony}/praise', [TestimonyController::class, 'praise'])->middleware('throttle:30,1')->name('testimonies.praise');
+    Route::get('/account/verses', [Account\VerseController::class, 'index'])->name('account.verses');
+    Route::get('/account/verses/more', [Account\VerseController::class, 'more'])->middleware('throttle:60,1')->name('account.verses.more');
+    Route::get('/account/verses/saved', [Account\VerseController::class, 'saved'])->name('account.verses.saved');
+    Route::post('/account/verses/{verse}/save', [Account\VerseController::class, 'save'])->middleware('throttle:60,1')->name('account.verses.save');
     Route::get('/account/permission', [Account\PermissionController::class, 'index'])->name('account.permission');
     Route::post('/account/permission', [Account\PermissionController::class, 'store'])->middleware('throttle:10,1')->name('account.permission.store');
     Route::post('/account/permission/{permission}/cancel', [Account\PermissionController::class, 'cancel'])->name('account.permission.cancel');
@@ -581,6 +585,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::middleware('can:manage,"content"')->group(function () {
             Route::get('/content', Admin\ContentController::class)->name('content');
+            Route::get('/verses', [Admin\VerseController::class, 'index'])->name('verses.index');
+            Route::post('/verses', [Admin\VerseController::class, 'store'])->name('verses.store');
+            Route::put('/verses/{verse}', [Admin\VerseController::class, 'update'])->name('verses.update');
+            Route::post('/verses/{verse}/toggle', [Admin\VerseController::class, 'toggle'])->name('verses.toggle');
             Route::resource('announcements', Admin\AnnouncementController::class)->only(['store', 'edit', 'update', 'destroy']);
             Route::get('/announcements/{announcement}/send', [Admin\BroadcastController::class, 'create'])->name('announcements.send');
             Route::post('/announcements/{announcement}/send', [Admin\BroadcastController::class, 'store'])->middleware('throttle:10,1')->name('announcements.send.store');

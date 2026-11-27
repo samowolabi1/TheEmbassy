@@ -1,0 +1,215 @@
+/* The verse scroll: one verse per screen, snapping into place as you swipe. */
+.verses-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 16px;
+  padding-bottom: 24px;
+}
+.verses-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.verses-head__saved {
+  font-weight: 800;
+  color: var(--navy);
+  text-decoration: none;
+}
+.verses-head__saved span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  margin-left: 6px;
+  border-radius: 999px;
+  background: var(--wash);
+  color: var(--bronze);
+  font-size: 13px;
+}
+.reel {
+  height: min(calc(100svh - 190px), 720px);
+  min-height: 420px;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain;
+  border-radius: 28px;
+  scrollbar-width: none;
+  outline-offset: 4px;
+}
+.reel::-webkit-scrollbar {
+  display: none;
+}
+.verse-card {
+  position: relative;
+  height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  padding: 32px clamp(22px, 6vw, 64px);
+  color: #fbf8f1;
+  cursor: pointer;
+  user-select: text;
+}
+/* Six calm grounds in the church's colours, so each verse feels new. */
+.verse-card--0 { background: linear-gradient(160deg, #0a1d3f, #18325f); }
+.verse-card--1 { background: linear-gradient(160deg, #3b1f4f, #0a1d3f); }
+.verse-card--2 { background: linear-gradient(160deg, #0f3b3a, #0a1d3f); }
+.verse-card--3 { background: linear-gradient(160deg, #5a3b05, #1c1405); }
+.verse-card--4 { background: linear-gradient(160deg, #1d2a52, #4a2a3f); }
+.verse-card--5 { background: linear-gradient(160deg, #102a43, #0b5560); }
+.verse-card__theme {
+  align-self: flex-start;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgb(224 170 30 / 0.18);
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.verse-card__theme:empty {
+  display: none;
+}
+.verse-card__text {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.35rem, 4.2vw, 2.1rem);
+  line-height: 1.45;
+  text-wrap: pretty;
+  max-width: 34ch;
+}
+.verse-card--long .verse-card__text {
+  font-size: clamp(1.15rem, 3.4vw, 1.7rem);
+  line-height: 1.4;
+}
+.verse-card__ref {
+  font-style: normal;
+  font-family: var(--font-royal);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+.verse-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+.verse-card__actions form {
+  margin: 0;
+}
+.verse-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgb(251 248 241 / 0.3);
+  border-radius: 999px;
+  background: rgb(251 248 241 / 0.08);
+  color: #fbf8f1;
+  font: 700 15px var(--font-body);
+  cursor: pointer;
+}
+.verse-btn:hover,
+.verse-btn:focus-visible {
+  background: rgb(251 248 241 / 0.18);
+}
+.verse-btn[aria-pressed='true'] {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.verse-card__hint {
+  margin-top: 4px;
+  text-align: center;
+  font-size: 13px;
+  color: rgb(251 248 241 / 0.65);
+  animation: verse-hint 2.4s ease-in-out infinite;
+}
+@media (max-width: 480px) {
+  .verse-card {
+    gap: 14px;
+    padding: 24px 20px;
+  }
+  .verse-card__actions {
+    gap: 8px;
+  }
+  .verse-btn {
+    padding: 0 14px;
+    font-size: 14px;
+  }
+}
+@keyframes verse-hint {
+  50% { transform: translateY(-6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .verse-card__hint { animation: none; }
+}
+
+/* Saved verses */
+.saved-verse {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.saved-verse__text {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.saved-verse__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.saved-verse__ref {
+  font-style: normal;
+  font-family: var(--font-royal);
+  color: var(--bronze);
+  letter-spacing: 0.06em;
+}
+
+/* The daily verse pop-up (built on the app's dialog box). */
+.daily-verse .ask__box {
+  background: linear-gradient(165deg, #0a1d3f, #18325f);
+  color: #fbf8f1;
+  border-radius: inherit;
+}
+.daily-verse .eyebrow {
+  color: var(--gold);
+}
+.daily-verse__text {
+  margin: 4px 0 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.35rem;
+  line-height: 1.5;
+}
+.daily-verse__ref {
+  font-style: normal;
+  font-family: var(--font-royal);
+  color: var(--gold);
+  letter-spacing: 0.08em;
+}
+.daily-verse .btn--outline {
+  color: #fbf8f1;
+  border-color: rgb(251 248 241 / 0.4);
+  background: transparent;
+}
+.daily-verse__off {
+  align-self: center;
+  margin-top: 4px;
+  font-size: 13px;
+  color: rgb(251 248 241 / 0.7);
+}

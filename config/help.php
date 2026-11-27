@@ -24,6 +24,17 @@ return [
             ],
         ],
 
+        'verses' => [
+            'title' => 'Bible verses',
+            'area' => 'content',
+            'about' => 'The verses members read in Verses on their account (swipe up or tap for another, and save, share or copy one) and the verse that greets them once a day when they open the app. It starts with about 350 verses from the King James Version, grouped by theme.',
+            'faqs' => [
+                ['Why only the King James Version?', 'It\'s free to use. Most modern versions (NIV, NKJV, NLT, AMP) are copyrighted, and using hundreds of their verses in an app needs the publisher\'s permission.'],
+                ['How do I take a verse out?', 'Press Hide. Members stop seeing it straight away, and it waits under Hidden if you want it back.'],
+                ['Can members turn the daily verse off?', 'Yes, in My details on their account. It\'s on to start, and shows once a day, the first time they open the app.'],
+            ],
+        ],
+
         'permissions' => [
             'title' => 'Workers\' permission',
             'area' => 'permissions',

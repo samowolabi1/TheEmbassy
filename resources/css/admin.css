@@ -2298,3 +2298,12 @@ input[type='file'] {
 .settings-grid > .login__remember {
   align-self: center;
 }
+
+/* Bible verses list */
+.verse-row {
+  align-items: flex-start;
+  gap: 14px;
+}
+.verse-row .stack {
+  flex: 1;
+}

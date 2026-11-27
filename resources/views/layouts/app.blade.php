@@ -43,6 +43,7 @@
         @yield('content')
     </main>
     @include('partials.footer')
+    @include('partials.daily-verse')
     @include('partials.notify')
 </body>
 </html>

@@ -23,6 +23,8 @@ class MemberFactory extends Factory
             'name' => fake()->name(),
             'phone' => '0803 '.fake()->numerify('### ####'),
             'email' => fake()->unique()->safeEmail(),
+            // Off in tests, so a random verse never lands on a page a test is reading.
+            'daily_verse' => false,
         ];
     }
 

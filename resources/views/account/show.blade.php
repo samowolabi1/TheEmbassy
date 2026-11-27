@@ -64,6 +64,7 @@
                 @endif
                 <a href="{{ route('account.prayer') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🙏</span>Prayer</a>
                 <a href="{{ route('account.appointments') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">🗓️</span>See a pastor</a>
+                <a href="{{ route('account.verses') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">📖</span>Verses</a>
                 @if (\App\Services\People\Permissions::canAsk($member))
                     <a href="{{ route('account.permission') }}" class="app-tile"><span class="app-tile__icon" aria-hidden="true">⏰</span>Permission</a>
                 @endif
@@ -251,6 +252,7 @@
                         <input type="text" name="address" value="{{ old('address', $member->address) }}" maxlength="255">
                     </label>
                     <label class="check"><input type="checkbox" name="notify_sms" value="1" @checked(old('notify_sms', $member->notify_sms))>Send me church messages on WhatsApp</label>
+                    <label class="check"><input type="checkbox" name="daily_verse" value="1" @checked(old('daily_verse', $member->daily_verse))>Show me a Bible verse each day when I open the app</label>
                     <button type="submit" class="btn btn--navy" style="align-self: flex-start">Save details</button>
                 </fieldset>
             </form>

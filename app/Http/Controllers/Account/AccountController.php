@@ -72,7 +72,7 @@ class AccountController extends Controller
         ]);
 
         // Units aren't chosen here: members ask to join one, and the pastors or office approve.
-        $member->update([...$data, 'notify_sms' => $request->boolean('notify_sms')]);
+        $member->update([...$data, 'notify_sms' => $request->boolean('notify_sms'), 'daily_verse' => $request->boolean('daily_verse')]);
         $tokens = app(Rewards::class)->profile($member->fresh('user'));
 
         return back()->with('status', 'Your details are saved.'.($tokens ? " Your profile is complete: +{$tokens} ".TokenName::many().'!' : ''));

@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Someone in the church family. They may have a login (user) or be on the register only.
  */
-#[Fillable(['name', 'first_name', 'last_name', 'phone', 'email', 'gender', 'birthday', 'anniversary', 'address', 'unit_id', 'fellowship_id', 'joined_on', 'baptised', 'believers_class', 'workers_training', 'sod', 'bible_college', 'notes', 'notify_sms', 'celebrate_birthday'])]
+#[Fillable(['name', 'first_name', 'last_name', 'phone', 'email', 'gender', 'birthday', 'anniversary', 'address', 'unit_id', 'fellowship_id', 'joined_on', 'baptised', 'believers_class', 'workers_training', 'sod', 'bible_college', 'notes', 'notify_sms', 'celebrate_birthday', 'daily_verse'])]
 class Member extends Model
 {
     use HasFactory, HasFirstAndLastName;
@@ -59,6 +59,8 @@ class Member extends Model
     {
         return [
             'celebrate_birthday' => 'boolean',
+            'daily_verse' => 'boolean',
+            'daily_verse_on' => 'date',
             'birthday' => 'date',
             'anniversary' => 'date',
             'joined_on' => 'date',
@@ -105,6 +107,16 @@ class Member extends Model
                 $m->units()->syncWithoutDetaching([$m->unit_id]);
             }
         });
+    }
+
+    /**
+     * Verses they saved from the verse scroll.
+     *
+     * @return BelongsToMany<Verse, $this>
+     */
+    public function savedVerses(): BelongsToMany
+    {
+        return $this->belongsToMany(Verse::class, 'member_verse')->withPivot('created_at')->orderByPivot('created_at', 'desc');
     }
 
     /**
