@@ -50,9 +50,12 @@ There are three kinds of account, all in the `users` table:
 | Administrator | Everything else, including Settings & roles |
 | Pastor | Everything except Settings & roles, including welfare cases and approvals above the HOD's limit |
 | Finance | Giving (funds and bank accounts), expenses & budgets, the market |
-| Church office | Members, attendance & first-timers, follow-up & care, units, the weekly email, the market, content (announcements, blog, pages), gallery, community moderation, notices, events, prayer, messages |
-| Media | Content (announcements, blog, pages), gallery, community moderation, notices, sermons & live, events, and the media unit's tools (live studio, requests, file library, birthday cards) |
+| Church office | Members, attendance & first-timers, follow-up & care, units, the weekly email, the market, website content (announcements, home slider, About page, Bible verses), the blog, gallery, community moderation, notices, events, prayer, messages |
+| Media | Website content, the blog, gallery, community moderation, notices, sermons & live, events, and the media unit's tools (live studio, requests, file library, birthday cards) |
 | Ushering | Attendance & first-timers, events (door check-in) |
+| Website manager | The website: announcements, the home page slider, the About page, Bible verses, the blog and the gallery |
+| Blog writer | The blog only: write, edit, schedule and publish articles |
+| Librarian | The library desk and book catalogue |
 
 Create the first administrator from the command line; they add everyone else in **Settings & roles**, which emails each new person a link to set their password:
 

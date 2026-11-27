@@ -17,7 +17,8 @@ return [
         'finance' => 'Giving, funds & bank accounts',
         'expenses' => 'Income, expenses & budgets',
         'market' => 'Market',
-        'content' => 'Content: announcements, blog and pages',
+        'content' => 'Website content: announcements, the home page slider, the About page and Bible verses',
+        'blog' => 'Blog: write, edit and publish articles',
         'gallery' => 'Photo gallery',
         'tokens' => 'Rewards currency: see the treasury and members\' balances (only the pastor in charge creates or moves them)',
         'community' => 'Community: moderate chat, rooms and quizzes',
@@ -40,12 +41,14 @@ return [
     'roles' => [
         'super' => ['name' => 'Pastor in charge (super admin)', 'areas' => ['*']],
         'admin' => ['name' => 'Administrator', 'areas' => ['*']],
-        'pastor' => ['name' => 'Pastor', 'areas' => ['members', 'attendance', 'care', 'welfare', 'units', 'subscribers', 'finance', 'expenses', 'market', 'content', 'gallery', 'community', 'tokens', 'notices', 'sermons', 'events', 'prayer', 'messages', 'appointments', 'testimonies', 'feedback', 'library', 'reminders', 'outreach', 'empowerment', 'permissions']],
+        'pastor' => ['name' => 'Pastor', 'areas' => ['members', 'attendance', 'care', 'welfare', 'units', 'subscribers', 'finance', 'expenses', 'market', 'content', 'blog', 'gallery', 'community', 'tokens', 'notices', 'sermons', 'events', 'prayer', 'messages', 'appointments', 'testimonies', 'feedback', 'library', 'reminders', 'outreach', 'empowerment', 'permissions']],
         'finance' => ['name' => 'Finance', 'areas' => ['finance', 'expenses', 'market']],
-        'secretary' => ['name' => 'Church office', 'areas' => ['members', 'attendance', 'care', 'units', 'subscribers', 'market', 'content', 'gallery', 'community', 'tokens', 'notices', 'events', 'prayer', 'messages', 'appointments', 'testimonies', 'feedback', 'library', 'reminders', 'outreach', 'empowerment']],
-        'media' => ['name' => 'Media', 'areas' => ['content', 'gallery', 'community', 'notices', 'sermons', 'events', 'testimonies']],
+        'secretary' => ['name' => 'Church office', 'areas' => ['members', 'attendance', 'care', 'units', 'subscribers', 'market', 'content', 'blog', 'gallery', 'community', 'tokens', 'notices', 'events', 'prayer', 'messages', 'appointments', 'testimonies', 'feedback', 'library', 'reminders', 'outreach', 'empowerment']],
+        'media' => ['name' => 'Media', 'areas' => ['content', 'blog', 'gallery', 'community', 'notices', 'sermons', 'events', 'testimonies']],
         'usher' => ['name' => 'Ushering', 'areas' => ['attendance', 'events']],
         'librarian' => ['name' => 'Librarian', 'areas' => ['library']],
+        'web' => ['name' => 'Website manager', 'areas' => ['content', 'blog', 'gallery']],
+        'writer' => ['name' => 'Blog writer', 'areas' => ['blog']],
     ],
 
 ];

@@ -593,11 +593,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/announcements/{announcement}/send', [Admin\BroadcastController::class, 'create'])->name('announcements.send');
             Route::post('/announcements/{announcement}/send', [Admin\BroadcastController::class, 'store'])->middleware('throttle:10,1')->name('announcements.send.store');
             Route::post('/declarations', [Admin\DeclarationController::class, 'store'])->name('declarations.store');
+            Route::get('/pages/{page}', [Admin\PageContentController::class, 'edit'])->whereIn('page', ['about', 'home'])->name('pages.edit');
+            Route::put('/pages/{page}', [Admin\PageContentController::class, 'update'])->whereIn('page', ['about', 'home'])->name('pages.update');
+        });
+
+        Route::middleware('can:manage,"blog"')->group(function () {
             Route::post('/posts/images', [Admin\PostController::class, 'upload'])->name('posts.upload');
             Route::get('/posts/{post}/preview', [Admin\PostController::class, 'preview'])->name('posts.preview');
             Route::resource('posts', Admin\PostController::class)->except('show');
-            Route::get('/pages/{page}', [Admin\PageContentController::class, 'edit'])->whereIn('page', ['about', 'home'])->name('pages.edit');
-            Route::put('/pages/{page}', [Admin\PageContentController::class, 'update'])->whereIn('page', ['about', 'home'])->name('pages.update');
         });
 
         Route::middleware('can:manage,"community"')->prefix('community')->name('community.')->group(function () {

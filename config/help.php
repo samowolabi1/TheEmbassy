@@ -250,7 +250,7 @@ return [
 
         'blog' => [
             'title' => 'Blog',
-            'area' => 'content',
+            'area' => 'blog',
             'about' => 'Articles for the Blog page and the home page: write, preview, schedule and publish.',
             'faqs' => [
                 ['How do I format an article?', 'Use the toolbar for headings, bold, links, lists, scripture cards and the "reflect" box, and add pictures straight into the text.'],
