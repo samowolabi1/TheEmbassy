@@ -111,7 +111,7 @@
                 @forelse ($events as $e)
                     <a href="{{ route('admin.events.show', $e) }}" style="display: flex; align-items: center; gap: 12px; color: var(--ink)">
                         <span style="width: 52px; height: 52px; border-radius: 14px; background: {{ $e->is_featured ? 'var(--gold)' : 'var(--navy)' }}; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0">
-                            <span style="font-size: 10px; font-weight: 800; color: {{ $e->is_featured ? 'var(--midnight)' : 'var(--white)' }}">{{ strtoupper($e->starts_at->format('M')) }}</span>
+                            <span style="font-size: 12px; font-weight: 800; color: {{ $e->is_featured ? 'var(--midnight)' : 'var(--white)' }}">{{ strtoupper($e->starts_at->format('M')) }}</span>
                             <span style="font-family: var(--font-display); font-weight: 800; font-size: 20px; line-height: 1; color: {{ $e->is_featured ? 'var(--midnight)' : 'var(--gold)' }}">{{ $e->starts_at->format('d') }}</span>
                         </span>
                         <span class="stack"><span style="font-weight: 800; font-size: 15px">{{ $e->title }}</span><span class="box__note">{{ $e->starts_at->format('D g:i A') }} · {{ $e->booked_count }} booked</span></span>

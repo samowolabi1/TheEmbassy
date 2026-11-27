@@ -686,7 +686,10 @@ input[type='file']:not(.sr-only) {
   html .check,
   html .training-q__row label,
   html .form .photo-tile label,
-  html .photo-tile label { min-height: 40px; align-items: center; }
+  html .photo-tile label,
+  html .switch,
+  html label:has(> input[type=checkbox]),
+  html label:has(> input[type=radio]) { min-height: 40px; align-items: center; }
   html details > summary:not(.btn):not(.chip):not(.msg__action) { min-height: 40px; display: flex; align-items: center; gap: 6px; }
   html .tip__button { position: relative; }
   html .tip__button::after { content: ''; position: absolute; inset: -11px; }

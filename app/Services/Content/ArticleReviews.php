@@ -18,16 +18,19 @@ class ArticleReviews
 {
     public function __construct(private WebPush $push, private Reminders $reminders) {}
 
-    public function submit(Post $post, ?string $wantsLiveAt): void
+    public function submit(Post $post, ?string $wantsLiveAt, bool $notify = true): void
     {
         $post->forceFill([
             'review' => 'pending',
             'review_note' => null,
-            'submitted_at' => now(),
+            'submitted_at' => $notify ? now() : ($post->submitted_at ?? now()),
             'wants_live_at' => $wantsLiveAt,
             'published_at' => null,
         ])->save();
 
+        if (! $notify) {
+            return;
+        }
         $when = $post->wants_live_at?->isFuture() ? ' They\'d like it live on '.$post->wants_live_at->format('j M, g:i A').'.' : '';
         foreach ($this->editors() as $editor) {
             $this->tell($editor, 'An article is waiting for approval', ($post->writer?->name ?? 'A blog writer').' sent "'.$post->title.'".'.$when, route('admin.posts.edit', $post), 'Read it');

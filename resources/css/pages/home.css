@@ -300,7 +300,7 @@
   background: var(--midnight);
 }
 .date-tile__mon {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.1em;
   color: var(--white);

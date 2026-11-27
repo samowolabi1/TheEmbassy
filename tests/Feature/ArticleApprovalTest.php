@@ -118,4 +118,18 @@ class ArticleApprovalTest extends TestCase
         $this->assertTrue(Post::firstWhere('title', 'Sowing seeds at the office')->isLive());
         Mail::assertNothingSent();
     }
+
+    public function test_editors_hear_once_and_a_draft_leaves_the_queue(): void
+    {
+        $this->actingAs($this->writer)->post(route('admin.posts.store'), $this->article(['status' => 'review']));
+        $post = Post::firstWhere('title', 'Sowing seeds at the office');
+        $this->put(route('admin.posts.update', $post), $this->article(['body' => 'A small fix.', 'status' => 'review']));
+        Mail::assertSent(ReminderMail::class, 1);
+        $this->assertTrue($post->fresh()->isWaitingForApproval());
+
+        $this->put(route('admin.posts.update', $post), $this->article(['status' => 'draft']))->assertSessionHasNoErrors();
+        $this->assertNull($post->fresh()->review);
+        session()->forget('status');
+        $this->actingAs($this->editor)->get(route('admin.posts.index', ['show' => 'waiting']))->assertDontSee('Sowing seeds at the office');
+    }
 }

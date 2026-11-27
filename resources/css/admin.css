@@ -2332,3 +2332,28 @@ input[type='file'] {
 .review-box__actions details {
   flex: 1 1 280px;
 }
+
+/* A checkbox in a table row, with a tap area big enough for a thumb. */
+.cell-check {
+  display: inline-grid;
+  place-items: center;
+  min-width: 36px;
+  min-height: 36px;
+  margin: -6px;
+  cursor: pointer;
+}
+.cell-check input {
+  width: 18px;
+  height: 18px;
+}
+
+/* Editing a verse: the form takes the row's full width, so it fits on a phone. */
+.verse-row {
+  flex-wrap: wrap;
+}
+.verse-row .list-item__actions:has(details[open]) {
+  flex-basis: 100%;
+}
+.verse-row details[open] {
+  flex: 1 1 100%;
+}

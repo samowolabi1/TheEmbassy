@@ -42,11 +42,11 @@
             @csrf
             <div class="table-wrap">
                 <table class="table table--cards" style="min-width: 820px">
-                    <thead><tr><th style="width: 36px"><span class="sr-only">Select</span><input type="checkbox" data-check-all aria-label="Select all"></th><th>NAME</th><th class="num">AGE</th><th>PHONE</th><th>CHOICES</th><th>STATUS</th><th>APPLIED</th><th class="num"><span class="sr-only">Open</span></th></tr></thead>
+                    <thead><tr><th style="width: 36px"><label class="cell-check"><input type="checkbox" data-check-all aria-label="Select all"></label></th><th>NAME</th><th class="num">AGE</th><th>PHONE</th><th>CHOICES</th><th>STATUS</th><th>APPLIED</th><th class="num"><span class="sr-only">Open</span></th></tr></thead>
                     <tbody>
                         @forelse ($applications as $a)
                             <tr>
-                                <td><input type="checkbox" name="ids[]" value="{{ $a->id }}" aria-label="Select {{ $a->name }}"></td>
+                                <td><label class="cell-check"><input type="checkbox" name="ids[]" value="{{ $a->id }}" aria-label="Select {{ $a->name }}"></label></td>
                                 <td><a href="{{ route('admin.empowerment.application', [$programme, $a]) }}" style="font-weight: 700">{{ $a->name }}</a><br><span class="box__note" style="margin: 0">{{ $a->reference }}{{ $a->location ? ' · '.$a->location : '' }}</span></td>
                                 <td class="num">{{ $a->age() ?? '—' }}</td>
                                 <td>@if ($a->whatsappUrl())<a href="{{ $a->whatsappUrl() }}" target="_blank" rel="noopener">{{ $a->phone }}</a>@else{{ $a->phone }}@endif</td>

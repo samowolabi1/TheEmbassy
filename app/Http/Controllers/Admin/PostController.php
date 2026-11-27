@@ -155,6 +155,7 @@ class PostController extends Controller
     private function fill(Request $request, Post $post, Images $images, ArticleReviews $reviews): void
     {
         $publishes = $request->user()->canPublishArticles();
+        $wasWaiting = $post->isWaitingForApproval();
         $data = $request->validate([
             'title' => ['required', 'string', 'max:160'],
             'slug' => ['nullable', 'string', 'max:80', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
@@ -229,7 +230,11 @@ class PostController extends Controller
         });
 
         if (! $publishes && $data['status'] === 'review') {
-            $reviews->submit($post, $data['publish_at'] ?? null);
+            // Editors hear once, when it arrives; saving it again while it waits just updates it.
+            $reviews->submit($post, $data['publish_at'] ?? null, notify: ! $wasWaiting);
+        } elseif (! $publishes && $wasWaiting) {
+            // Back to a draft: it leaves the editors' queue.
+            $post->forceFill(['review' => null, 'submitted_at' => null, 'wants_live_at' => null])->save();
         }
         if (isset($approvedWriter) && $approvedWriter && $approvedWriter->id !== $request->user()->id) {
             $reviews->tellApproved($post);

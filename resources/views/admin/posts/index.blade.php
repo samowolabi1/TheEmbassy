@@ -37,7 +37,7 @@
                     <span class="list-thumb bg-{{ $post->swatch }}" aria-hidden="true"></span>
                 @endif
                 <span class="list-item__main">
-                    <a href="{{ route('admin.posts.edit', $post) }}" class="list-item__title">{{ $post->title }}</a>
+                    <a href="{{ auth()->user()->canPublishArticles() || ! $post->published_at ? route('admin.posts.edit', $post) : ($post->isLive() ? $post->url() : route('admin.posts.preview', $post)) }}" class="list-item__title">{{ $post->title }}</a>
                     <span class="list-item__meta">{{ $post->topic }} · {{ $post->authorName() }} · {{ $post->readingTime() }}
                         @if ($post->status() === 'scheduled') · goes live {{ $post->published_at->format('j M Y, g:i A') }}
                         @elseif ($post->published_at) · {{ $post->published_at->format('j M Y') }}

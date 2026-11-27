@@ -125,7 +125,7 @@
                     <textarea name="beliefs" maxlength="3000" style="height: 180px">{{ old('beliefs', implode("\n", $content['beliefs'] ?? [])) }}</textarea>
                     <span class="field__hint">One per line.</span>
                 </label>
-                <span class="box__note">Units on the About page come from <a href="{{ route('admin.units.index') }}" class="box__link">Units &amp; fellowships</a>: give a unit a "What they do" line and it shows there.</span>
+                <span class="box__note">Units on the About page come from @if (auth()->user()->canManage('units'))<a href="{{ route('admin.units.index') }}" class="box__link">Units &amp; fellowships</a>@else Units &amp; fellowships (looked after by the church office)@endif: give a unit a "What they do" line and it shows there.</span>
             </section>
 
             <section class="box form">
