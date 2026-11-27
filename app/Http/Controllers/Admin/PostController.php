@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Services\Content\ArticleReviews;
 use App\Services\Content\Images;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -26,13 +27,16 @@ class PostController extends Controller
     public function index(Request $request): View
     {
         $request->validate(['q' => ['nullable', 'string', 'max:100']]);
-        $show = in_array($request->query('show'), ['published', 'scheduled', 'draft'], true) ? $request->query('show') : 'all';
+        $show = in_array($request->query('show'), ['published', 'scheduled', 'draft', 'waiting'], true) ? $request->query('show') : 'all';
         $search = trim((string) $request->query('q'));
+        // Blog writers see their own articles; editors see everyone's.
+        $mine = fn ($q) => $q->when(! $request->user()->canPublishArticles(), fn ($q) => $q->where('user_id', $request->user()->id));
 
-        $posts = Post::query()
+        $posts = Post::query()->tap($mine)
             ->when($show === 'published', fn ($q) => $q->where('published_at', '<=', now()))
             ->when($show === 'scheduled', fn ($q) => $q->where('published_at', '>', now()))
-            ->when($show === 'draft', fn ($q) => $q->whereNull('published_at'))
+            ->when($show === 'draft', fn ($q) => $q->whereNull('published_at')->whereNull('review'))
+            ->when($show === 'waiting', fn ($q) => $q->where('review', 'pending'))
             ->when($search !== '', fn ($q) => $q->where('title', 'like', '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search).'%'))
             ->orderByRaw('published_at is null desc')
             ->orderByDesc('published_at')
@@ -45,9 +49,10 @@ class PostController extends Controller
             'show' => $show,
             'search' => $search,
             'counts' => [
-                'published' => Post::where('published_at', '<=', now())->count(),
-                'scheduled' => Post::where('published_at', '>', now())->count(),
-                'draft' => Post::whereNull('published_at')->count(),
+                'waiting' => Post::query()->tap($mine)->where('review', 'pending')->count(),
+                'published' => Post::query()->tap($mine)->where('published_at', '<=', now())->count(),
+                'scheduled' => Post::query()->tap($mine)->where('published_at', '>', now())->count(),
+                'draft' => Post::query()->tap($mine)->whereNull('published_at')->whereNull('review')->count(),
             ],
         ]);
     }
@@ -61,28 +66,55 @@ class PostController extends Controller
         ])));
     }
 
-    public function store(Request $request, Images $images): RedirectResponse
+    public function store(Request $request, Images $images, ArticleReviews $reviews): RedirectResponse
     {
         $post = new Post(['user_id' => $request->user()->id]);
-        $this->fill($request, $post, $images);
+        $this->fill($request, $post, $images, $reviews);
 
         return $this->saved($request, $post, 'added');
     }
 
-    public function edit(Post $post): View
+    public function edit(Request $request, Post $post): View
     {
+        $this->authorizeWriter($request, $post);
+
         return view('admin.posts.form', $this->formData($post));
     }
 
-    public function update(Request $request, Post $post, Images $images): RedirectResponse
+    public function update(Request $request, Post $post, Images $images, ArticleReviews $reviews): RedirectResponse
     {
-        $this->fill($request, $post, $images);
+        $this->authorizeWriter($request, $post);
+        $this->fill($request, $post, $images, $reviews);
 
         return $this->saved($request, $post, 'saved');
     }
 
-    public function destroy(Post $post, Images $images): RedirectResponse
+    /**
+     * An editor approves a writer's article: it goes live now, or at the time the writer chose.
+     */
+    public function approve(Request $request, Post $post, ArticleReviews $reviews): RedirectResponse
     {
+        abort_unless($request->user()->canPublishArticles() && $post->isWaitingForApproval(), 403);
+        $reviews->approve($post, $request->user());
+
+        return redirect()->route('admin.posts.edit', $post)->with('status', $post->isLive() ? "\"{$post->title}\" is live. The writer has been told." : "\"{$post->title}\" is approved and goes live on {$post->published_at->format('j M Y, g:i A')}.");
+    }
+
+    /**
+     * An editor sends a writer's article back with what to change.
+     */
+    public function sendBack(Request $request, Post $post, ArticleReviews $reviews): RedirectResponse
+    {
+        abort_unless($request->user()->canPublishArticles() && $post->isWaitingForApproval(), 403);
+        $note = $request->validate(['note' => ['required', 'string', 'max:500']], ['note.required' => 'Say what needs changing, so the writer knows.'])['note'];
+        $reviews->sendBack($post, $request->user(), $note);
+
+        return redirect()->route('admin.posts.index', ['show' => 'waiting'])->with('status', "\"{$post->title}\" went back to the writer with your note.");
+    }
+
+    public function destroy(Request $request, Post $post, Images $images): RedirectResponse
+    {
+        $this->authorizeWriter($request, $post);
         $images->delete($post->cover_path, $post->cover_thumb_path);
         $post->delete();
 
@@ -92,8 +124,10 @@ class PostController extends Controller
     /**
      * How the article will look on the website, even before it is published.
      */
-    public function preview(Post $post, BlogController $blog): View
+    public function preview(Request $request, Post $post, BlogController $blog): View
     {
+        abort_unless($request->user()->canPublishArticles() || $post->user_id === $request->user()->id || $post->isLive(), 403);
+
         return $blog->article($post, preview: true);
     }
 
@@ -118,8 +152,9 @@ class PostController extends Controller
         return response()->json(['markdown' => '!['.$alt.']('.$url.')']);
     }
 
-    private function fill(Request $request, Post $post, Images $images): void
+    private function fill(Request $request, Post $post, Images $images, ArticleReviews $reviews): void
     {
+        $publishes = $request->user()->canPublishArticles();
         $data = $request->validate([
             'title' => ['required', 'string', 'max:160'],
             'slug' => ['nullable', 'string', 'max:80', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
@@ -133,8 +168,8 @@ class PostController extends Controller
             'author_name' => ['nullable', 'string', 'max:100'],
             'author_bio' => ['nullable', 'string', 'max:300'],
             'meta_description' => ['nullable', 'string', 'max:300'],
-            'status' => ['required', Rule::in(['draft', 'published', 'scheduled'])],
-            'publish_at' => ['nullable', 'required_if:status,scheduled', 'date'],
+            'status' => ['required', Rule::in($publishes ? ['draft', 'published', 'scheduled'] : ['draft', 'review'])],
+            'publish_at' => ['nullable', 'required_if:status,scheduled', 'date', $publishes ? 'nullable' : 'after:now'],
         ], [
             'slug.regex' => 'Use lowercase letters, numbers and dashes only, e.g. dating-with-purpose.',
             'publish_at.required_if' => 'Choose when this article should go live.',
@@ -156,14 +191,20 @@ class PostController extends Controller
             'author_name' => $data['author_name'] ?? null,
             'author_bio' => $data['author_bio'] ?? null,
             'meta_description' => $data['meta_description'] ?? null,
-            'is_featured' => $request->boolean('is_featured'),
+            // Only editors choose the featured article.
+            'is_featured' => $publishes ? $request->boolean('is_featured') : (bool) $post->is_featured,
             'published_at' => match ($data['status']) {
-                'draft' => null,
+                'draft', 'review' => null,
                 'scheduled' => Carbon::parse($data['publish_at']),
                 // Keep the original date when re-saving a published article.
                 'published' => $post->isLive() ? $post->published_at : now(),
             },
         ]);
+        // An editor publishing or scheduling a waiting article approves it.
+        if ($publishes && $post->review && in_array($data['status'], ['published', 'scheduled'], true)) {
+            $post->forceFill(['review' => null, 'review_note' => null, 'reviewed_by' => $request->user()->id, 'reviewed_at' => now()]);
+            $approvedWriter = $post->writer;
+        }
 
         if ($request->boolean('remove_cover') || $request->hasFile('cover')) {
             $images->delete($post->cover_path, $post->cover_thumb_path);
@@ -186,11 +227,34 @@ class PostController extends Controller
                 Post::whereKeyNot($post->id)->where('is_featured', true)->update(['is_featured' => false]);
             }
         });
+
+        if (! $publishes && $data['status'] === 'review') {
+            $reviews->submit($post, $data['publish_at'] ?? null);
+        }
+        if (isset($approvedWriter) && $approvedWriter && $approvedWriter->id !== $request->user()->id) {
+            $reviews->tellApproved($post);
+        }
+    }
+
+    /**
+     * Blog writers only open their own articles, and only before they go live: after that,
+     * changes go through an editor.
+     */
+    private function authorizeWriter(Request $request, Post $post): void
+    {
+        if ($request->user()->canPublishArticles()) {
+            return;
+        }
+        abort_unless($post->user_id === $request->user()->id, 403, 'You can only open your own articles.');
+        abort_if($post->published_at !== null, 403, 'This article is approved, so only an editor can change it now. Ask your website manager.');
     }
 
     private function saved(Request $request, Post $post, string $verb): RedirectResponse
     {
-        $message = match ($post->status()) {
+        $message = match (true) {
+            $post->isWaitingForApproval() => "\"{$post->title}\" is sent for approval. You'll hear when it's approved.",
+            default => null,
+        } ?? match ($post->status()) {
             'draft' => "Draft \"{$post->title}\" {$verb}.",
             'scheduled' => "\"{$post->title}\" will go live on {$post->published_at->format('j M Y, g:i A')}.",
             default => "\"{$post->title}\" is live.",

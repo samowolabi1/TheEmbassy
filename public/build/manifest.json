@@ -4,7 +4,7 @@
     "name": "dialog"
   },
   "resources/css/admin.css": {
-    "file": "assets/admin-B6HeLqgh.css",
+    "file": "assets/admin-DBgvNgOS.css",
     "name": "admin",
     "names": [
       "admin.css"
@@ -22,7 +22,7 @@
     "isEntry": true
   },
   "resources/js/admin.js": {
-    "file": "assets/admin-DCti_EC-.js",
+    "file": "assets/admin-Dknx5iWf.js",
     "name": "admin",
     "src": "resources/js/admin.js",
     "isEntry": true,

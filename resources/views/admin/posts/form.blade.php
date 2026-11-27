@@ -1,7 +1,8 @@
 @extends('layouts.admin', ['title' => $post->exists ? 'Edit article' : 'New article', 'active' => 'blog'])
 
 @php
-    $status = old('status', $post->status());
+    $publishes = auth()->user()->canPublishArticles();
+    $status = old('status', $publishes ? $post->status() : ($post->isWaitingForApproval() ? 'review' : 'draft'));
 @endphp
 
 @section('content')
@@ -11,7 +12,8 @@
             <h1>{{ $post->exists ? 'Edit article' : 'New article' }}</h1>
             @if ($post->exists)
                 <span class="page-head__sub">
-                    @switch($post->status())
+                    @switch($post->review ? 'review' : $post->status())
+                        @case('review') {{ $post->stateLabel() }}, not on the website yet. @break
                         @case('draft') Draft, not on the website. @break
                         @case('scheduled') Scheduled for {{ $post->published_at->format('j M Y, g:i A') }}. @break
                         @default Live at <a href="{{ $post->url() }}" target="_blank" class="box__link">{{ str_replace(['https://', 'http://'], '', $post->url()) }}</a>
@@ -25,6 +27,40 @@
             </div>
         @endif
     </header>
+
+    @if ($post->isWaitingForApproval() && $publishes)
+        <section class="box review-box">
+            <h2>Waiting for your approval</h2>
+            <p class="box__note" style="margin: 0">{{ $post->writer?->name ?? 'A blog writer' }} sent this {{ $post->submitted_at?->diffForHumans() }}.
+                {{ $post->wants_live_at?->isFuture() ? 'They\'d like it to go live on '.$post->wants_live_at->format('j M Y, g:i A').'.' : 'It goes live as soon as you approve it.' }}
+                Read it and use Preview to see it as readers will. You can correct it below and press Save first.</p>
+            <div class="review-box__actions">
+                <form method="POST" action="{{ route('admin.posts.approve', $post) }}" data-confirm="{{ $post->wants_live_at?->isFuture() ? 'Approve it to go live on '.$post->wants_live_at->format('j M, g:i A').'?' : 'Approve it and put it on the website now?' }}" data-confirm-ok="Approve">
+                    @csrf
+                    <button type="submit" class="btn btn--gold">Approve and publish</button>
+                </form>
+                <details class="list-item--edit" @if ($errors->has('note')) open @endif>
+                    <summary class="btn btn--outline">Send back with a note</summary>
+                    <form method="POST" action="{{ route('admin.posts.send-back', $post) }}" class="form" style="margin-top: 12px">
+                        @csrf
+                        <label class="field">What should change?
+                            <textarea name="note" rows="3" maxlength="500" required placeholder="e.g. Lovely piece. Please add the scripture reference in the second section and shorten the opening.">{{ old('note') }}</textarea>
+                            @error('note') <span class="field-error">{{ $message }}</span> @enderror
+                        </label>
+                        <div><button type="submit" class="btn btn--navy">Send back</button></div>
+                    </form>
+                </details>
+            </div>
+        </section>
+    @elseif ($post->isWaitingForApproval())
+        <p class="flash" role="status" style="background: var(--wash); color: var(--navy)">Sent for approval {{ $post->submitted_at?->diffForHumans() }}. You can still make changes; saving keeps it in the queue.</p>
+    @elseif ($post->needsChanges())
+        <section class="box review-box review-box--changes">
+            <h2>{{ $publishes ? 'Sent back to the writer' : 'Please make a few changes' }}</h2>
+            <p style="margin: 0">"{{ $post->review_note }}"</p>
+            <p class="box__note" style="margin: 0">From {{ \App\Models\User::find($post->reviewed_by)?->name ?? 'an editor' }}, {{ $post->reviewed_at?->diffForHumans() }}.{{ $publishes ? '' : ' Make the changes, then choose "Send for approval" and save.' }}</p>
+        </section>
+    @endif
 
     @if (session('preview'))
         <p class="flash" role="status">Saved. <a href="{{ session('preview') }}" target="_blank" class="box__link">Open the preview</a></p>
@@ -90,15 +126,25 @@ A paragraph. **Bold**, *italic* and [a link](https://example.com).
                     <legend>Status</legend>
                     <div class="choices">
                         <label class="choice"><input type="radio" name="status" value="draft" @checked($status === 'draft') data-status><span>Draft</span></label>
-                        <label class="choice"><input type="radio" name="status" value="published" @checked($status === 'published') data-status><span>Publish</span></label>
-                        <label class="choice"><input type="radio" name="status" value="scheduled" @checked($status === 'scheduled') data-status><span>Schedule</span></label>
+                        @if ($publishes)
+                            <label class="choice"><input type="radio" name="status" value="published" @checked($status === 'published') data-status><span>Publish</span></label>
+                            <label class="choice"><input type="radio" name="status" value="scheduled" @checked($status === 'scheduled') data-status><span>Schedule</span></label>
+                        @else
+                            <label class="choice"><input type="radio" name="status" value="review" @checked($status === 'review') data-status><span>Send for approval</span></label>
+                        @endif
                     </div>
+                    @unless ($publishes)
+                        <span class="field__hint">An editor reads it before it goes on the website. You'll get an email when it's approved or if it needs changes.</span>
+                    @endunless
                 </fieldset>
-                <label class="field" data-publish-at @if ($status !== 'scheduled') hidden @endif>Go live on
-                    <input type="datetime-local" name="publish_at" value="{{ old('publish_at', $post->status() === 'scheduled' ? $post->published_at->format('Y-m-d\TH:i') : '') }}">
+                <label class="field" data-publish-at @if (! in_array($status, ['scheduled', 'review'], true)) hidden @endif>{{ $publishes ? 'Go live on' : 'Go live on (optional)' }}
+                    <input type="datetime-local" name="publish_at" value="{{ old('publish_at', $post->status() === 'scheduled' ? $post->published_at->format('Y-m-d\TH:i') : ($post->wants_live_at?->isFuture() ? $post->wants_live_at->format('Y-m-d\TH:i') : '')) }}">
+                    @unless ($publishes)<span class="field__hint">Leave empty for as soon as it's approved.</span>@endunless
                     @error('publish_at') <span class="field-error">{{ $message }}</span> @enderror
                 </label>
-                <label class="login__remember"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $post->is_featured))>Feature at the top of the blog</label>
+                @if ($publishes)
+                    <label class="login__remember"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $post->is_featured))>Feature at the top of the blog</label>
+                @endif
                 <div class="actions">
                     <button type="submit" class="btn btn--navy">Save</button>
                     <button type="submit" name="then" value="preview" class="btn btn--outline">Save &amp; preview</button>

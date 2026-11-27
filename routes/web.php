@@ -600,6 +600,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::middleware('can:manage,"blog"')->group(function () {
             Route::post('/posts/images', [Admin\PostController::class, 'upload'])->name('posts.upload');
             Route::get('/posts/{post}/preview', [Admin\PostController::class, 'preview'])->name('posts.preview');
+            Route::post('/posts/{post}/approve', [Admin\PostController::class, 'approve'])->name('posts.approve');
+            Route::post('/posts/{post}/send-back', [Admin\PostController::class, 'sendBack'])->name('posts.send-back');
             Route::resource('posts', Admin\PostController::class)->except('show');
         });
 

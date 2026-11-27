@@ -49,6 +49,9 @@ class Post extends Model
             'previous_slugs' => 'array',
             'is_featured' => 'boolean',
             'published_at' => 'datetime',
+            'submitted_at' => 'datetime',
+            'wants_live_at' => 'datetime',
+            'reviewed_at' => 'datetime',
         ];
     }
 
@@ -106,6 +109,46 @@ class Post extends Model
             $this->published_at->isFuture() => 'scheduled',
             default => 'published',
         };
+    }
+
+    /**
+     * Sent for approval by a blog writer and not yet answered.
+     */
+    public function isWaitingForApproval(): bool
+    {
+        return $this->review === 'pending';
+    }
+
+    /**
+     * Sent back to the writer with a note.
+     */
+    public function needsChanges(): bool
+    {
+        return $this->review === 'changes';
+    }
+
+    /**
+     * Where it stands, in words: for the blog list and the editor.
+     */
+    public function stateLabel(): string
+    {
+        return match (true) {
+            $this->isWaitingForApproval() => 'Waiting for approval',
+            $this->needsChanges() => 'Needs changes',
+            default => match ($this->status()) {
+                'draft' => 'Draft',
+                'scheduled' => 'Scheduled',
+                default => 'Live',
+            },
+        };
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function writer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function isLive(): bool

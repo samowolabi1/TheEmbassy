@@ -11,7 +11,7 @@ class ContentRolesTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_a_blog_writer_writes_and_publishes_articles_and_nothing_else(): void
+    public function test_a_blog_writer_writes_articles_and_nothing_else(): void
     {
         $writer = User::factory()->staff('writer')->create();
         $this->actingAs($writer)->get(route('admin.posts.index'))->assertOk();
@@ -20,9 +20,10 @@ class ContentRolesTest extends TestCase
 
         $this->post(route('admin.posts.store'), [
             'title' => 'Walking in purpose', 'topic' => 'Faith', 'author_name' => 'Sis. Ada', 'swatch' => Post::SWATCHES[0],
-            'dek' => 'Finding God\'s plan for your life.', 'body' => "## Start here\n\nGod has a plan.", 'status' => 'published',
+            'dek' => 'Finding God\'s plan for your life.', 'body' => "## Start here\n\nGod has a plan.", 'status' => 'review',
         ])->assertSessionHasNoErrors();
-        $this->assertTrue(Post::firstWhere('title', 'Walking in purpose')->isLive());
+        // It waits for an editor's approval (see ArticleApprovalTest).
+        $this->assertTrue(Post::firstWhere('title', 'Walking in purpose')->isWaitingForApproval());
 
         foreach (['admin.content', 'admin.gallery.index', 'admin.verses.index', 'admin.members.index'] as $route) {
             $this->get(route($route))->assertForbidden();

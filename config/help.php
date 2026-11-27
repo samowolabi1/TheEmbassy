@@ -253,6 +253,7 @@ return [
             'area' => 'blog',
             'about' => 'Articles for the Blog page and the home page: write, preview, schedule and publish.',
             'faqs' => [
+                ['How does approval work for blog writers?', 'Someone with the Blog writer role can\'t publish. They write an article and choose "Send for approval" (with an optional time for it to go live). The website managers and media team are emailed, and it waits under "Waiting for approval" with a count on the Blog menu. Open it, read it (Preview shows it as readers will), correct anything and Save, then press "Approve and publish", or "Send back with a note" to say what should change. The writer is emailed either way. Once it\'s live, only an editor can change it.'],
                 ['How do I format an article?', 'Use the toolbar for headings, bold, links, lists, scripture cards and the "reflect" box, and add pictures straight into the text.'],
                 ['Can I publish later?', 'Yes: save it with a date in the future and it goes live then. Drafts stay hidden until published.'],
                 ['I changed an article\'s address. Will old links break?', 'No. The old address keeps working and sends readers to the new one.'],

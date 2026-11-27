@@ -90,7 +90,7 @@ if (editor) {
 // Show the date picker only for "Schedule".
 const publishAt = document.querySelector('[data-publish-at]');
 if (publishAt) {
-    const sync = () => (publishAt.hidden = document.querySelector('[data-status]:checked')?.value !== 'scheduled');
+    const sync = () => (publishAt.hidden = document.querySelector('[data-status]:checked')?.value !== 'scheduled' && document.querySelector('[data-status]:checked')?.value !== 'review');
     document.querySelectorAll('[data-status]').forEach((r) => r.addEventListener('change', sync));
     sync();
 }

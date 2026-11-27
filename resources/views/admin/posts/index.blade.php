@@ -4,7 +4,7 @@
     <header class="page-head">
         <div class="stack" style="gap: 4px">
             <h1>Blog</h1>
-            <span class="page-head__sub">Write, schedule and publish articles for the Blog page and the home page.</span>
+            <span class="page-head__sub">{{ auth()->user()->canPublishArticles() ? 'Write, schedule and publish articles for the Blog page and the home page. Articles from blog writers wait under "Waiting for approval".' : 'Write articles and send them for approval. An editor reads each one before it goes on the website.' }}</span>
         </div>
         <div class="actions">
             <a href="{{ route('blog.index') }}" class="btn btn--outline">View blog</a>
@@ -15,6 +15,7 @@
     <div class="tabs-row">
         <nav class="tabs" aria-label="Filter articles">
             <a href="{{ route('admin.posts.index', array_filter(['q' => $search])) }}" class="tab" @if ($show === 'all') aria-current="page" @endif>All</a>
+            <a href="{{ route('admin.posts.index', array_filter(['show' => 'waiting', 'q' => $search])) }}" class="tab" @if ($show === 'waiting') aria-current="page" @endif>Waiting for approval <span>{{ $counts['waiting'] }}</span></a>
             <a href="{{ route('admin.posts.index', array_filter(['show' => 'published', 'q' => $search])) }}" class="tab" @if ($show === 'published') aria-current="page" @endif>Live <span>{{ $counts['published'] }}</span></a>
             <a href="{{ route('admin.posts.index', array_filter(['show' => 'scheduled', 'q' => $search])) }}" class="tab" @if ($show === 'scheduled') aria-current="page" @endif>Scheduled <span>{{ $counts['scheduled'] }}</span></a>
             <a href="{{ route('admin.posts.index', array_filter(['show' => 'draft', 'q' => $search])) }}" class="tab" @if ($show === 'draft') aria-current="page" @endif>Drafts <span>{{ $counts['draft'] }}</span></a>
@@ -44,14 +45,12 @@
                     </span>
                 </span>
                 @if ($post->is_featured) <span class="pill pill--gold">Featured</span> @endif
-                @switch($post->status())
-                    @case('draft') <span class="pill pill--draft">Draft</span> @break
-                    @case('scheduled') <span class="pill pill--scheduled">Scheduled</span> @break
-                    @default <span class="pill pill--live">Live</span>
-                @endswitch
+                <span class="pill {{ match ($post->stateLabel()) { 'Waiting for approval' => 'pill--gold', 'Needs changes' => 'pill--warn', 'Draft' => 'pill--draft', 'Scheduled' => 'pill--scheduled', default => 'pill--live' } }}">{{ $post->stateLabel() }}</span>
                 <span class="list-item__actions">
                     <a href="{{ $post->isLive() ? $post->url() : route('admin.posts.preview', $post) }}" class="btn btn--ghost btn--xs" target="_blank">{{ $post->isLive() ? 'View' : 'Preview' }}<span class="sr-only"> {{ $post->title }}</span></a>
-                    <a href="{{ route('admin.posts.edit', $post) }}" class="btn btn--ghost btn--xs">Edit<span class="sr-only"> {{ $post->title }}</span></a>
+                    @if (auth()->user()->canPublishArticles() || ! $post->published_at)
+                        <a href="{{ route('admin.posts.edit', $post) }}" class="btn btn--ghost btn--xs">{{ $post->isWaitingForApproval() && auth()->user()->canPublishArticles() ? 'Review' : 'Edit' }}<span class="sr-only"> {{ $post->title }}</span></a>
+                    @endif
                 </span>
             </div>
         @empty

@@ -44,7 +44,8 @@
         ],
         'CONTENT' => [
             ['id' => 'content', 'area' => 'content', 'label' => 'Content & announcements', 'route' => 'admin.content'],
-            ['id' => 'blog', 'area' => 'blog', 'label' => 'Blog', 'route' => 'admin.posts.index'],
+            ['id' => 'blog', 'area' => 'blog', 'label' => 'Blog', 'route' => 'admin.posts.index',
+                'badge' => $user->canPublishArticles() ? (\App\Models\Post::where('review', 'pending')->count() ?: null) : null],
             ['id' => 'pages', 'area' => 'content', 'label' => 'Pages (About, home)', 'route' => 'admin.pages.edit', 'params' => ['about']],
             ['id' => 'gallery', 'area' => 'gallery', 'label' => 'Gallery', 'route' => 'admin.gallery.index'],
             ['id' => 'verses', 'area' => 'content', 'label' => 'Bible verses', 'route' => 'admin.verses.index'],

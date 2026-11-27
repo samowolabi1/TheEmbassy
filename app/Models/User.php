@@ -160,6 +160,14 @@ class User extends Authenticatable
             ->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->join('') ?: '?';
     }
 
+    /**
+     * Blog writers send articles for approval; everyone else with the blog publishes them.
+     */
+    public function canPublishArticles(): bool
+    {
+        return $this->canManage('blog') && $this->role !== 'writer';
+    }
+
     public function canManage(string $area): bool
     {
         $areas = $this->isStaff() ? config("roles.roles.{$this->role}.areas") : [];

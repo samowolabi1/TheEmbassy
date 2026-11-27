@@ -2307,3 +2307,28 @@ input[type='file'] {
 .verse-row .stack {
   flex: 1;
 }
+
+/* A blog writer's article waiting for an editor, or sent back with a note. */
+.review-box {
+  border: 1.5px solid var(--gold);
+  background: var(--wash);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.review-box--changes {
+  border-color: var(--warn);
+  background: var(--warn-bg);
+}
+.review-box__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+}
+.review-box__actions form {
+  margin: 0;
+}
+.review-box__actions details {
+  flex: 1 1 280px;
+}
